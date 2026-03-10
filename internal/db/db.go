@@ -47,6 +47,9 @@ var migrations = []string{
 
 	// v2: add category to links
 	`ALTER TABLE links ADD COLUMN category TEXT NOT NULL DEFAULT ''`,
+
+	// v3: add active flag to links
+	`ALTER TABLE links ADD COLUMN active INTEGER NOT NULL DEFAULT 1`,
 }
 
 func migrate(conn *sql.DB) error {

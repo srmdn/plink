@@ -40,6 +40,8 @@ func New(cfg *config.Config, database *db.DB, webFS embed.FS) http.Handler {
 	mux.HandleFunc("PUT /api/links/{id}", s.requireAuth(s.handleUpdateLink))
 	mux.HandleFunc("DELETE /api/links/{id}", s.requireAuth(s.handleDeleteLink))
 	mux.HandleFunc("GET /api/links/{id}/analytics", s.requireAuth(s.handleAnalytics))
+	mux.HandleFunc("PATCH /api/links/{id}/toggle", s.requireAuth(s.handleToggleLink))
+	mux.HandleFunc("GET /api/export", s.requireAuth(s.handleExport))
 
 	// Catch-all: slug redirect (must be last)
 	mux.HandleFunc("GET /{slug}", s.handleRedirect)
