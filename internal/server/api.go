@@ -1,7 +1,9 @@
 package server
 
 import (
+	"encoding/csv"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
@@ -129,6 +131,49 @@ func (s *Server) handleDeleteLink(w http.ResponseWriter, r *http.Request) {
 	}
 
 	writeJSON(w, http.StatusOK, map[string]bool{"ok": true})
+}
+
+func (s *Server) handleToggleLink(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
+	if err != nil {
+		writeError(w, http.StatusBadRequest, "invalid id")
+		return
+	}
+	if err := s.db.ToggleLink(id); err != nil {
+		writeError(w, http.StatusInternalServerError, "db error")
+		return
+	}
+	writeJSON(w, http.StatusOK, map[string]bool{"ok": true})
+}
+
+func (s *Server) handleExport(w http.ResponseWriter, r *http.Request) {
+	links, err := s.db.ListLinks()
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "db error")
+		return
+	}
+
+	format := r.URL.Query().Get("format")
+	if format == "csv" {
+		w.Header().Set("Content-Type", "text/csv")
+		w.Header().Set("Content-Disposition", "attachment; filename=\"plink-export.csv\"")
+		cw := csv.NewWriter(w)
+		cw.Write([]string{"slug", "url", "description", "category", "active", "clicks", "created_at"})
+		for _, l := range links {
+			active := "1"
+			if !l.Active {
+				active = "0"
+			}
+			cw.Write([]string{l.Slug, l.URL, l.Description, l.Category, active, fmt.Sprintf("%d", l.Clicks), fmt.Sprintf("%d", l.CreatedAt)})
+		}
+		cw.Flush()
+		return
+	}
+
+	// Default: JSON
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Content-Disposition", "attachment; filename=\"plink-export.json\"")
+	json.NewEncoder(w).Encode(links)
 }
 
 func (s *Server) handleAnalytics(w http.ResponseWriter, r *http.Request) {
