@@ -10,7 +10,7 @@ import (
 	"github.com/srmdn/plink/internal/server"
 )
 
-//go:embed web/admin.html
+//go:embed web
 var webFS embed.FS
 
 func Run() {

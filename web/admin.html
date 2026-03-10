@@ -4,6 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>plink</title>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -97,6 +98,7 @@
   .btn-ghost:hover { color: var(--text); border-color: var(--muted); }
   .btn-danger  { background: transparent; border: 1px solid transparent; color: var(--danger); }
   .btn-danger:hover { border-color: var(--danger); }
+  .btn-copy.copied { color: var(--accent); border-color: var(--accent); }
   .btn-sm { padding: 4px 10px; font-size: 11px; }
 
   /* ── Toolbar ── */
@@ -318,6 +320,8 @@
         <td class="desc-cell">${esc(l.description) || '<span style="color:var(--border)">—</span>'}</td>
         <td class="clicks-cell">${l.clicks}</td>
         <td class="actions">
+          <button class="btn btn-ghost btn-sm btn-copy" onclick="copyLink(this, '${esc(l.slug)}')">copy</button>
+          <a class="btn btn-ghost btn-sm" href="${esc(l.url)}" target="_blank" rel="noopener">visit</a>
           <button class="btn btn-ghost btn-sm" onclick="openAnalytics(${l.id}, '${esc(l.slug)}')">stats</button>
           <button class="btn btn-ghost btn-sm" onclick="openEdit(${l.id})">edit</button>
           <button class="btn btn-danger btn-sm" onclick="deleteLink(${l.id}, '${esc(l.slug)}')">del</button>
@@ -391,6 +395,15 @@
   function showModalError(msg) {
     $('modal-error').textContent = msg;
     $('modal-error').classList.remove('hidden');
+  }
+
+  // ── Copy short link ────────────────────────────────
+  function copyLink(btn, slug) {
+    const url = `${location.origin}/${slug}`;
+    navigator.clipboard.writeText(url);
+    btn.textContent = 'copied!';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'copy'; btn.classList.remove('copied'); }, 1500);
   }
 
   // ── Delete ─────────────────────────────────────────

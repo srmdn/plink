@@ -25,6 +25,10 @@ func New(cfg *config.Config, database *db.DB, webFS embed.FS) http.Handler {
 
 	mux := http.NewServeMux()
 
+	// Favicon
+	mux.HandleFunc("GET /favicon.svg", s.handleFavicon)
+	mux.HandleFunc("GET /favicon.ico", s.handleFavicon)
+
 	// Admin UI — no route-level auth; JS handles auth state via API
 	mux.HandleFunc("GET /admin", s.handleAdmin)
 	mux.HandleFunc("POST /admin/login", s.handleLogin)

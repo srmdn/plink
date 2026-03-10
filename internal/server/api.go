@@ -30,6 +30,13 @@ func (s *Server) handleAdmin(w http.ResponseWriter, r *http.Request) {
 	w.Write(data)
 }
 
+func (s *Server) handleFavicon(w http.ResponseWriter, r *http.Request) {
+	data, _ := s.webFS.ReadFile("web/favicon.svg")
+	w.Header().Set("Content-Type", "image/svg+xml")
+	w.Header().Set("Cache-Control", "public, max-age=86400")
+	w.Write(data)
+}
+
 func (s *Server) handleListLinks(w http.ResponseWriter, r *http.Request) {
 	links, err := s.db.ListLinks()
 	if err != nil {
