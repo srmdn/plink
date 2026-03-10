@@ -208,6 +208,7 @@
   <main id="dashboard-view" class="hidden">
     <div class="toolbar">
       <div class="toolbar-left">
+        <input type="text" id="search" placeholder="filter links..." style="width:220px;padding:6px 10px;font-size:12px" autocomplete="off" spellcheck="false" />
         <span class="count" id="link-count"></span>
       </div>
       <button class="btn btn-primary" id="add-btn">+ add link</button>
@@ -305,15 +306,32 @@
     fetch('/admin/logout', { method: 'POST' }).then(() => location.reload());
   });
 
+  // ── Search ─────────────────────────────────────────
+  $('search').addEventListener('input', () => renderTable());
+
   // ── Table ──────────────────────────────────────────
   function renderTable() {
-    $('link-count').textContent = `${links.length} link${links.length !== 1 ? 's' : ''}`;
+    const q = $('search').value.toLowerCase().trim();
+    const visible = q
+      ? links.filter(l =>
+          l.slug.toLowerCase().includes(q) ||
+          l.url.toLowerCase().includes(q) ||
+          l.description.toLowerCase().includes(q)
+        )
+      : links;
+
+    $('link-count').textContent = q
+      ? `${visible.length} of ${links.length} link${links.length !== 1 ? 's' : ''}`
+      : `${links.length} link${links.length !== 1 ? 's' : ''}`;
+
     const tbody = $('links-tbody');
-    if (!links.length) {
-      tbody.innerHTML = `<tr class="empty-row"><td colspan="5">no links yet — add your first one</td></tr>`;
+    if (!visible.length) {
+      tbody.innerHTML = links.length
+        ? `<tr class="empty-row"><td colspan="5">no links match "${esc(q)}"</td></tr>`
+        : `<tr class="empty-row"><td colspan="5">no links yet — add your first one</td></tr>`;
       return;
     }
-    tbody.innerHTML = links.map(l => `
+    tbody.innerHTML = visible.map(l => `
       <tr>
         <td class="slug">${esc(l.slug)}</td>
         <td class="url-cell"><a href="${esc(l.url)}" target="_blank" rel="noopener" style="color:inherit;text-decoration:none">${esc(l.url)}</a></td>
