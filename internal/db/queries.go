@@ -10,6 +10,7 @@ type Link struct {
 	Slug        string `json:"slug"`
 	URL         string `json:"url"`
 	Description string `json:"description"`
+	Category    string `json:"category"`
 	Clicks      int64  `json:"clicks"`
 	CreatedAt   int64  `json:"created_at"`
 	UpdatedAt   int64  `json:"updated_at"`
@@ -33,7 +34,7 @@ type Analytics struct {
 
 func (db *DB) ListLinks() ([]Link, error) {
 	rows, err := db.Query(`
-		SELECT l.id, l.slug, l.url, l.description, l.created_at, l.updated_at,
+		SELECT l.id, l.slug, l.url, l.description, l.category, l.created_at, l.updated_at,
 		       COUNT(c.id) AS clicks
 		FROM links l
 		LEFT JOIN clicks c ON c.link_id = l.id
@@ -48,7 +49,7 @@ func (db *DB) ListLinks() ([]Link, error) {
 	var links []Link
 	for rows.Next() {
 		var l Link
-		if err := rows.Scan(&l.ID, &l.Slug, &l.URL, &l.Description, &l.CreatedAt, &l.UpdatedAt, &l.Clicks); err != nil {
+		if err := rows.Scan(&l.ID, &l.Slug, &l.URL, &l.Description, &l.Category, &l.CreatedAt, &l.UpdatedAt, &l.Clicks); err != nil {
 			return nil, err
 		}
 		links = append(links, l)
@@ -67,24 +68,24 @@ func (db *DB) GetLinkBySlug(slug string) (*Link, error) {
 	return &l, err
 }
 
-func (db *DB) CreateLink(slug, url, description string) (*Link, error) {
+func (db *DB) CreateLink(slug, url, description, category string) (*Link, error) {
 	now := time.Now().Unix()
 	res, err := db.Exec(
-		`INSERT INTO links (slug, url, description, created_at, updated_at) VALUES (?, ?, ?, ?, ?)`,
-		slug, url, description, now, now,
+		`INSERT INTO links (slug, url, description, category, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)`,
+		slug, url, description, category, now, now,
 	)
 	if err != nil {
 		return nil, err
 	}
 	id, _ := res.LastInsertId()
-	return &Link{ID: id, Slug: slug, URL: url, Description: description, CreatedAt: now, UpdatedAt: now}, nil
+	return &Link{ID: id, Slug: slug, URL: url, Description: description, Category: category, CreatedAt: now, UpdatedAt: now}, nil
 }
 
-func (db *DB) UpdateLink(id int64, slug, url, description string) error {
+func (db *DB) UpdateLink(id int64, slug, url, description, category string) error {
 	now := time.Now().Unix()
 	_, err := db.Exec(
-		`UPDATE links SET slug = ?, url = ?, description = ?, updated_at = ? WHERE id = ?`,
-		slug, url, description, now, id,
+		`UPDATE links SET slug = ?, url = ?, description = ?, category = ?, updated_at = ? WHERE id = ?`,
+		slug, url, description, category, now, id,
 	)
 	return err
 }

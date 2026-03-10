@@ -99,6 +99,7 @@
   .btn-danger  { background: transparent; border: 1px solid transparent; color: var(--danger); }
   .btn-danger:hover { border-color: var(--danger); }
   .btn-copy.copied { color: var(--accent); border-color: var(--accent); }
+  .cat-badge { display: inline-block; font-size: 10px; padding: 2px 7px; border-radius: 10px; background: var(--surface); border: 1px solid var(--border); color: var(--muted); white-space: nowrap; }
   .btn-sm { padding: 4px 10px; font-size: 11px; }
 
   /* ── Toolbar ── */
@@ -208,7 +209,10 @@
   <main id="dashboard-view" class="hidden">
     <div class="toolbar">
       <div class="toolbar-left">
-        <input type="text" id="search" placeholder="filter links..." style="width:220px;padding:6px 10px;font-size:12px" autocomplete="off" spellcheck="false" />
+        <input type="text" id="search" placeholder="filter links..." style="width:200px;padding:6px 10px;font-size:12px" autocomplete="off" spellcheck="false" />
+        <select id="cat-filter" style="background:var(--bg);color:var(--muted);border:1px solid var(--border);border-radius:var(--radius);padding:6px 10px;font-family:inherit;font-size:12px;cursor:pointer;outline:none">
+          <option value="">all categories</option>
+        </select>
         <span class="count" id="link-count"></span>
       </div>
       <button class="btn btn-primary" id="add-btn">+ add link</button>
@@ -220,6 +224,7 @@
             <th>slug</th>
             <th>destination</th>
             <th>description</th>
+            <th>category</th>
             <th style="text-align:right">clicks</th>
             <th style="text-align:right">actions</th>
           </tr>
@@ -250,6 +255,11 @@
     <div class="field">
       <label for="f-desc">description <span style="color:var(--muted)">(optional)</span></label>
       <input type="text" id="f-desc" placeholder="Shopee referral — food category" autocomplete="off" />
+    </div>
+    <div class="field">
+      <label for="f-cat">category <span style="color:var(--muted)">(optional)</span></label>
+      <input type="text" id="f-cat" placeholder="VPS, Courses, Shopping..." autocomplete="off" list="cat-suggestions" />
+      <datalist id="cat-suggestions"></datalist>
     </div>
     <div class="modal-footer">
       <button class="btn btn-ghost" id="modal-cancel">cancel</button>
@@ -306,29 +316,51 @@
     fetch('/admin/logout', { method: 'POST' }).then(() => location.reload());
   });
 
-  // ── Search ─────────────────────────────────────────
+  // ── Search & category filter ───────────────────────
   $('search').addEventListener('input', () => renderTable());
+  $('cat-filter').addEventListener('change', () => renderTable());
+
+  function updateCategoryUI() {
+    const cats = [...new Set(links.map(l => l.category).filter(Boolean))].sort();
+
+    // Populate dropdown
+    const sel = $('cat-filter');
+    const current = sel.value;
+    sel.innerHTML = `<option value="">all categories</option>` +
+      cats.map(c => `<option value="${esc(c)}"${c === current ? ' selected' : ''}>${esc(c)}</option>`).join('');
+
+    // Populate datalist for modal input
+    $('cat-suggestions').innerHTML = cats.map(c => `<option value="${esc(c)}">`).join('');
+  }
 
   // ── Table ──────────────────────────────────────────
   function renderTable() {
-    const q = $('search').value.toLowerCase().trim();
-    const visible = q
-      ? links.filter(l =>
-          l.slug.toLowerCase().includes(q) ||
-          l.url.toLowerCase().includes(q) ||
-          l.description.toLowerCase().includes(q)
-        )
-      : links;
+    const q   = $('search').value.toLowerCase().trim();
+    const cat = $('cat-filter').value;
 
-    $('link-count').textContent = q
+    const visible = links.filter(l => {
+      const matchQ = !q || (
+        l.slug.toLowerCase().includes(q) ||
+        l.url.toLowerCase().includes(q) ||
+        l.description.toLowerCase().includes(q) ||
+        l.category.toLowerCase().includes(q)
+      );
+      const matchCat = !cat || l.category === cat;
+      return matchQ && matchCat;
+    });
+
+    const filtered = q || cat;
+    $('link-count').textContent = filtered
       ? `${visible.length} of ${links.length} link${links.length !== 1 ? 's' : ''}`
       : `${links.length} link${links.length !== 1 ? 's' : ''}`;
+
+    updateCategoryUI();
 
     const tbody = $('links-tbody');
     if (!visible.length) {
       tbody.innerHTML = links.length
-        ? `<tr class="empty-row"><td colspan="5">no links match "${esc(q)}"</td></tr>`
-        : `<tr class="empty-row"><td colspan="5">no links yet — add your first one</td></tr>`;
+        ? `<tr class="empty-row"><td colspan="6">no links match the current filter</td></tr>`
+        : `<tr class="empty-row"><td colspan="6">no links yet — add your first one</td></tr>`;
       return;
     }
     tbody.innerHTML = visible.map(l => `
@@ -336,6 +368,7 @@
         <td class="slug">${esc(l.slug)}</td>
         <td class="url-cell"><a href="${esc(l.url)}" target="_blank" rel="noopener" style="color:inherit;text-decoration:none">${esc(l.url)}</a></td>
         <td class="desc-cell">${esc(l.description) || '<span style="color:var(--border)">—</span>'}</td>
+        <td>${l.category ? `<span class="cat-badge">${esc(l.category)}</span>` : '<span style="color:var(--border)">—</span>'}</td>
         <td class="clicks-cell">${l.clicks}</td>
         <td class="actions">
           <button class="btn btn-ghost btn-sm btn-copy" onclick="copyLink(this, '${esc(l.slug)}')">copy</button>
@@ -364,10 +397,12 @@
       $('f-slug').value = l.slug;
       $('f-url').value  = l.url;
       $('f-desc').value = l.description;
+      $('f-cat').value  = l.category;
     } else {
       $('f-slug').value = '';
       $('f-url').value  = '';
       $('f-desc').value = '';
+      $('f-cat').value  = '';
     }
 
     $('link-modal').classList.remove('hidden');
@@ -385,6 +420,7 @@
     const slug = $('f-slug').value.trim();
     const url  = $('f-url').value.trim();
     const desc = $('f-desc').value.trim();
+    const cat  = $('f-cat').value.trim();
 
     if (!slug || !url) {
       showModalError('slug and url are required');
@@ -397,7 +433,7 @@
     const res = await fetch(endpoint, {
       method,
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ slug, url, description: desc }),
+      body: JSON.stringify({ slug, url, description: desc, category: cat }),
     });
 
     if (!res.ok) {

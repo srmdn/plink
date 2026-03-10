@@ -54,6 +54,7 @@ func (s *Server) handleCreateLink(w http.ResponseWriter, r *http.Request) {
 		Slug        string `json:"slug"`
 		URL         string `json:"url"`
 		Description string `json:"description"`
+		Category    string `json:"category"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
 		writeError(w, http.StatusBadRequest, "invalid json")
@@ -72,7 +73,7 @@ func (s *Server) handleCreateLink(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	link, err := s.db.CreateLink(body.Slug, body.URL, body.Description)
+	link, err := s.db.CreateLink(body.Slug, body.URL, body.Description, body.Category)
 	if err != nil {
 		if strings.Contains(err.Error(), "UNIQUE") {
 			writeError(w, http.StatusConflict, "slug already exists")
@@ -96,13 +97,14 @@ func (s *Server) handleUpdateLink(w http.ResponseWriter, r *http.Request) {
 		Slug        string `json:"slug"`
 		URL         string `json:"url"`
 		Description string `json:"description"`
+		Category    string `json:"category"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
 		writeError(w, http.StatusBadRequest, "invalid json")
 		return
 	}
 
-	if err := s.db.UpdateLink(id, body.Slug, body.URL, body.Description); err != nil {
+	if err := s.db.UpdateLink(id, body.Slug, body.URL, body.Description, body.Category); err != nil {
 		if strings.Contains(err.Error(), "UNIQUE") {
 			writeError(w, http.StatusConflict, "slug already exists")
 			return
