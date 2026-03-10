@@ -1,0 +1,14 @@
+[Unit]
+Description=plink link shortener
+After=network.target
+
+[Service]
+Type=simple
+User=www-data
+WorkingDirectory=/opt/plink
+ExecStart=/opt/plink/plink
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

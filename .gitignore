@@ -1,0 +1,13 @@
+# Environment
+.env
+
+# Database
+*.db
+*.db-shm
+*.db-wal
+
+# Binary
+plink
+
+# OS
+.DS_Store

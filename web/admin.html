@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>plink</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:       #0f0f0f;
+    --surface:  #1a1a1a;
+    --border:   #2a2a2a;
+    --text:     #e5e5e5;
+    --muted:    #737373;
+    --accent:   #22c55e;
+    --danger:   #ef4444;
+    --radius:   4px;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: ui-monospace, 'SFMono-Regular', 'Cascadia Code', monospace;
+    font-size: 13px;
+    line-height: 1.5;
+    min-height: 100vh;
+  }
+
+  /* ── Layout ── */
+  #app { display: flex; flex-direction: column; min-height: 100vh; }
+
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 24px;
+    border-bottom: 1px solid var(--border);
+  }
+  .logo { font-size: 15px; font-weight: 600; color: var(--accent); letter-spacing: -0.02em; }
+  .logo span { color: var(--muted); font-weight: 400; }
+
+  main { flex: 1; padding: 24px; max-width: 960px; width: 100%; margin: 0 auto; }
+
+  /* ── Login ── */
+  #login-view {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 80vh;
+  }
+  .login-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 32px;
+    width: 320px;
+  }
+  .login-box h2 { font-size: 14px; margin-bottom: 20px; color: var(--text); }
+  .login-error { color: var(--danger); font-size: 12px; margin-bottom: 12px; }
+
+  /* ── Forms ── */
+  label { display: block; font-size: 11px; color: var(--muted); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.05em; }
+  input[type="text"], input[type="password"], input[type="url"] {
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text);
+    font-family: inherit;
+    font-size: 13px;
+    padding: 8px 10px;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  input:focus { border-color: var(--accent); }
+  .field { margin-bottom: 14px; }
+
+  /* ── Buttons ── */
+  button, .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border: none;
+    border-radius: var(--radius);
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 500;
+    padding: 7px 14px;
+    transition: opacity 0.15s;
+    text-decoration: none;
+  }
+  button:hover { opacity: 0.8; }
+  .btn-primary { background: var(--accent); color: #000; }
+  .btn-ghost   { background: transparent; border: 1px solid var(--border); color: var(--muted); }
+  .btn-ghost:hover { color: var(--text); border-color: var(--muted); }
+  .btn-danger  { background: transparent; border: 1px solid transparent; color: var(--danger); }
+  .btn-danger:hover { border-color: var(--danger); }
+  .btn-sm { padding: 4px 10px; font-size: 11px; }
+
+  /* ── Toolbar ── */
+  .toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+  }
+  .toolbar-left { display: flex; align-items: center; gap: 12px; }
+  .count { color: var(--muted); font-size: 12px; }
+
+  /* ── Table ── */
+  .table-wrap { border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+  table { width: 100%; border-collapse: collapse; }
+  th {
+    background: var(--surface);
+    color: var(--muted);
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    padding: 10px 14px;
+    text-align: left;
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--border);
+  }
+  td { padding: 11px 14px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--surface); }
+  .slug { color: var(--accent); font-weight: 500; }
+  .url-cell { color: var(--muted); max-width: 280px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .desc-cell { color: var(--muted); max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .clicks-cell { color: var(--text); text-align: right; }
+  .actions { display: flex; align-items: center; gap: 4px; justify-content: flex-end; }
+  .empty-row td { text-align: center; color: var(--muted); padding: 40px; }
+
+  /* ── Modal ── */
+  .overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.7);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 100;
+    padding: 20px;
+  }
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    width: 100%;
+    max-width: 480px;
+    padding: 24px;
+  }
+  .modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+  .modal-title { font-size: 14px; font-weight: 600; }
+  .modal-footer { display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px; }
+  .modal-error { color: var(--danger); font-size: 12px; margin-bottom: 12px; }
+
+  /* ── Analytics ── */
+  .analytics-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 20px; }
+  .stat-card { background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px; }
+  .stat-value { font-size: 22px; font-weight: 600; color: var(--accent); }
+  .stat-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin-top: 2px; }
+
+  .chart-wrap { margin-bottom: 20px; }
+  .chart-label { font-size: 11px; color: var(--muted); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.05em; }
+  .chart-svg { width: 100%; display: block; }
+
+  .referrers-label { font-size: 11px; color: var(--muted); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.05em; }
+  .ref-row { display: flex; align-items: center; justify-content: space-between; padding: 7px 0; border-bottom: 1px solid var(--border); }
+  .ref-row:last-child { border-bottom: none; }
+  .ref-source { color: var(--text); }
+  .ref-bar-wrap { flex: 1; margin: 0 12px; height: 4px; background: var(--border); border-radius: 2px; }
+  .ref-bar { height: 100%; background: var(--accent); border-radius: 2px; opacity: 0.6; }
+  .ref-count { color: var(--muted); font-size: 12px; min-width: 30px; text-align: right; }
+
+  .analytics-modal { max-width: 580px; }
+
+  /* ── Misc ── */
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- Header -->
+  <header>
+    <div class="logo">plink <span>/ admin</span></div>
+    <button class="btn btn-ghost btn-sm" id="logout-btn" style="display:none">logout</button>
+  </header>
+
+  <!-- Login -->
+  <div id="login-view" class="hidden">
+    <div class="login-box">
+      <h2>sign in to plink</h2>
+      <div class="login-error hidden" id="login-error">incorrect password</div>
+      <form method="POST" action="/admin/login">
+        <div class="field">
+          <label for="password">password</label>
+          <input type="password" id="password" name="password" autofocus autocomplete="current-password" />
+        </div>
+        <button type="submit" class="btn btn-primary" style="width:100%">sign in</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Dashboard -->
+  <main id="dashboard-view" class="hidden">
+    <div class="toolbar">
+      <div class="toolbar-left">
+        <span class="count" id="link-count"></span>
+      </div>
+      <button class="btn btn-primary" id="add-btn">+ add link</button>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>slug</th>
+            <th>destination</th>
+            <th>description</th>
+            <th style="text-align:right">clicks</th>
+            <th style="text-align:right">actions</th>
+          </tr>
+        </thead>
+        <tbody id="links-tbody"></tbody>
+      </table>
+    </div>
+  </main>
+
+</div>
+
+<!-- Link Modal (add / edit) -->
+<div class="overlay hidden" id="link-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title" id="modal-title">add link</span>
+      <button class="btn btn-ghost btn-sm" id="modal-close">✕</button>
+    </div>
+    <div class="modal-error hidden" id="modal-error"></div>
+    <div class="field">
+      <label for="f-slug">slug</label>
+      <input type="text" id="f-slug" placeholder="my-referral-link" autocomplete="off" spellcheck="false" />
+    </div>
+    <div class="field">
+      <label for="f-url">destination url</label>
+      <input type="url" id="f-url" placeholder="https://example.com/ref?id=..." autocomplete="off" spellcheck="false" />
+    </div>
+    <div class="field">
+      <label for="f-desc">description <span style="color:var(--muted)">(optional)</span></label>
+      <input type="text" id="f-desc" placeholder="Shopee referral — food category" autocomplete="off" />
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" id="modal-cancel">cancel</button>
+      <button class="btn btn-primary" id="modal-save">save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Analytics Modal -->
+<div class="overlay hidden" id="analytics-modal">
+  <div class="modal analytics-modal">
+    <div class="modal-header">
+      <span class="modal-title" id="analytics-title">analytics</span>
+      <button class="btn btn-ghost btn-sm" id="analytics-close">✕</button>
+    </div>
+    <div id="analytics-body"></div>
+  </div>
+</div>
+
+<script>
+  const $ = id => document.getElementById(id);
+
+  // ── State ──────────────────────────────────────────
+  let links = [];
+  let editingId = null;
+
+  // ── Boot ───────────────────────────────────────────
+  (async () => {
+    const params = new URLSearchParams(location.search);
+    if (params.get('error')) $('login-error').classList.remove('hidden');
+
+    const res = await fetch('/api/links');
+    if (res.status === 401) {
+      showLogin();
+    } else {
+      links = await res.json();
+      showDashboard();
+    }
+  })();
+
+  function showLogin() {
+    $('login-view').classList.remove('hidden');
+    $('logout-btn').style.display = 'none';
+  }
+
+  function showDashboard() {
+    $('dashboard-view').classList.remove('hidden');
+    $('logout-btn').style.display = '';
+    renderTable();
+  }
+
+  // ── Logout ─────────────────────────────────────────
+  $('logout-btn').addEventListener('click', () => {
+    fetch('/admin/logout', { method: 'POST' }).then(() => location.reload());
+  });
+
+  // ── Table ──────────────────────────────────────────
+  function renderTable() {
+    $('link-count').textContent = `${links.length} link${links.length !== 1 ? 's' : ''}`;
+    const tbody = $('links-tbody');
+    if (!links.length) {
+      tbody.innerHTML = `<tr class="empty-row"><td colspan="5">no links yet — add your first one</td></tr>`;
+      return;
+    }
+    tbody.innerHTML = links.map(l => `
+      <tr>
+        <td class="slug">${esc(l.slug)}</td>
+        <td class="url-cell"><a href="${esc(l.url)}" target="_blank" rel="noopener" style="color:inherit;text-decoration:none">${esc(l.url)}</a></td>
+        <td class="desc-cell">${esc(l.description) || '<span style="color:var(--border)">—</span>'}</td>
+        <td class="clicks-cell">${l.clicks}</td>
+        <td class="actions">
+          <button class="btn btn-ghost btn-sm" onclick="openAnalytics(${l.id}, '${esc(l.slug)}')">stats</button>
+          <button class="btn btn-ghost btn-sm" onclick="openEdit(${l.id})">edit</button>
+          <button class="btn btn-danger btn-sm" onclick="deleteLink(${l.id}, '${esc(l.slug)}')">del</button>
+        </td>
+      </tr>
+    `).join('');
+  }
+
+  // ── Add / Edit Modal ───────────────────────────────
+  $('add-btn').addEventListener('click', () => openModal());
+  $('modal-close').addEventListener('click', closeModal);
+  $('modal-cancel').addEventListener('click', closeModal);
+  $('link-modal').addEventListener('click', e => { if (e.target === $('link-modal')) closeModal(); });
+
+  function openModal(id) {
+    editingId = id || null;
+    $('modal-title').textContent = id ? 'edit link' : 'add link';
+    $('modal-error').classList.add('hidden');
+
+    if (id) {
+      const l = links.find(x => x.id === id);
+      $('f-slug').value = l.slug;
+      $('f-url').value  = l.url;
+      $('f-desc').value = l.description;
+    } else {
+      $('f-slug').value = '';
+      $('f-url').value  = '';
+      $('f-desc').value = '';
+    }
+
+    $('link-modal').classList.remove('hidden');
+    setTimeout(() => (id ? $('f-url') : $('f-slug')).focus(), 50);
+  }
+
+  function openEdit(id) { openModal(id); }
+
+  function closeModal() {
+    $('link-modal').classList.add('hidden');
+    editingId = null;
+  }
+
+  $('modal-save').addEventListener('click', async () => {
+    const slug = $('f-slug').value.trim();
+    const url  = $('f-url').value.trim();
+    const desc = $('f-desc').value.trim();
+
+    if (!slug || !url) {
+      showModalError('slug and url are required');
+      return;
+    }
+
+    const method  = editingId ? 'PUT' : 'POST';
+    const endpoint = editingId ? `/api/links/${editingId}` : '/api/links';
+
+    const res = await fetch(endpoint, {
+      method,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ slug, url, description: desc }),
+    });
+
+    if (!res.ok) {
+      const data = await res.json();
+      showModalError(data.error || 'something went wrong');
+      return;
+    }
+
+    await refreshLinks();
+    closeModal();
+  });
+
+  function showModalError(msg) {
+    $('modal-error').textContent = msg;
+    $('modal-error').classList.remove('hidden');
+  }
+
+  // ── Delete ─────────────────────────────────────────
+  async function deleteLink(id, slug) {
+    if (!confirm(`delete "/${slug}"?`)) return;
+    const res = await fetch(`/api/links/${id}`, { method: 'DELETE' });
+    if (res.ok) await refreshLinks();
+  }
+
+  // ── Analytics Modal ────────────────────────────────
+  $('analytics-close').addEventListener('click', () => $('analytics-modal').classList.add('hidden'));
+  $('analytics-modal').addEventListener('click', e => {
+    if (e.target === $('analytics-modal')) $('analytics-modal').classList.add('hidden');
+  });
+
+  async function openAnalytics(id, slug) {
+    $('analytics-title').textContent = `/${slug}`;
+    $('analytics-body').innerHTML = `<p style="color:var(--muted);text-align:center;padding:20px">loading...</p>`;
+    $('analytics-modal').classList.remove('hidden');
+
+    const res = await fetch(`/api/links/${id}/analytics`);
+    const data = await res.json();
+    $('analytics-body').innerHTML = renderAnalytics(data);
+  }
+
+  function renderAnalytics(data) {
+    const daily = fillDays(data.daily || []);
+    const max   = Math.max(...daily.map(d => d.clicks), 1);
+
+    // SVG bar chart
+    const bars = daily.map((d, i) => {
+      const h = Math.round((d.clicks / max) * 60);
+      const x = i * (100 / daily.length);
+      const w = (100 / daily.length) - 0.4;
+      return `<rect x="${x.toFixed(2)}%" y="${60 - h}" width="${w.toFixed(2)}%" height="${h}" fill="#22c55e" opacity="0.75" rx="1"/>`;
+    }).join('');
+
+    // Axis labels (first, middle, last)
+    const labelIdx = [0, Math.floor(daily.length / 2), daily.length - 1];
+    const labels = labelIdx.map(i => {
+      const x = ((i + 0.5) / daily.length * 100).toFixed(1);
+      return `<text x="${x}%" y="75" text-anchor="middle" fill="#737373" font-size="9" font-family="monospace">${daily[i].date.slice(5)}</text>`;
+    }).join('');
+
+    const chart = `
+      <svg class="chart-svg" viewBox="0 0 400 80" height="80">
+        ${bars}
+        ${labels}
+      </svg>`;
+
+    // Referrers
+    const refs = (data.referrers || []);
+    const refMax = refs.length ? refs[0].clicks : 1;
+    const refRows = refs.length
+      ? refs.map(r => `
+        <div class="ref-row">
+          <span class="ref-source">${esc(r.source)}</span>
+          <div class="ref-bar-wrap"><div class="ref-bar" style="width:${Math.round(r.clicks/refMax*100)}%"></div></div>
+          <span class="ref-count">${r.clicks}</span>
+        </div>`).join('')
+      : `<p style="color:var(--muted);padding:12px 0">no clicks yet</p>`;
+
+    return `
+      <div class="analytics-grid">
+        <div class="stat-card">
+          <div class="stat-value">${data.total_clicks}</div>
+          <div class="stat-label">total clicks</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">${daily.reduce((s,d)=>s+d.clicks,0)}</div>
+          <div class="stat-label">last 30 days</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">${refs.length ? esc(refs[0].source) : '—'}</div>
+          <div class="stat-label">top source</div>
+        </div>
+      </div>
+      <div class="chart-wrap">
+        <div class="chart-label">clicks — last 30 days</div>
+        ${chart}
+      </div>
+      <div>
+        <div class="referrers-label">referrers</div>
+        ${refRows}
+      </div>`;
+  }
+
+  // ── Helpers ────────────────────────────────────────
+  async function refreshLinks() {
+    const res = await fetch('/api/links');
+    links = await res.json();
+    renderTable();
+  }
+
+  function fillDays(data, days = 30) {
+    const map = {};
+    data.forEach(d => map[d.date] = d.clicks);
+    const result = [];
+    for (let i = days - 1; i >= 0; i--) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      const key = d.toISOString().split('T')[0];
+      result.push({ date: key, clicks: map[key] || 0 });
+    }
+    return result;
+  }
+
+  function esc(s) {
+    return String(s)
+      .replace(/&/g,'&amp;')
+      .replace(/</g,'&lt;')
+      .replace(/>/g,'&gt;')
+      .replace(/"/g,'&quot;')
+      .replace(/'/g,'&#39;');
+  }
+</script>
+</body>
+</html>
