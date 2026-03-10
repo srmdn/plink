@@ -1,4 +1,4 @@
-package main
+package plink
 
 import (
 	"embed"
@@ -13,7 +13,7 @@ import (
 //go:embed web/admin.html
 var webFS embed.FS
 
-func main() {
+func Run() {
 	cfg := config.Load()
 
 	database, err := db.Init(cfg.DBPath)

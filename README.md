@@ -28,7 +28,7 @@ git clone https://github.com/srmdn/plink
 cd plink
 cp .env.example .env
 # edit .env and set ADMIN_PASSWORD
-go run .
+go run ./cmd
 # open http://localhost:8080/admin
 ```
 
@@ -45,7 +45,7 @@ Copy `.env.example` to `.env` and edit:
 ## Build
 
 ```bash
-go build -o plink .
+go build -o plink ./cmd
 ./plink
 ```
 
