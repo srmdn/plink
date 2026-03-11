@@ -1,0 +1,26 @@
+{{define "login"}}
+<!DOCTYPE html>
+<html lang="en">
+{{template "head" .}}
+<body>
+<div id="app">
+  <header>
+    <div class="logo">plink <span>/ admin</span></div>
+  </header>
+  <div id="login-view">
+    <div class="login-box">
+      <h2>sign in to plink</h2>
+      {{if .Error}}<div class="login-error">incorrect password</div>{{end}}
+      <form method="POST" action="/admin/login">
+        <div class="field">
+          <label for="password">password</label>
+          <input type="password" id="password" name="password" autofocus autocomplete="current-password" />
+        </div>
+        <button type="submit" class="btn btn-primary btn-full">sign in</button>
+      </form>
+    </div>
+  </div>
+</div>
+</body>
+</html>
+{{end}}

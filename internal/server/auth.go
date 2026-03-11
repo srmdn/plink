@@ -77,7 +77,7 @@ func (s *Server) requireAuth(next http.HandlerFunc) http.HandlerFunc {
 				http.Error(w, `{"error":"unauthorized"}`, http.StatusUnauthorized)
 				return
 			}
-			http.Redirect(w, r, "/admin", http.StatusFound)
+			http.Redirect(w, r, "/admin/login", http.StatusFound)
 			return
 		}
 		next(w, r)
@@ -86,7 +86,7 @@ func (s *Server) requireAuth(next http.HandlerFunc) http.HandlerFunc {
 
 func (s *Server) handleLogin(w http.ResponseWriter, r *http.Request) {
 	if r.FormValue("password") != s.cfg.AdminPassword {
-		http.Redirect(w, r, "/admin?error=1", http.StatusFound)
+		http.Redirect(w, r, "/admin/login?error=1", http.StatusFound)
 		return
 	}
 
@@ -102,6 +102,7 @@ func (s *Server) handleLogin(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/admin", http.StatusFound)
 }
 
+
 func (s *Server) handleLogout(w http.ResponseWriter, r *http.Request) {
 	if cookie, err := r.Cookie(cookieName); err == nil {
 		s.sessions.delete(cookie.Value)
@@ -112,5 +113,5 @@ func (s *Server) handleLogout(w http.ResponseWriter, r *http.Request) {
 		Path:   "/",
 		MaxAge: -1,
 	})
-	http.Redirect(w, r, "/admin", http.StatusFound)
+	http.Redirect(w, r, "/admin/login", http.StatusFound)
 }
