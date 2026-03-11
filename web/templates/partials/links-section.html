@@ -1,0 +1,78 @@
+{{define "links-section"}}
+<div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;flex-wrap:wrap;">
+  <select
+    class="cat-filter"
+    name="category"
+    hx-get="/admin/links"
+    hx-trigger="change"
+    hx-target="#links-section"
+    hx-swap="innerHTML"
+    hx-include="#search, select[name='category']"
+  >
+    <option value="">all categories</option>
+    {{range .Categories}}
+    <option value="{{.}}" {{if eq . $.Category}}selected{{end}}>{{.}}</option>
+    {{end}}
+  </select>
+  <span class="count">
+    {{if or .Query .Category}}{{.Count}} of {{.Total}}{{else}}{{.Total}} link{{if ne .Total 1}}s{{end}}{{end}}
+  </span>
+</div>
+
+<div class="links-list">
+  {{if .Links}}
+  {{range .Links}}
+  <div class="link-card{{if not .Active}} inactive{{end}}">
+    <div class="card-top">
+      <div class="card-slug-row">
+        <div class="status-dot {{if .Active}}active{{else}}inactive{{end}}"></div>
+        <span class="slug">/{{.Slug}}</span>
+        {{if .Category}}<span class="cat-badge">{{.Category}}</span>{{end}}
+      </div>
+      <span class="card-clicks">{{.Clicks}} click{{if ne .Clicks 1}}s{{end}}</span>
+    </div>
+    <a class="card-url" href="{{.URL}}" target="_blank" rel="noopener">{{.URL}}</a>
+    {{if .Description}}<p class="card-desc">{{.Description}}</p>{{end}}
+    <div class="card-actions">
+      {{if .Active}}
+      <button class="btn btn-ghost btn-sm btn-copy" onclick="copyLink(this,'{{.Slug}}')">copy</button>
+      <a class="btn btn-ghost btn-sm" href="{{.URL}}" target="_blank" rel="noopener">visit</a>
+      {{end}}
+      <button
+        class="btn btn-ghost btn-sm"
+        hx-get="/admin/links/{{.ID}}/analytics"
+        hx-target="#analytics-body"
+        hx-swap="innerHTML"
+      >stats</button>
+      <div class="spacer"></div>
+      <button
+        class="btn btn-ghost btn-sm"
+        hx-patch="/admin/links/{{.ID}}/toggle"
+        hx-target="#links-section"
+        hx-swap="innerHTML"
+        hx-include="#search, select[name='category']"
+      >{{if .Active}}pause{{else}}activate{{end}}</button>
+      <button
+        class="btn btn-ghost btn-sm"
+        hx-get="/admin/links/{{.ID}}/edit"
+        hx-target="#modal-body"
+        hx-swap="innerHTML"
+      >edit</button>
+      <button
+        class="btn btn-danger btn-sm"
+        hx-delete="/admin/links/{{.ID}}"
+        hx-confirm="delete '/{{.Slug}}'?"
+        hx-target="#links-section"
+        hx-swap="innerHTML"
+        hx-include="#search, select[name='category']"
+      >del</button>
+    </div>
+  </div>
+  {{end}}
+  {{else}}
+  <div class="empty-state">
+    {{if or .Query .Category}}no links match the current filter{{else}}no links yet — add your first one{{end}}
+  </div>
+  {{end}}
+</div>
+{{end}}

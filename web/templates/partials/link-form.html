@@ -1,0 +1,36 @@
+{{define "link-form"}}
+<div class="modal-header">
+  <span class="modal-title">{{if .Link}}edit link{{else}}add link{{end}}</span>
+  <button type="button" class="btn btn-ghost btn-sm" onclick="closeModal()">✕</button>
+</div>
+{{if .Error}}<div class="modal-error">{{.Error}}</div>{{end}}
+<form
+  {{if .Link}}hx-put="/admin/links/{{.Link.ID}}"{{else}}hx-post="/admin/links"{{end}}
+  hx-target="#links-section"
+  hx-swap="innerHTML"
+>
+  <div class="field">
+    <label for="f-slug">slug</label>
+    <input type="text" id="f-slug" name="slug" value="{{if .Link}}{{.Link.Slug}}{{end}}" placeholder="my-referral-link" autocomplete="off" spellcheck="false" {{if not .Link}}autofocus{{end}} />
+  </div>
+  <div class="field">
+    <label for="f-url">destination url</label>
+    <input type="url" id="f-url" name="url" value="{{if .Link}}{{.Link.URL}}{{end}}" placeholder="https://example.com/ref?id=..." autocomplete="off" spellcheck="false" {{if .Link}}autofocus{{end}} />
+  </div>
+  <div class="field">
+    <label for="f-desc">description <span style="color:var(--border)">(optional)</span></label>
+    <input type="text" id="f-desc" name="description" value="{{if .Link}}{{.Link.Description}}{{end}}" placeholder="Shopee referral — food category" autocomplete="off" />
+  </div>
+  <div class="field">
+    <label for="f-cat">category <span style="color:var(--border)">(optional)</span></label>
+    <input type="text" id="f-cat" name="category" value="{{if .Link}}{{.Link.Category}}{{end}}" placeholder="VPS, Courses, Shopping..." autocomplete="off" list="cat-suggestions" />
+    <datalist id="cat-suggestions">
+      {{range .Categories}}<option value="{{.}}">{{end}}
+    </datalist>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-ghost" onclick="closeModal()">cancel</button>
+    <button type="submit" class="btn btn-primary">save</button>
+  </div>
+</form>
+{{end}}

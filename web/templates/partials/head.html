@@ -1,0 +1,301 @@
+{{define "head"}}
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>plink</title>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+<script src="/js/htmx.min.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:      #0f0f0f;
+    --surface: #1a1a1a;
+    --surface2:#222222;
+    --border:  #2a2a2a;
+    --text:    #e5e5e5;
+    --muted:   #737373;
+    --accent:  #22c55e;
+    --danger:  #ef4444;
+    --radius:  6px;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: ui-monospace, 'SFMono-Regular', 'Cascadia Code', monospace;
+    font-size: 13px;
+    line-height: 1.5;
+    min-height: 100dvh;
+  }
+
+  #app { display: flex; flex-direction: column; min-height: 100dvh; }
+
+  header {
+    position: sticky; top: 0; z-index: 10;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 20px;
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+  }
+  .logo { font-size: 15px; font-weight: 700; color: var(--accent); letter-spacing: -0.03em; }
+  .logo span { color: var(--muted); font-weight: 400; }
+
+  main { flex: 1; padding: 20px; max-width: 800px; width: 100%; margin: 0 auto; }
+
+  /* ── Login ── */
+  #login-view {
+    display: flex; align-items: center; justify-content: center;
+    min-height: 80dvh; padding: 20px;
+  }
+  .login-box {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 28px 24px; width: min(340px, 100%);
+  }
+  .login-box h2 { font-size: 14px; margin-bottom: 20px; }
+  .login-error { color: var(--danger); font-size: 12px; margin-bottom: 12px; }
+
+  /* ── Forms ── */
+  label {
+    display: block; font-size: 10px; color: var(--muted);
+    margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.08em;
+  }
+  input[type="text"], input[type="password"], input[type="url"] {
+    width: 100%; background: var(--bg); border: 1px solid var(--border);
+    border-radius: var(--radius); color: var(--text); font-family: inherit;
+    font-size: 13px; padding: 9px 11px; outline: none;
+    transition: border-color 0.15s; -webkit-appearance: none;
+  }
+  input:focus { border-color: var(--accent); }
+  .field { margin-bottom: 14px; }
+
+  /* ── Buttons ── */
+  button, .btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    gap: 5px; border: 1px solid transparent; border-radius: var(--radius);
+    cursor: pointer; font-family: inherit; font-size: 12px; font-weight: 500;
+    padding: 7px 14px; transition: opacity 0.15s, border-color 0.15s, color 0.15s;
+    text-decoration: none; white-space: nowrap; -webkit-tap-highlight-color: transparent;
+    background: transparent;
+  }
+  button:active, .btn:active { opacity: 0.65; }
+  .btn-primary { background: var(--accent); color: #000; border-color: var(--accent); }
+  .btn-ghost   { background: transparent; border-color: var(--border); color: var(--muted); }
+  .btn-ghost:hover { color: var(--text); border-color: #444; }
+  .btn-danger  { background: transparent; border-color: transparent; color: var(--danger); }
+  .btn-danger:hover { border-color: var(--danger); }
+  .btn-sm { padding: 5px 10px; font-size: 11px; }
+  .btn-full { width: 100%; }
+  .btn-copy.copied { color: var(--accent) !important; border-color: var(--accent) !important; }
+
+  /* ── Toolbar ── */
+  .toolbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 16px; }
+  .toolbar-left { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; flex: 1; min-width: 0; }
+  #search {
+    flex: 1; min-width: 140px;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); color: var(--text); font-family: inherit;
+    font-size: 12px; padding: 7px 11px; outline: none; transition: border-color 0.15s;
+  }
+  #search:focus { border-color: var(--accent); }
+  #search::placeholder { color: var(--muted); }
+  .cat-filter {
+    background: var(--surface); color: var(--muted); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 7px 10px; font-family: inherit;
+    font-size: 12px; cursor: pointer; outline: none; max-width: 160px;
+  }
+  .count { color: var(--muted); font-size: 11px; white-space: nowrap; }
+
+  /* Export dropdown */
+  .export-wrap { position: relative; }
+  .export-menu {
+    position: absolute; top: calc(100% + 4px); right: 0;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); overflow: hidden; min-width: 120px; z-index: 20;
+  }
+  .export-menu a {
+    display: block; padding: 9px 14px; color: var(--muted); font-size: 12px;
+    text-decoration: none; cursor: pointer;
+  }
+  .export-menu a:hover { background: var(--surface2); color: var(--text); }
+
+  /* ── Cards ── */
+  .links-list { display: flex; flex-direction: column; gap: 8px; }
+
+  .link-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 14px 16px;
+    display: flex; flex-direction: column; gap: 6px;
+    transition: border-color 0.15s, opacity 0.2s;
+  }
+  .link-card:hover { border-color: #3a3a3a; }
+  .link-card.inactive { opacity: 0.45; }
+  .link-card.inactive:hover { opacity: 0.7; }
+
+  .card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+  .card-slug-row { display: flex; align-items: center; flex-wrap: wrap; gap: 7px; min-width: 0; }
+  .slug { color: var(--accent); font-weight: 600; font-size: 14px; letter-spacing: -0.01em; }
+  .link-card.inactive .slug { color: var(--muted); text-decoration: line-through; }
+
+  .status-dot {
+    width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; margin-top: 1px;
+  }
+  .status-dot.active   { background: var(--accent); }
+  .status-dot.inactive { background: var(--muted); }
+
+  .cat-badge {
+    display: inline-block; font-size: 10px; padding: 2px 7px; border-radius: 99px;
+    background: var(--surface2); border: 1px solid var(--border); color: var(--muted); white-space: nowrap;
+  }
+  .card-clicks { color: var(--muted); font-size: 11px; white-space: nowrap; flex-shrink: 0; margin-top: 2px; }
+
+  .card-url {
+    color: var(--muted); font-size: 11px; text-decoration: none;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: block;
+  }
+  .card-url:hover { color: var(--text); }
+  .card-desc { color: var(--muted); font-size: 11px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  .card-actions {
+    display: flex; align-items: center; flex-wrap: wrap; gap: 5px;
+    margin-top: 4px; padding-top: 8px; border-top: 1px solid var(--border);
+  }
+  .card-actions .spacer { flex: 1; }
+
+  .empty-state { text-align: center; color: var(--muted); padding: 48px 20px; font-size: 13px; }
+
+  /* ── Modal ── */
+  .overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.75);
+    display: flex; align-items: center; justify-content: center; z-index: 100; padding: 20px;
+  }
+  .modal {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); width: 100%; max-width: 480px;
+    max-height: 90dvh; overflow-y: auto; padding: 22px;
+  }
+  .modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
+  .modal-title { font-size: 14px; font-weight: 600; }
+  .modal-footer { display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px; }
+  .modal-error { color: var(--danger); font-size: 12px; margin-bottom: 12px; }
+
+  @media (max-width: 520px) {
+    .overlay { padding: 0; align-items: flex-end; }
+    .modal { border-radius: 12px 12px 0 0; max-height: 88dvh; border-bottom: none; }
+    .modal-footer { flex-direction: column-reverse; gap: 8px; }
+    .modal-footer button { width: 100%; }
+  }
+
+  /* ── Analytics ── */
+  .analytics-modal { max-width: 560px; }
+  .analytics-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px; }
+  @media (max-width: 420px) { .analytics-grid { grid-template-columns: 1fr 1fr; } }
+
+  .stat-card { background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 14px; }
+  .stat-value { font-size: 20px; font-weight: 600; color: var(--accent); }
+  .stat-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin-top: 2px; }
+
+  .chart-wrap { margin-bottom: 20px; }
+  .section-label { font-size: 10px; color: var(--muted); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.08em; }
+  .chart-svg { width: 100%; display: block; overflow: visible; }
+
+  .ref-row { display: flex; align-items: center; padding: 7px 0; border-bottom: 1px solid var(--border); gap: 10px; }
+  .ref-row:last-child { border-bottom: none; }
+  .ref-source { color: var(--text); font-size: 12px; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .ref-bar-wrap { flex: 1; height: 4px; background: var(--border); border-radius: 2px; flex-shrink: 0; min-width: 40px; }
+  .ref-bar { height: 100%; background: var(--accent); border-radius: 2px; opacity: 0.6; }
+  .ref-count { color: var(--muted); font-size: 11px; min-width: 28px; text-align: right; flex-shrink: 0; }
+
+  .qr-wrap { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 16px 0; }
+  .qr-url  { font-size: 11px; color: var(--muted); word-break: break-all; text-align: center; }
+
+  .htmx-indicator { opacity: 0; transition: opacity 0.2s; }
+  .htmx-request .htmx-indicator { opacity: 1; }
+  .hidden { display: none !important; }
+</style>
+<script>
+/* ── Tiny QR code generator (Byte mode, EC level M) ────────────────────────
+   Adapted from qrcodegen by Project Nayuki (MIT License)                  */
+const QR = (() => {
+  const G = 0x11D;
+  function gfMul(a, b) { let r=0; for(let i=7;i>=0;i--) { r=(r<<1)^((r>>7)*G); if((b>>i)&1) r^=a; } return r; }
+  function gfPow(a, p) { let r=1; for(let i=0;i<p;i++) r=gfMul(r,a); return r; }
+  function rsGen(n) { let g=[1]; for(let i=0;i<n;i++) { let c=gfPow(2,i); g=g.map((v,j)=>gfMul(v,c)^(g[j+1]||0)); g.push(gfMul(g[g.length-1],c)); } return g.slice(0,-1); }
+  function rsDiv(data, ec) { let g=rsGen(ec), r=[...data]; for(let i=0;i<data.length;i++) { let c=r.shift(); if(c) g.forEach((v,j)=>{ r[j]=(r[j]||0)^gfMul(v,c); }); else r.push(0); } return r.slice(0,ec); }
+  const CAPS = [null,null,null,null,null,null,null,null,null,null,
+    {total:26,ec:10,data:16},{total:44,ec:16,data:28},{total:70,ec:26,data:44},
+    {total:100,ec:36,data:64},{total:134,ec:48,data:86}];
+  function encode(text) {
+    const bytes=[...new TextEncoder().encode(text)]; const n=bytes.length;
+    let ver=1; for(let v=1;v<=14;v++){if(CAPS[v]&&CAPS[v].data>=n){ver=v;break;}}
+    const cap=CAPS[ver]; let bits=[];
+    const push=(v,l)=>{for(let i=l-1;i>=0;i--)bits.push((v>>i)&1);};
+    push(4,4);push(n,8);bytes.forEach(b=>push(b,8));push(0,4);
+    while(bits.length%8)bits.push(0);
+    const pads=[0xEC,0x11];let pi=0;
+    while(bits.length<cap.data*8){push(pads[pi++%2],8);}
+    let cw=[];for(let i=0;i<cap.data;i++){let b=0;for(let j=0;j<8;j++)b=(b<<1)|bits[i*8+j];cw.push(b);}
+    const ec=rsDiv(cw,cap.total-cap.data);cw=cw.concat(ec);
+    const size=ver*4+17;
+    const M=Array.from({length:size},()=>new Array(size).fill(-1));
+    const isFunc=Array.from({length:size},()=>new Array(size).fill(false));
+    const setF=(r,c,v)=>{M[r][c]=v?1:0;isFunc[r][c]=true;};
+    const finder=(r,c)=>{for(let i=-1;i<=7;i++)for(let j=-1;j<=7;j++){if(r+i>=0&&r+i<size&&c+j>=0&&c+j<size)setF(r+i,c+j,i>=0&&i<=6&&j>=0&&j<=6&&(i==0||i==6||j==0||j==6||(i>=2&&i<=4&&j>=2&&j<=4)));} };
+    finder(0,0);finder(0,size-7);finder(size-7,0);
+    for(let i=8;i<size-8;i++){setF(6,i,(i%2)==0);setF(i,6,(i%2)==0);}
+    setF(size-8,8,true);
+    if(ver>=2){const ap=[6,size-7];for(const r of ap)for(const c of ap){if(isFunc[r][c])continue;for(let i=-2;i<=2;i++)for(let j=-2;j<=2;j++)setF(r+i,c+j,i==-2||i==2||j==-2||j==2||(i==0&&j==0));}}
+    const fmtMask=0b101010000010010;
+    const fmtBits=Array.from({length:15},(_,i)=>(fmtMask>>i)&1);
+    const fpos=[0,1,2,3,4,5,7,8,size-7,size-6,size-5,size-4,size-3,size-2,size-1];
+    fpos.forEach((p,i)=>{setF(8,p,fmtBits[i]);setF(p,8,fmtBits[14-i]);});
+    let bi=0;const dataBits=[];cw.forEach(b=>{for(let i=7;i>=0;i--)dataBits.push((b>>i)&1);});
+    for(let right=size-1;right>=1;right-=2){if(right==6)right=5;for(let vert=0;vert<size;vert++){const r=((right+1)&2)?vert:size-1-vert;for(let k=0;k<2;k++){const c=right-k;if(!isFunc[r][c]){M[r][c]=(bi<dataBits.length)?dataBits[bi++]:0;}}}}
+    return{matrix:M,size};
+  }
+  function toSVG(text,px=4){
+    try{
+      const{matrix,size}=encode(text);const dim=size*px;let rects='';
+      for(let r=0;r<size;r++)for(let c=0;c<size;c++)if(matrix[r][c]===1)rects+=`<rect x="${c*px}" y="${r*px}" width="${px}" height="${px}"/>`;
+      return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${dim} ${dim}" width="${dim}" height="${dim}" shape-rendering="crispEdges"><rect width="${dim}" height="${dim}" fill="#fff"/><g fill="#000">${rects}</g></svg>`;
+    }catch(e){return '<p style="color:var(--danger)">qr generation failed</p>';}
+  }
+  return{toSVG};
+})();
+
+function openModal() {
+  document.getElementById('link-modal').classList.remove('hidden');
+}
+function closeModal() {
+  document.getElementById('link-modal').classList.add('hidden');
+}
+function openAnalyticsModal() {
+  document.getElementById('analytics-modal').classList.remove('hidden');
+}
+function closeAnalyticsModal() {
+  document.getElementById('analytics-modal').classList.add('hidden');
+}
+function copyLink(btn, slug) {
+  navigator.clipboard.writeText(location.origin + '/' + slug);
+  btn.textContent = 'copied!';
+  btn.classList.add('copied');
+  setTimeout(() => { btn.textContent = 'copy'; btn.classList.remove('copied'); }, 1500);
+}
+function toggleExportMenu(e) {
+  e.stopPropagation();
+  document.getElementById('export-menu').classList.toggle('hidden');
+}
+document.addEventListener('click', () => {
+  const m = document.getElementById('export-menu');
+  if (m) m.classList.add('hidden');
+});
+// Open modals when htmx swaps content into them
+document.addEventListener('htmx:afterSwap', function(e) {
+  if (e.detail.target.id === 'modal-body') openModal();
+  if (e.detail.target.id === 'analytics-body') openAnalyticsModal();
+});
+// Close modal after successful form save (triggered by HX-Trigger: closeModal)
+document.addEventListener('closeModal', closeModal);
+</script>
+</head>
+{{end}}

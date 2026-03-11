@@ -26,12 +26,6 @@ var reservedSlugs = map[string]bool{
 	"api":   true,
 }
 
-func (s *Server) handleAdmin(w http.ResponseWriter, r *http.Request) {
-	data, _ := s.webFS.ReadFile("web/admin.html")
-	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	w.Write(data)
-}
-
 func (s *Server) handleFavicon(w http.ResponseWriter, r *http.Request) {
 	data, _ := s.webFS.ReadFile("web/favicon.svg")
 	w.Header().Set("Content-Type", "image/svg+xml")

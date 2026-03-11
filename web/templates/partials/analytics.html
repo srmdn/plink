@@ -1,0 +1,54 @@
+{{define "analytics"}}
+<script>document.getElementById('analytics-title').textContent = '/{{.Slug}}';</script>
+<div class="analytics-grid">
+  <div class="stat-card">
+    <div class="stat-value">{{.Total}}</div>
+    <div class="stat-label">total</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-value">{{.Last30d}}</div>
+    <div class="stat-label">last 30d</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-value" style="font-size:13px;word-break:break-all">{{.TopSource}}</div>
+    <div class="stat-label">top source</div>
+  </div>
+</div>
+
+<div class="chart-wrap">
+  <div class="section-label">clicks — last 30 days</div>
+  {{.ChartSVG}}
+</div>
+
+<div style="margin-bottom:20px">
+  <div class="section-label">referrers</div>
+  {{if .Referrers}}
+  {{$max := (index .Referrers 0).Clicks}}
+  {{range .Referrers}}
+  <div class="ref-row">
+    <span class="ref-source">{{.Source}}</span>
+    <div class="ref-bar-wrap">
+      <div class="ref-bar" style="width:{{percent .Clicks $max}}%"></div>
+    </div>
+    <span class="ref-count">{{.Clicks}}</span>
+  </div>
+  {{end}}
+  {{else}}
+  <p style="color:var(--muted);padding:12px 0;font-size:12px">no clicks yet</p>
+  {{end}}
+</div>
+
+<div>
+  <div class="section-label">qr code</div>
+  <div class="qr-wrap">
+    <div id="qr-{{.Slug}}" data-url="{{.ShortURL}}"></div>
+    <span class="qr-url">{{.ShortURL}}</span>
+  </div>
+</div>
+<script>
+(function(){
+  var el = document.getElementById('qr-{{.Slug}}');
+  if (el && window.QR) el.innerHTML = QR.toSVG(el.dataset.url, 5);
+}());
+</script>
+{{end}}
