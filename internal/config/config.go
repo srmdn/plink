@@ -13,6 +13,8 @@ type Config struct {
 	AdminPassword string
 	AdminPath     string
 	SecureCookies bool
+	SiteName      string
+	SiteDesc      string
 }
 
 func Load() *Config {
@@ -29,6 +31,8 @@ func Load() *Config {
 		AdminPassword: password,
 		AdminPath:     getEnv("ADMIN_PATH", "admin"),
 		SecureCookies: getEnv("APP_ENV", "development") == "production",
+		SiteName:      getEnv("SITE_NAME", "plink"),
+		SiteDesc:      getEnv("SITE_DESC", "personal links"),
 	}
 }
 

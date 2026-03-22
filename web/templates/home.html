@@ -4,7 +4,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>klikgan.com</title>
+<title>{{.SiteName}}</title>
 <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -27,6 +27,7 @@
     font-size: 13px;
     line-height: 1.5;
     min-height: 100dvh;
+    display: flex; flex-direction: column;
   }
 
   header {
@@ -38,6 +39,14 @@
   }
   .logo { font-size: 15px; font-weight: 700; color: var(--accent); letter-spacing: -0.03em; }
   .logo span { color: var(--muted); font-weight: 400; }
+  .header-right { display: flex; align-items: center; gap: 14px; }
+  .header-desc { color: var(--muted); font-size: 11px; }
+  .dashboard-link {
+    color: var(--muted); font-size: 11px; text-decoration: none;
+    border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 4px 10px; transition: color 0.15s, border-color 0.15s;
+  }
+  .dashboard-link:hover { color: var(--text); border-color: #444; }
 
   main { flex: 1; padding: 20px; max-width: 800px; width: 100%; margin: 0 auto; }
 
@@ -67,9 +76,10 @@
   .pub-card:hover { border-color: #3a3a3a; background: var(--surface2); }
 
   .pub-card-top {
-    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+    display: flex; align-items: center; justify-content: space-between; gap: 8px;
     margin-bottom: 4px;
   }
+  .pub-card-left { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; min-width: 0; }
   .pub-card-slug {
     color: var(--accent); font-weight: 600; font-size: 14px;
     letter-spacing: -0.01em;
@@ -79,6 +89,7 @@
     background: var(--bg); border: 1px solid var(--border); color: var(--muted);
     white-space: nowrap;
   }
+  .ext-icon { color: var(--muted); font-size: 11px; flex-shrink: 0; }
   .pub-card-desc {
     color: var(--muted); font-size: 11px;
     overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
@@ -93,8 +104,13 @@
 <div id="app">
 
   <header>
-    <div class="logo">klikgan<span>.com</span></div>
-    <span style="color:var(--muted);font-size:11px;">personal links</span>
+    <div class="logo">{{.SiteName}}</div>
+    <div class="header-right">
+      <span class="header-desc">{{.SiteDesc}}</span>
+      {{if .IsLoggedIn}}
+      <a href="/{{.AdminPath}}" class="dashboard-link">dashboard</a>
+      {{end}}
+    </div>
   </header>
 
   <main>
@@ -110,10 +126,13 @@
     <div class="links-grid">
       {{if .Links}}
       {{range .Links}}
-      <a href="/{{.Slug}}" class="pub-card">
+      <a href="/{{.Slug}}" class="pub-card" target="_blank" rel="noopener noreferrer">
         <div class="pub-card-top">
-          <span class="pub-card-slug">/{{.Slug}}</span>
-          {{if .Category}}<span class="cat-badge">{{.Category}}</span>{{end}}
+          <div class="pub-card-left">
+            <span class="pub-card-slug">/{{.Slug}}</span>
+            {{if .Category}}<span class="cat-badge">{{.Category}}</span>{{end}}
+          </div>
+          <span class="ext-icon">↗</span>
         </div>
         {{if .Description}}<div class="pub-card-desc">{{.Description}}</div>{{end}}
       </a>
