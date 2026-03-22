@@ -3,7 +3,7 @@
   <select
     class="cat-filter"
     name="category"
-    hx-get="/admin/links"
+    hx-get="/{{.AdminPath}}/links"
     hx-trigger="change"
     hx-target="#links-section"
     hx-swap="innerHTML"
@@ -40,27 +40,27 @@
       {{end}}
       <button
         class="btn btn-ghost btn-sm"
-        hx-get="/admin/links/{{.ID}}/analytics"
+        hx-get="/{{$.AdminPath}}/links/{{.ID}}/analytics"
         hx-target="#analytics-body"
         hx-swap="innerHTML"
       >stats</button>
       <div class="spacer"></div>
       <button
         class="btn btn-ghost btn-sm"
-        hx-patch="/admin/links/{{.ID}}/toggle"
+        hx-patch="/{{$.AdminPath}}/links/{{.ID}}/toggle"
         hx-target="#links-section"
         hx-swap="innerHTML"
         hx-include="#search, select[name='category']"
       >{{if .Active}}pause{{else}}activate{{end}}</button>
       <button
         class="btn btn-ghost btn-sm"
-        hx-get="/admin/links/{{.ID}}/edit"
+        hx-get="/{{$.AdminPath}}/links/{{.ID}}/edit"
         hx-target="#modal-body"
         hx-swap="innerHTML"
       >edit</button>
       <button
         class="btn btn-danger btn-sm"
-        hx-delete="/admin/links/{{.ID}}"
+        hx-delete="/{{$.AdminPath}}/links/{{.ID}}"
         hx-confirm="delete '/{{.Slug}}'?"
         hx-target="#links-section"
         hx-swap="innerHTML"

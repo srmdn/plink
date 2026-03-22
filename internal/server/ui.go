@@ -15,7 +15,8 @@ import (
 // ── Data types ──────────────────────────────────────────────────────────────
 
 type loginData struct {
-	Error bool
+	Error     bool
+	AdminPath string
 }
 
 type dashboardData struct {
@@ -25,12 +26,14 @@ type dashboardData struct {
 	Category   string
 	Count      int
 	Total      int
+	AdminPath  string
 }
 
 type linkFormData struct {
 	Link       *db.Link
 	Categories []string
 	Error      string
+	AdminPath  string
 }
 
 type analyticsData struct {
@@ -65,10 +68,10 @@ func (s *Server) serveLinksSection(w http.ResponseWriter, r *http.Request) {
 	}
 	q := r.FormValue("q")
 	cat := r.FormValue("category")
-	s.renderTemplate(w, "links-section", buildDashboardData(links, q, cat))
+	s.renderTemplate(w, "links-section", buildDashboardData(links, q, cat, s.cfg.AdminPath))
 }
 
-func buildDashboardData(links []db.Link, q, cat string) dashboardData {
+func buildDashboardData(links []db.Link, q, cat, adminPath string) dashboardData {
 	categories := extractCategories(links)
 	filtered := filterLinks(links, q, cat)
 	return dashboardData{
@@ -78,6 +81,7 @@ func buildDashboardData(links []db.Link, q, cat string) dashboardData {
 		Category:   cat,
 		Count:      len(filtered),
 		Total:      len(links),
+		AdminPath:  adminPath,
 	}
 }
 
@@ -177,10 +181,10 @@ func baseURL(r *http.Request) string {
 
 func (s *Server) handleLoginPage(w http.ResponseWriter, r *http.Request) {
 	if cookie, err := r.Cookie(cookieName); err == nil && s.sessions.valid(cookie.Value) {
-		http.Redirect(w, r, "/admin", http.StatusFound)
+		http.Redirect(w, r, "/"+s.cfg.AdminPath, http.StatusFound)
 		return
 	}
-	s.renderTemplate(w, "login", loginData{Error: r.URL.Query().Get("error") == "1"})
+	s.renderTemplate(w, "login", loginData{Error: r.URL.Query().Get("error") == "1", AdminPath: s.cfg.AdminPath})
 }
 
 func (s *Server) handleDashboard(w http.ResponseWriter, r *http.Request) {
@@ -189,7 +193,7 @@ func (s *Server) handleDashboard(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "db error", http.StatusInternalServerError)
 		return
 	}
-	data := buildDashboardData(links, r.URL.Query().Get("q"), r.URL.Query().Get("category"))
+	data := buildDashboardData(links, r.URL.Query().Get("q"), r.URL.Query().Get("category"), s.cfg.AdminPath)
 	s.renderTemplate(w, "dashboard", data)
 }
 
@@ -201,7 +205,7 @@ func (s *Server) handleLinksSection(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) handleNewLinkForm(w http.ResponseWriter, r *http.Request) {
 	links, _ := s.db.ListLinks()
-	s.renderTemplate(w, "link-form", linkFormData{Categories: extractCategories(links)})
+	s.renderTemplate(w, "link-form", linkFormData{Categories: extractCategories(links), AdminPath: s.cfg.AdminPath})
 }
 
 func (s *Server) handleEditLinkForm(w http.ResponseWriter, r *http.Request) {
@@ -224,7 +228,7 @@ func (s *Server) handleEditLinkForm(w http.ResponseWriter, r *http.Request) {
 		http.NotFound(w, r)
 		return
 	}
-	s.renderTemplate(w, "link-form", linkFormData{Link: link, Categories: cats})
+	s.renderTemplate(w, "link-form", linkFormData{Link: link, Categories: cats, AdminPath: s.cfg.AdminPath})
 }
 
 func (s *Server) handleCreateLinkUI(w http.ResponseWriter, r *http.Request) {
@@ -243,14 +247,14 @@ func (s *Server) handleCreateLinkUI(w http.ResponseWriter, r *http.Request) {
 	formErr := func(msg string, link *db.Link) {
 		w.Header().Set("HX-Retarget", "#modal-body")
 		w.Header().Set("HX-Reswap", "innerHTML")
-		s.renderTemplate(w, "link-form", linkFormData{Link: link, Categories: cats, Error: msg})
+		s.renderTemplate(w, "link-form", linkFormData{Link: link, Categories: cats, Error: msg, AdminPath: s.cfg.AdminPath})
 	}
 
 	if slug == "" || url == "" {
 		formErr("slug and url are required", nil)
 		return
 	}
-	if reservedSlugs[slug] {
+	if reservedSlugs[slug] || slug == s.cfg.AdminPath {
 		formErr("slug is reserved", &db.Link{Slug: slug, URL: url, Description: desc, Category: cat})
 		return
 	}
@@ -293,6 +297,7 @@ func (s *Server) handleUpdateLinkUI(w http.ResponseWriter, r *http.Request) {
 			Link:       &db.Link{ID: id, Slug: slug, URL: url, Description: desc, Category: cat},
 			Categories: cats,
 			Error:      msg,
+			AdminPath:  s.cfg.AdminPath,
 		})
 	}
 

@@ -57,6 +57,8 @@ func New(cfg *config.Config, database *db.DB, webFS embed.FS) http.Handler {
 		tmpl:         tmpl,
 	}
 
+	ap := "/" + cfg.AdminPath
+
 	mux := http.NewServeMux()
 
 	// Static assets
@@ -66,20 +68,20 @@ func New(cfg *config.Config, database *db.DB, webFS embed.FS) http.Handler {
 	mux.HandleFunc("GET /favicon.ico", s.handleFavicon)
 
 	// Auth
-	mux.HandleFunc("GET /admin/login", s.handleLoginPage)
-	mux.HandleFunc("POST /admin/login", s.handleLogin)
-	mux.HandleFunc("POST /admin/logout", s.requireCSRF(s.handleLogout))
+	mux.HandleFunc("GET "+ap+"/login", s.handleLoginPage)
+	mux.HandleFunc("POST "+ap+"/login", s.handleLogin)
+	mux.HandleFunc("POST "+ap+"/logout", s.requireCSRF(s.handleLogout))
 
 	// Admin UI
-	mux.HandleFunc("GET /admin", s.requireAuth(s.handleDashboard))
-	mux.HandleFunc("GET /admin/links", s.requireAuth(s.handleLinksSection))
-	mux.HandleFunc("GET /admin/links/new", s.requireAuth(s.handleNewLinkForm))
-	mux.HandleFunc("GET /admin/links/{id}/edit", s.requireAuth(s.handleEditLinkForm))
-	mux.HandleFunc("GET /admin/links/{id}/analytics", s.requireAuth(s.handleAnalyticsUI))
-	mux.HandleFunc("POST /admin/links", s.requireAuth(s.requireCSRF(s.handleCreateLinkUI)))
-	mux.HandleFunc("PUT /admin/links/{id}", s.requireAuth(s.requireCSRF(s.handleUpdateLinkUI)))
-	mux.HandleFunc("DELETE /admin/links/{id}", s.requireAuth(s.requireCSRF(s.handleDeleteLinkUI)))
-	mux.HandleFunc("PATCH /admin/links/{id}/toggle", s.requireAuth(s.requireCSRF(s.handleToggleLinkUI)))
+	mux.HandleFunc("GET "+ap, s.requireAuth(s.handleDashboard))
+	mux.HandleFunc("GET "+ap+"/links", s.requireAuth(s.handleLinksSection))
+	mux.HandleFunc("GET "+ap+"/links/new", s.requireAuth(s.handleNewLinkForm))
+	mux.HandleFunc("GET "+ap+"/links/{id}/edit", s.requireAuth(s.handleEditLinkForm))
+	mux.HandleFunc("GET "+ap+"/links/{id}/analytics", s.requireAuth(s.handleAnalyticsUI))
+	mux.HandleFunc("POST "+ap+"/links", s.requireAuth(s.requireCSRF(s.handleCreateLinkUI)))
+	mux.HandleFunc("PUT "+ap+"/links/{id}", s.requireAuth(s.requireCSRF(s.handleUpdateLinkUI)))
+	mux.HandleFunc("DELETE "+ap+"/links/{id}", s.requireAuth(s.requireCSRF(s.handleDeleteLinkUI)))
+	mux.HandleFunc("PATCH "+ap+"/links/{id}/toggle", s.requireAuth(s.requireCSRF(s.handleToggleLinkUI)))
 
 	// REST API (kept for external use / backwards compat)
 	mux.HandleFunc("GET /api/links", s.requireAuth(s.handleListLinks))
@@ -89,6 +91,9 @@ func New(cfg *config.Config, database *db.DB, webFS embed.FS) http.Handler {
 	mux.HandleFunc("GET /api/links/{id}/analytics", s.requireAuth(s.handleAnalytics))
 	mux.HandleFunc("PATCH /api/links/{id}/toggle", s.requireAuth(s.requireCSRF(s.handleToggleLink)))
 	mux.HandleFunc("GET /api/export", s.requireAuth(s.handleExport))
+
+	// Public homepage
+	mux.HandleFunc("GET /{$}", s.handleHome)
 
 	// Catch-all: slug redirect (must be last)
 	mux.HandleFunc("GET /{slug}", s.handleRedirect)

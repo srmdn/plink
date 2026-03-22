@@ -5,7 +5,7 @@
 </div>
 {{if .Error}}<div class="modal-error">{{.Error}}</div>{{end}}
 <form
-  {{if .Link}}hx-put="/admin/links/{{.Link.ID}}"{{else}}hx-post="/admin/links"{{end}}
+  {{if .Link}}hx-put="/{{.AdminPath}}/links/{{.Link.ID}}"{{else}}hx-post="/{{.AdminPath}}/links"{{end}}
   hx-target="#links-section"
   hx-swap="innerHTML"
 >

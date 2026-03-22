@@ -79,7 +79,7 @@ func (s *Server) requireAuth(next http.HandlerFunc) http.HandlerFunc {
 				http.Error(w, `{"error":"unauthorized"}`, http.StatusUnauthorized)
 				return
 			}
-			http.Redirect(w, r, "/admin/login", http.StatusFound)
+			http.Redirect(w, r, "/"+s.cfg.AdminPath+"/login", http.StatusFound)
 			return
 		}
 		// Refresh CSRF cookie on authenticated page loads
@@ -100,7 +100,7 @@ func (s *Server) handleLogin(w http.ResponseWriter, r *http.Request) {
 	password := []byte(r.FormValue("password"))
 	if subtle.ConstantTimeCompare(password, []byte(s.cfg.AdminPassword)) != 1 {
 		log.Printf("plink: failed login attempt from %s", ip)
-		http.Redirect(w, r, "/admin/login?error=1", http.StatusFound)
+		http.Redirect(w, r, "/"+s.cfg.AdminPath+"/login?error=1", http.StatusFound)
 		return
 	}
 
@@ -116,7 +116,7 @@ func (s *Server) handleLogin(w http.ResponseWriter, r *http.Request) {
 		SameSite: http.SameSiteStrictMode,
 	})
 	s.setCSRFCookie(w)
-	http.Redirect(w, r, "/admin", http.StatusFound)
+	http.Redirect(w, r, "/"+s.cfg.AdminPath, http.StatusFound)
 }
 
 
@@ -138,5 +138,5 @@ func (s *Server) handleLogout(w http.ResponseWriter, r *http.Request) {
 		Path:   "/",
 		MaxAge: -1,
 	})
-	http.Redirect(w, r, "/admin/login", http.StatusFound)
+	http.Redirect(w, r, "/"+s.cfg.AdminPath+"/login", http.StatusFound)
 }
