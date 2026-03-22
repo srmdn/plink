@@ -2,7 +2,9 @@ package server
 
 import (
 	"crypto/rand"
+	"crypto/subtle"
 	"encoding/hex"
+	"log"
 	"net/http"
 	"strings"
 	"sync"
@@ -80,16 +82,29 @@ func (s *Server) requireAuth(next http.HandlerFunc) http.HandlerFunc {
 			http.Redirect(w, r, "/admin/login", http.StatusFound)
 			return
 		}
+		// Refresh CSRF cookie on authenticated page loads
+		if r.Method == http.MethodGet {
+			s.setCSRFCookie(w)
+		}
 		next(w, r)
 	}
 }
 
 func (s *Server) handleLogin(w http.ResponseWriter, r *http.Request) {
-	if r.FormValue("password") != s.cfg.AdminPassword {
+	ip := clientIP(r)
+	if !s.loginLimiter.allow(ip) {
+		http.Error(w, "too many requests — try again later", http.StatusTooManyRequests)
+		return
+	}
+
+	password := []byte(r.FormValue("password"))
+	if subtle.ConstantTimeCompare(password, []byte(s.cfg.AdminPassword)) != 1 {
+		log.Printf("plink: failed login attempt from %s", ip)
 		http.Redirect(w, r, "/admin/login?error=1", http.StatusFound)
 		return
 	}
 
+	s.loginLimiter.reset(ip)
 	token := s.sessions.create()
 	http.SetCookie(w, &http.Cookie{
 		Name:     cookieName,
@@ -97,8 +112,10 @@ func (s *Server) handleLogin(w http.ResponseWriter, r *http.Request) {
 		Path:     "/",
 		MaxAge:   int(sessionTTL.Seconds()),
 		HttpOnly: true,
+		Secure:   s.cfg.SecureCookies,
 		SameSite: http.SameSiteStrictMode,
 	})
+	s.setCSRFCookie(w)
 	http.Redirect(w, r, "/admin", http.StatusFound)
 }
 
@@ -108,7 +125,15 @@ func (s *Server) handleLogout(w http.ResponseWriter, r *http.Request) {
 		s.sessions.delete(cookie.Value)
 	}
 	http.SetCookie(w, &http.Cookie{
-		Name:   cookieName,
+		Name:     cookieName,
+		Value:    "",
+		Path:     "/",
+		MaxAge:   -1,
+		HttpOnly: true,
+		Secure:   s.cfg.SecureCookies,
+	})
+	http.SetCookie(w, &http.Cookie{
+		Name:   csrfCookieName,
 		Value:  "",
 		Path:   "/",
 		MaxAge: -1,

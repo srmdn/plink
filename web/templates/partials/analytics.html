@@ -1,5 +1,5 @@
 {{define "analytics"}}
-<script>document.getElementById('analytics-title').textContent = '/{{.Slug}}';</script>
+<script>document.getElementById('analytics-title').textContent = '/{{.Slug | js}}';</script>
 <div class="analytics-grid">
   <div class="stat-card">
     <div class="stat-value">{{.Total}}</div>
@@ -41,13 +41,13 @@
 <div>
   <div class="section-label">qr code</div>
   <div class="qr-wrap">
-    <div id="qr-{{.Slug}}" data-url="{{.ShortURL}}"></div>
+    <div id="qr-{{.Slug | js}}" data-url="{{.ShortURL}}"></div>
     <span class="qr-url">{{.ShortURL}}</span>
   </div>
 </div>
 <script>
 (function(){
-  var el = document.getElementById('qr-{{.Slug}}');
+  var el = document.getElementById('qr-{{.Slug | js}}');
   if (el && window.QR) el.innerHTML = QR.toSVG(el.dataset.url, 5);
 }());
 </script>

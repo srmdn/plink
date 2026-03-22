@@ -11,11 +11,25 @@ import (
 )
 
 type Server struct {
-	cfg      *config.Config
-	db       *db.DB
-	sessions *sessionStore
-	webFS    embed.FS
-	tmpl     *template.Template
+	cfg          *config.Config
+	db           *db.DB
+	sessions     *sessionStore
+	loginLimiter *loginLimiter
+	webFS        embed.FS
+	tmpl         *template.Template
+}
+
+func securityHeaders(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("X-Content-Type-Options", "nosniff")
+		w.Header().Set("X-Frame-Options", "DENY")
+		w.Header().Set("Referrer-Policy", "strict-origin-when-cross-origin")
+		w.Header().Set("Permissions-Policy", "geolocation=(), microphone=(), camera=()")
+		w.Header().Set("Strict-Transport-Security", "max-age=31536000; includeSubDomains")
+		w.Header().Set("Content-Security-Policy",
+			"default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; object-src 'none'; base-uri 'self'; frame-ancestors 'none'")
+		next.ServeHTTP(w, r)
+	})
 }
 
 func New(cfg *config.Config, database *db.DB, webFS embed.FS) http.Handler {
@@ -27,6 +41,7 @@ func New(cfg *config.Config, database *db.DB, webFS embed.FS) http.Handler {
 				}
 				return val * 100 / max
 			},
+			"js": template.JSEscaper,
 		}).ParseFS(webFS,
 			"web/templates/*.html",
 			"web/templates/partials/*.html",
@@ -34,11 +49,12 @@ func New(cfg *config.Config, database *db.DB, webFS embed.FS) http.Handler {
 	)
 
 	s := &Server{
-		cfg:      cfg,
-		db:       database,
-		sessions: newSessionStore(),
-		webFS:    webFS,
-		tmpl:     tmpl,
+		cfg:          cfg,
+		db:           database,
+		sessions:     newSessionStore(),
+		loginLimiter: newLoginLimiter(),
+		webFS:        webFS,
+		tmpl:         tmpl,
 	}
 
 	mux := http.NewServeMux()
@@ -52,7 +68,7 @@ func New(cfg *config.Config, database *db.DB, webFS embed.FS) http.Handler {
 	// Auth
 	mux.HandleFunc("GET /admin/login", s.handleLoginPage)
 	mux.HandleFunc("POST /admin/login", s.handleLogin)
-	mux.HandleFunc("POST /admin/logout", s.handleLogout)
+	mux.HandleFunc("POST /admin/logout", s.requireCSRF(s.handleLogout))
 
 	// Admin UI
 	mux.HandleFunc("GET /admin", s.requireAuth(s.handleDashboard))
@@ -60,22 +76,22 @@ func New(cfg *config.Config, database *db.DB, webFS embed.FS) http.Handler {
 	mux.HandleFunc("GET /admin/links/new", s.requireAuth(s.handleNewLinkForm))
 	mux.HandleFunc("GET /admin/links/{id}/edit", s.requireAuth(s.handleEditLinkForm))
 	mux.HandleFunc("GET /admin/links/{id}/analytics", s.requireAuth(s.handleAnalyticsUI))
-	mux.HandleFunc("POST /admin/links", s.requireAuth(s.handleCreateLinkUI))
-	mux.HandleFunc("PUT /admin/links/{id}", s.requireAuth(s.handleUpdateLinkUI))
-	mux.HandleFunc("DELETE /admin/links/{id}", s.requireAuth(s.handleDeleteLinkUI))
-	mux.HandleFunc("PATCH /admin/links/{id}/toggle", s.requireAuth(s.handleToggleLinkUI))
+	mux.HandleFunc("POST /admin/links", s.requireAuth(s.requireCSRF(s.handleCreateLinkUI)))
+	mux.HandleFunc("PUT /admin/links/{id}", s.requireAuth(s.requireCSRF(s.handleUpdateLinkUI)))
+	mux.HandleFunc("DELETE /admin/links/{id}", s.requireAuth(s.requireCSRF(s.handleDeleteLinkUI)))
+	mux.HandleFunc("PATCH /admin/links/{id}/toggle", s.requireAuth(s.requireCSRF(s.handleToggleLinkUI)))
 
 	// REST API (kept for external use / backwards compat)
 	mux.HandleFunc("GET /api/links", s.requireAuth(s.handleListLinks))
-	mux.HandleFunc("POST /api/links", s.requireAuth(s.handleCreateLink))
-	mux.HandleFunc("PUT /api/links/{id}", s.requireAuth(s.handleUpdateLink))
-	mux.HandleFunc("DELETE /api/links/{id}", s.requireAuth(s.handleDeleteLink))
+	mux.HandleFunc("POST /api/links", s.requireAuth(s.requireCSRF(s.handleCreateLink)))
+	mux.HandleFunc("PUT /api/links/{id}", s.requireAuth(s.requireCSRF(s.handleUpdateLink)))
+	mux.HandleFunc("DELETE /api/links/{id}", s.requireAuth(s.requireCSRF(s.handleDeleteLink)))
 	mux.HandleFunc("GET /api/links/{id}/analytics", s.requireAuth(s.handleAnalytics))
-	mux.HandleFunc("PATCH /api/links/{id}/toggle", s.requireAuth(s.handleToggleLink))
+	mux.HandleFunc("PATCH /api/links/{id}/toggle", s.requireAuth(s.requireCSRF(s.handleToggleLink)))
 	mux.HandleFunc("GET /api/export", s.requireAuth(s.handleExport))
 
 	// Catch-all: slug redirect (must be last)
 	mux.HandleFunc("GET /{slug}", s.handleRedirect)
 
-	return mux
+	return securityHeaders(mux)
 }
