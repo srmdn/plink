@@ -8,9 +8,13 @@ import (
 )
 
 type homeData struct {
-	Links      []db.PublicLink
-	Categories []string
-	Category   string
+	Links       []db.PublicLink
+	Categories  []string
+	Category    string
+	SiteName    string
+	SiteDesc    string
+	IsLoggedIn  bool
+	AdminPath   string
 }
 
 func (s *Server) handleHome(w http.ResponseWriter, r *http.Request) {
@@ -44,9 +48,18 @@ func (s *Server) handleHome(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	loggedIn := false
+	if cookie, err := r.Cookie(cookieName); err == nil && s.sessions.valid(cookie.Value) {
+		loggedIn = true
+	}
+
 	s.renderTemplate(w, "home", homeData{
 		Links:      links,
 		Categories: categories,
 		Category:   cat,
+		SiteName:   s.cfg.SiteName,
+		SiteDesc:   s.cfg.SiteDesc,
+		IsLoggedIn: loggedIn,
+		AdminPath:  s.cfg.AdminPath,
 	})
 }

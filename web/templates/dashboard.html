@@ -7,9 +7,12 @@
 
   <header>
     <div class="logo">plink <span>/ admin</span></div>
-    <form method="POST" action="/{{.AdminPath}}/logout" style="display:inline">
-      <button type="submit" class="btn btn-ghost btn-sm">logout</button>
-    </form>
+    <div style="display:flex;align-items:center;gap:8px;">
+      <a href="/" class="btn btn-ghost btn-sm">home</a>
+      <form method="POST" action="/{{.AdminPath}}/logout" style="display:inline">
+        <button type="submit" class="btn btn-ghost btn-sm">logout</button>
+      </form>
+    </div>
   </header>
 
   <main>
