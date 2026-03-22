@@ -33,6 +33,36 @@ type Analytics struct {
 	Referrers   []Referrer    `json:"referrers"`
 }
 
+type PublicLink struct {
+	ID          int64
+	Slug        string
+	Description string
+	Category    string
+}
+
+func (db *DB) ListPublicLinks() ([]PublicLink, error) {
+	rows, err := db.Query(`
+		SELECT id, slug, description, category
+		FROM links
+		WHERE active = 1
+		ORDER BY category, slug
+	`)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var links []PublicLink
+	for rows.Next() {
+		var l PublicLink
+		if err := rows.Scan(&l.ID, &l.Slug, &l.Description, &l.Category); err != nil {
+			return nil, err
+		}
+		links = append(links, l)
+	}
+	return links, rows.Err()
+}
+
 func (db *DB) ListLinks() ([]Link, error) {
 	rows, err := db.Query(`
 		SELECT l.id, l.slug, l.url, l.description, l.category, l.active, l.created_at, l.updated_at,

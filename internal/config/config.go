@@ -11,6 +11,7 @@ type Config struct {
 	Addr          string
 	DBPath        string
 	AdminPassword string
+	AdminPath     string
 	SecureCookies bool
 }
 
@@ -26,6 +27,7 @@ func Load() *Config {
 		Addr:          getEnv("ADDR", ":8080"),
 		DBPath:        getEnv("DB_PATH", "plink.db"),
 		AdminPassword: password,
+		AdminPath:     getEnv("ADMIN_PATH", "admin"),
 		SecureCookies: getEnv("APP_ENV", "development") == "production",
 	}
 }

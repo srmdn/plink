@@ -11,7 +11,7 @@
     <div class="login-box">
       <h2>sign in to plink</h2>
       {{if .Error}}<div class="login-error">incorrect password</div>{{end}}
-      <form method="POST" action="/admin/login">
+      <form method="POST" action="/{{.AdminPath}}/login">
         <div class="field">
           <label for="password">password</label>
           <input type="password" id="password" name="password" autofocus autocomplete="current-password" />

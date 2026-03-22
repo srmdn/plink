@@ -7,7 +7,7 @@
 
   <header>
     <div class="logo">plink <span>/ admin</span></div>
-    <form method="POST" action="/admin/logout" style="display:inline">
+    <form method="POST" action="/{{.AdminPath}}/logout" style="display:inline">
       <button type="submit" class="btn btn-ghost btn-sm">logout</button>
     </form>
   </header>
@@ -23,7 +23,7 @@
           placeholder="search links..."
           autocomplete="off"
           spellcheck="false"
-          hx-get="/admin/links"
+          hx-get="/{{.AdminPath}}/links"
           hx-trigger="input changed delay:200ms"
           hx-target="#links-section"
           hx-swap="innerHTML"
@@ -42,7 +42,7 @@
       </div>
       <button
         class="btn btn-primary"
-        hx-get="/admin/links/new"
+        hx-get="/{{.AdminPath}}/links/new"
         hx-target="#modal-body"
         hx-swap="innerHTML"
       >+ add link</button>

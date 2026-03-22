@@ -1,0 +1,130 @@
+{{define "home"}}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>klikgan.com</title>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:      #0f0f0f;
+    --surface: #1a1a1a;
+    --surface2:#222222;
+    --border:  #2a2a2a;
+    --text:    #e5e5e5;
+    --muted:   #737373;
+    --accent:  #22c55e;
+    --radius:  6px;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: ui-monospace, 'SFMono-Regular', 'Cascadia Code', monospace;
+    font-size: 13px;
+    line-height: 1.5;
+    min-height: 100dvh;
+  }
+
+  header {
+    position: sticky; top: 0; z-index: 10;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 20px;
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+  }
+  .logo { font-size: 15px; font-weight: 700; color: var(--accent); letter-spacing: -0.03em; }
+  .logo span { color: var(--muted); font-weight: 400; }
+
+  main { flex: 1; padding: 20px; max-width: 800px; width: 100%; margin: 0 auto; }
+
+  /* Category pills */
+  .cat-pills {
+    display: flex; flex-wrap: wrap; gap: 6px;
+    margin-bottom: 20px;
+  }
+  .pill {
+    display: inline-block; font-size: 11px; padding: 4px 12px;
+    border-radius: 99px; border: 1px solid var(--border);
+    color: var(--muted); text-decoration: none; cursor: pointer;
+    transition: color 0.15s, border-color 0.15s;
+  }
+  .pill:hover { color: var(--text); border-color: #444; }
+  .pill.active { color: var(--accent); border-color: var(--accent); }
+
+  /* Link cards */
+  .links-grid { display: flex; flex-direction: column; gap: 8px; }
+
+  .pub-card {
+    display: block; text-decoration: none;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 14px 16px;
+    transition: border-color 0.15s, background 0.15s;
+  }
+  .pub-card:hover { border-color: #3a3a3a; background: var(--surface2); }
+
+  .pub-card-top {
+    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+    margin-bottom: 4px;
+  }
+  .pub-card-slug {
+    color: var(--accent); font-weight: 600; font-size: 14px;
+    letter-spacing: -0.01em;
+  }
+  .cat-badge {
+    display: inline-block; font-size: 10px; padding: 2px 7px; border-radius: 99px;
+    background: var(--bg); border: 1px solid var(--border); color: var(--muted);
+    white-space: nowrap;
+  }
+  .pub-card-desc {
+    color: var(--muted); font-size: 11px;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+
+  .empty-state {
+    text-align: center; color: var(--muted); padding: 48px 20px; font-size: 13px;
+  }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <header>
+    <div class="logo">klikgan<span>.com</span></div>
+    <span style="color:var(--muted);font-size:11px;">personal links</span>
+  </header>
+
+  <main>
+    {{if .Categories}}
+    <div class="cat-pills">
+      <a href="/" class="pill {{if eq .Category ""}}active{{end}}">all</a>
+      {{range .Categories}}
+      <a href="?category={{.}}" class="pill {{if eq . $.Category}}active{{end}}">{{.}}</a>
+      {{end}}
+    </div>
+    {{end}}
+
+    <div class="links-grid">
+      {{if .Links}}
+      {{range .Links}}
+      <a href="/{{.Slug}}" class="pub-card">
+        <div class="pub-card-top">
+          <span class="pub-card-slug">/{{.Slug}}</span>
+          {{if .Category}}<span class="cat-badge">{{.Category}}</span>{{end}}
+        </div>
+        {{if .Description}}<div class="pub-card-desc">{{.Description}}</div>{{end}}
+      </a>
+      {{end}}
+      {{else}}
+      <div class="empty-state">no links here yet</div>
+      {{end}}
+    </div>
+  </main>
+
+</div>
+</body>
+</html>
+{{end}}
