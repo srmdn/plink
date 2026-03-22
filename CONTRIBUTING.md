@@ -4,7 +4,7 @@ Thanks for your interest! plink is a personal project that's open to contributio
 
 ## Status
 
-**plink is currently in active development and not production-ready.** The API, database schema, and configuration format may change without notice until a stable release is tagged.
+plink is stable and production-ready. The core feature set is complete. New features are considered but the project philosophy is to stay simple and single-binary.
 
 ## What kind of contributions are welcome?
 
@@ -25,10 +25,11 @@ Thanks for your interest! plink is a personal project that's open to contributio
 git clone https://github.com/srmdn/plink
 cd plink
 cp .env.example .env
+# edit .env and set ADMIN_PASSWORD (required — app will not start without it)
 go run ./cmd
 ```
 
-The admin UI is at `http://localhost:8080/admin`. Default password is `admin`.
+The admin UI is at `http://localhost:8080/admin`. Log in with the password you set in `.env`.
 
 ## Project structure
 
