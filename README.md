@@ -35,19 +35,22 @@ cd plink
 cp .env.example .env
 # edit .env — set ADMIN_PASSWORD (required, no default)
 go run ./cmd
-# open http://localhost:8080/admin
+# open http://localhost:8080/<ADMIN_PATH>/login  (default: http://localhost:8080/admin/login)
 ```
 
 ## Configuration
 
 Copy `.env.example` to `.env` and edit:
 
-| Variable         | Default       | Description               |
-|------------------|---------------|---------------------------|
-| `ADDR`           | `:8080`       | Listen address            |
-| `DB_PATH`        | `plink.db`    | SQLite database file path |
-| `ADMIN_PASSWORD` | (required)    | Admin password — **no default, must be set** |
-| `APP_ENV`        | `development` | Set to `production` to enable Secure cookie flag (required when running behind HTTPS) |
+| Variable         | Default          | Description               |
+|------------------|------------------|---------------------------|
+| `ADDR`           | `:8080`          | Listen address            |
+| `DB_PATH`        | `plink.db`       | SQLite database file path |
+| `ADMIN_PASSWORD` | (required)       | Admin password — **no default, must be set** |
+| `APP_ENV`        | `development`    | Set to `production` to enable Secure cookie flag (required when running behind HTTPS) |
+| `ADMIN_PATH`     | `admin`          | Admin URL path — set to something hard to guess for security by obscurity |
+| `SITE_NAME`      | `plink`          | Site name shown on the public homepage |
+| `SITE_DESC`      | `personal links` | Short description shown on the public homepage |
 
 ## Security
 

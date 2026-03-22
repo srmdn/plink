@@ -29,7 +29,7 @@ cp .env.example .env
 go run ./cmd
 ```
 
-The admin UI is at `http://localhost:8080/admin`. Log in with the password you set in `.env`.
+The admin UI is at `http://localhost:8080/admin/login` (default path — configurable via `ADMIN_PATH` in `.env`). Log in with the password you set in `.env`.
 
 ## Project structure
 
@@ -40,7 +40,7 @@ plink/
 │   ├── config/     # .env loading
 │   ├── db/         # SQLite init, migrations, queries
 │   └── server/     # HTTP handlers, auth, routing
-├── web/            # Admin UI (single HTML file + favicon)
+├── web/            # Templates: home, dashboard, login + partials (embedded into binary)
 ├── deploy/         # systemd + nginx examples
 └── plink.go        # package plink — embed + Run()
 ```
@@ -53,7 +53,7 @@ Schema changes go in `internal/db/db.go` as new entries in the `migrations` slic
 
 - Standard Go formatting (`gofmt`)
 - No external dependencies unless absolutely necessary
-- Keep the admin UI as a single `web/admin.html` file — no build step, no npm
+- Keep templates in `web/templates/` as plain HTML — no build step, no npm
 
 ## Reporting security issues
 
