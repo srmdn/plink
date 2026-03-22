@@ -1,6 +1,6 @@
 module github.com/srmdn/plink
 
-go 1.25.6
+go 1.26.1
 
 require modernc.org/sqlite v1.46.1
 
