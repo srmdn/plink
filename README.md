@@ -1,6 +1,6 @@
 # plink
 
-> ⚠️ **Work in progress — not ready for production use.** Expect breaking changes.
+Self-hosted and production-ready.
 
 Self-hosted personal link shortener. No prefix, no bloat — `yourdomain.com/my-link` goes straight to the destination.
 
@@ -27,13 +27,13 @@ yourdomain.com/tokopedia-promo  →  https://tokopedia.com/...
 
 ## Quick start
 
-**Requires Go 1.22+**
+**Requires Go 1.22+** (built and tested with Go 1.26)
 
 ```bash
 git clone https://github.com/srmdn/plink
 cd plink
 cp .env.example .env
-# edit .env and set ADMIN_PASSWORD
+# edit .env — set ADMIN_PASSWORD (required, no default)
 go run ./cmd
 # open http://localhost:8080/admin
 ```
@@ -42,11 +42,20 @@ go run ./cmd
 
 Copy `.env.example` to `.env` and edit:
 
-| Variable         | Default    | Description               |
-|------------------|------------|---------------------------|
-| `ADDR`           | `:8080`    | Listen address            |
-| `DB_PATH`        | `plink.db` | SQLite database file path |
-| `ADMIN_PASSWORD` | `admin`    | Admin password — **change this** |
+| Variable         | Default       | Description               |
+|------------------|---------------|---------------------------|
+| `ADDR`           | `:8080`       | Listen address            |
+| `DB_PATH`        | `plink.db`    | SQLite database file path |
+| `ADMIN_PASSWORD` | (required)    | Admin password — **no default, must be set** |
+| `APP_ENV`        | `development` | Set to `production` to enable Secure cookie flag (required when running behind HTTPS) |
+
+## Security
+
+- **CSRF protection** — double-submit cookie token on all state-changing requests
+- **Rate limiting** — login attempts capped at 5 per IP per 15 minutes
+- **Secure cookies** — set `APP_ENV=production` to enable `Secure` flag (HTTPS only)
+- **Security headers** — CSP, HSTS, X-Frame-Options, and more applied automatically
+- **URL validation** — only `http`/`https` redirect targets accepted
 
 ## Build
 
