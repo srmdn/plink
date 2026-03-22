@@ -2,6 +2,7 @@ package config
 
 import (
 	"bufio"
+	"log"
 	"os"
 	"strings"
 )
@@ -10,15 +11,22 @@ type Config struct {
 	Addr          string
 	DBPath        string
 	AdminPassword string
+	SecureCookies bool
 }
 
 func Load() *Config {
 	loadEnvFile(".env")
 
+	password := getEnv("ADMIN_PASSWORD", "")
+	if password == "" {
+		log.Fatal("ADMIN_PASSWORD must be set in .env or environment")
+	}
+
 	return &Config{
 		Addr:          getEnv("ADDR", ":8080"),
 		DBPath:        getEnv("DB_PATH", "plink.db"),
-		AdminPassword: getEnv("ADMIN_PASSWORD", "admin"),
+		AdminPassword: password,
+		SecureCookies: getEnv("APP_ENV", "development") == "production",
 	}
 }
 

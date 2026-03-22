@@ -296,6 +296,27 @@ document.addEventListener('htmx:afterSwap', function(e) {
 });
 // Close modal after successful form save (triggered by HX-Trigger: closeModal)
 document.addEventListener('closeModal', closeModal);
+// CSRF: include token in all htmx requests
+function getCsrfToken() {
+  var m = document.cookie.match(/(?:^|;\s*)plink_csrf=([^;]*)/);
+  return m ? m[1] : '';
+}
+document.addEventListener('htmx:configRequest', function(e) {
+  var token = getCsrfToken();
+  if (token) e.detail.headers['X-CSRF-Token'] = token;
+});
+// CSRF: inject hidden input into traditional forms (e.g. logout)
+document.addEventListener('DOMContentLoaded', function() {
+  var token = getCsrfToken();
+  if (!token) return;
+  document.querySelectorAll('form').forEach(function(f) {
+    var input = document.createElement('input');
+    input.type = 'hidden';
+    input.name = 'csrf_token';
+    input.value = token;
+    f.appendChild(input);
+  });
+});
 </script>
 </head>
 {{end}}
