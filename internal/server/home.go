@@ -15,6 +15,7 @@ type homeData struct {
 	SiteDesc    string
 	IsLoggedIn  bool
 	AdminPath   string
+	Production  bool
 }
 
 func (s *Server) handleHome(w http.ResponseWriter, r *http.Request) {
@@ -61,5 +62,6 @@ func (s *Server) handleHome(w http.ResponseWriter, r *http.Request) {
 		SiteDesc:   s.cfg.SiteDesc,
 		IsLoggedIn: loggedIn,
 		AdminPath:  s.cfg.AdminPath,
+		Production: s.cfg.Production,
 	})
 }

@@ -15,8 +15,9 @@ import (
 // ── Data types ──────────────────────────────────────────────────────────────
 
 type loginData struct {
-	Error     bool
-	AdminPath string
+	Error      bool
+	AdminPath  string
+	Production bool
 }
 
 type dashboardData struct {
@@ -27,6 +28,7 @@ type dashboardData struct {
 	Count      int
 	Total      int
 	AdminPath  string
+	Production bool
 }
 
 type linkFormData struct {
@@ -68,10 +70,10 @@ func (s *Server) serveLinksSection(w http.ResponseWriter, r *http.Request) {
 	}
 	q := r.FormValue("q")
 	cat := r.FormValue("category")
-	s.renderTemplate(w, "links-section", buildDashboardData(links, q, cat, s.cfg.AdminPath))
+	s.renderTemplate(w, "links-section", buildDashboardData(links, q, cat, s.cfg.AdminPath, s.cfg.Production))
 }
 
-func buildDashboardData(links []db.Link, q, cat, adminPath string) dashboardData {
+func buildDashboardData(links []db.Link, q, cat, adminPath string, production bool) dashboardData {
 	categories := extractCategories(links)
 	filtered := filterLinks(links, q, cat)
 	return dashboardData{
@@ -82,6 +84,7 @@ func buildDashboardData(links []db.Link, q, cat, adminPath string) dashboardData
 		Count:      len(filtered),
 		Total:      len(links),
 		AdminPath:  adminPath,
+		Production: production,
 	}
 }
 
@@ -184,7 +187,7 @@ func (s *Server) handleLoginPage(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/"+s.cfg.AdminPath, http.StatusFound)
 		return
 	}
-	s.renderTemplate(w, "login", loginData{Error: r.URL.Query().Get("error") == "1", AdminPath: s.cfg.AdminPath})
+	s.renderTemplate(w, "login", loginData{Error: r.URL.Query().Get("error") == "1", AdminPath: s.cfg.AdminPath, Production: s.cfg.Production})
 }
 
 func (s *Server) handleDashboard(w http.ResponseWriter, r *http.Request) {
@@ -193,7 +196,7 @@ func (s *Server) handleDashboard(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "db error", http.StatusInternalServerError)
 		return
 	}
-	data := buildDashboardData(links, r.URL.Query().Get("q"), r.URL.Query().Get("category"), s.cfg.AdminPath)
+	data := buildDashboardData(links, r.URL.Query().Get("q"), r.URL.Query().Get("category"), s.cfg.AdminPath, s.cfg.Production)
 	s.renderTemplate(w, "dashboard", data)
 }
 
