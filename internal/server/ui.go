@@ -21,14 +21,15 @@ type loginData struct {
 }
 
 type dashboardData struct {
-	Links      []db.Link
-	Categories []string
-	Query      string
-	Category   string
-	Count      int
-	Total      int
-	AdminPath  string
-	Production bool
+	Links       []db.Link
+	Categories  []string
+	Query       string
+	Category    string
+	Count       int
+	Total       int
+	TotalClicks int64
+	AdminPath   string
+	Production  bool
 }
 
 type linkFormData struct {
@@ -76,15 +77,20 @@ func (s *Server) serveLinksSection(w http.ResponseWriter, r *http.Request) {
 func buildDashboardData(links []db.Link, q, cat, adminPath string, production bool) dashboardData {
 	categories := extractCategories(links)
 	filtered := filterLinks(links, q, cat)
+	var totalClicks int64
+	for _, link := range links {
+		totalClicks += link.Clicks
+	}
 	return dashboardData{
-		Links:      filtered,
-		Categories: categories,
-		Query:      q,
-		Category:   cat,
-		Count:      len(filtered),
-		Total:      len(links),
-		AdminPath:  adminPath,
-		Production: production,
+		Links:       filtered,
+		Categories:  categories,
+		Query:       q,
+		Category:    cat,
+		Count:       len(filtered),
+		Total:       len(links),
+		TotalClicks: totalClicks,
+		AdminPath:   adminPath,
+		Production:  production,
 	}
 }
 
@@ -132,7 +138,7 @@ func fillDays(data []db.DailyClicks, days int) []dailyFill {
 	result := make([]dailyFill, days)
 	now := time.Now()
 	for i := 0; i < days; i++ {
-		t := now.AddDate(0, 0, -(days-1-i))
+		t := now.AddDate(0, 0, -(days - 1 - i))
 		key := t.Format("2006-01-02")
 		result[i] = dailyFill{Date: key, Clicks: m[key]}
 	}
