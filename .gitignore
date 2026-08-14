@@ -12,10 +12,20 @@ AGENTS.md
 *.db-wal
 *.sqlite
 *.sqlite3
+*.sqlite-shm
+*.sqlite-wal
 *.db.bak
+*.sqlite.bak
 
 # Binary
 plink
+
+# Runtime
+*.log
+*.pid
+*.tmp
+*.swp
+*.swo
 
 # OS
 .DS_Store
