@@ -3,6 +3,7 @@ package server
 import (
 	"net/http"
 	"sort"
+	"strings"
 
 	"github.com/srmdn/plink/internal/db"
 )
@@ -12,6 +13,7 @@ type homeData struct {
 	Featured   []db.PublicLink
 	Categories []string
 	Category   string
+	Query      string
 	SiteName   string
 	SiteDesc   string
 	IsLoggedIn bool
@@ -53,6 +55,7 @@ func (s *Server) handleHome(w http.ResponseWriter, r *http.Request) {
 	}
 
 	cat := r.URL.Query().Get("category")
+	query := strings.TrimSpace(r.URL.Query().Get("q"))
 
 	// Extract unique categories
 	seen := make(map[string]bool)
@@ -65,15 +68,18 @@ func (s *Server) handleHome(w http.ResponseWriter, r *http.Request) {
 	}
 	sort.Strings(categories)
 
-	// Filter by category if requested
-	links := all
-	if cat != "" {
-		links = links[:0]
-		for _, l := range all {
-			if l.Category == cat {
-				links = append(links, l)
+	links := make([]db.PublicLink, 0, len(all))
+	for _, l := range all {
+		if cat != "" && l.Category != cat {
+			continue
+		}
+		if query != "" {
+			haystack := strings.ToLower(l.Slug + " " + l.Description + " " + l.Category)
+			if !strings.Contains(haystack, strings.ToLower(query)) {
+				continue
 			}
 		}
+		links = append(links, l)
 	}
 
 	loggedIn := false
@@ -86,6 +92,7 @@ func (s *Server) handleHome(w http.ResponseWriter, r *http.Request) {
 		Featured:   pickFeatured(all),
 		Categories: categories,
 		Category:   cat,
+		Query:      query,
 		SiteName:   s.cfg.SiteName,
 		SiteDesc:   s.cfg.SiteDesc,
 		IsLoggedIn: loggedIn,
