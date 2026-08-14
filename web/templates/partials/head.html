@@ -272,7 +272,8 @@
   .analytics-url:hover { color: var(--accent); }
   .analytics-actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
   .link-analytics-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
-  .stat-value-text { font-size: 12px; line-height: 1.35; overflow-wrap: anywhere; }
+  .link-analytics-grid .stat-card { min-width: 0; min-height: 76px; }
+  .stat-value-text { min-width: 0; font-size: 11px; line-height: 1.35; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   @media (max-width: 420px) { .analytics-grid { grid-template-columns: 1fr 1fr; } }
 
   .stat-card { background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 14px; }
