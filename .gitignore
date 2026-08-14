@@ -16,8 +16,10 @@ AGENTS.md
 *.sqlite-wal
 *.db.bak
 *.sqlite.bak
+data/
 
 # Binary
+plink
 plink
 
 # Runtime
