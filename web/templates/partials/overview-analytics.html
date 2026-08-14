@@ -1,0 +1,36 @@
+{{define "overview-analytics"}}
+<script>document.getElementById('analytics-title').textContent = 'source overview';</script>
+<div class="analytics-grid">
+  <div class="stat-card">
+    <div class="stat-value">{{.Total}}</div>
+    <div class="stat-label">total clicks</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-value">{{.Last30d}}</div>
+    <div class="stat-label">last 30d</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-value" style="font-size:13px;word-break:break-all">{{.TopSource}}</div>
+    <div class="stat-label">top source</div>
+  </div>
+</div>
+
+<div>
+  <div class="section-label">top referrers across all links</div>
+  {{if .Referrers}}
+  {{$max := (index .Referrers 0).Clicks}}
+  {{range .Referrers}}
+  <div class="ref-row">
+    <span class="ref-source" title="{{.Source}}">{{.Source}}</span>
+    <div class="ref-bar-wrap">
+      <div class="ref-bar" style="width:{{percent .Clicks $max}}%"></div>
+    </div>
+    <span class="ref-count">{{.Clicks}}</span>
+    <span class="ref-links">{{.LinkCount}} links</span>
+  </div>
+  {{end}}
+  {{else}}
+  <p style="color:var(--muted);padding:12px 0;font-size:12px">no clicks yet</p>
+  {{end}}
+</div>
+{{end}}

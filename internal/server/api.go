@@ -51,6 +51,8 @@ func (s *Server) handleCreateLink(w http.ResponseWriter, r *http.Request) {
 		URL         string `json:"url"`
 		Description string `json:"description"`
 		Category    string `json:"category"`
+		Featured    *bool  `json:"featured"`
+		Priority    *int   `json:"priority"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
 		writeError(w, http.StatusBadRequest, "invalid json")
@@ -69,7 +71,19 @@ func (s *Server) handleCreateLink(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	link, err := s.db.CreateLink(body.Slug, body.URL, body.Description, body.Category)
+	options := db.LinkOptions{}
+	if body.Featured != nil {
+		options.Featured = *body.Featured
+	}
+	if body.Priority != nil {
+		if *body.Priority < 0 {
+			writeError(w, http.StatusBadRequest, "priority must be a non-negative number")
+			return
+		}
+		options.Priority = *body.Priority
+	}
+
+	link, err := s.db.CreateLinkWithOptions(body.Slug, body.URL, body.Description, body.Category, options)
 	if err != nil {
 		if strings.Contains(err.Error(), "UNIQUE") {
 			writeError(w, http.StatusConflict, "slug already exists")
@@ -94,13 +108,43 @@ func (s *Server) handleUpdateLink(w http.ResponseWriter, r *http.Request) {
 		URL         string `json:"url"`
 		Description string `json:"description"`
 		Category    string `json:"category"`
+		Featured    *bool  `json:"featured"`
+		Priority    *int   `json:"priority"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
 		writeError(w, http.StatusBadRequest, "invalid json")
 		return
 	}
 
-	if err := s.db.UpdateLink(id, body.Slug, body.URL, body.Description, body.Category); err != nil {
+	if body.Priority != nil && *body.Priority < 0 {
+		writeError(w, http.StatusBadRequest, "priority must be a non-negative number")
+		return
+	}
+
+	var updateErr error
+	if body.Featured == nil && body.Priority == nil {
+		// Preserve the legacy API contract: omitted curation fields do not reset metadata.
+		updateErr = s.db.UpdateLink(id, body.Slug, body.URL, body.Description, body.Category)
+	} else {
+		current, err := s.db.GetLinkByID(id)
+		if err != nil {
+			writeError(w, http.StatusInternalServerError, "db error")
+			return
+		}
+		if current == nil {
+			writeError(w, http.StatusNotFound, "link not found")
+			return
+		}
+		options := db.LinkOptions{Featured: current.Featured, Priority: current.Priority}
+		if body.Featured != nil {
+			options.Featured = *body.Featured
+		}
+		if body.Priority != nil {
+			options.Priority = *body.Priority
+		}
+		updateErr = s.db.UpdateLinkWithOptions(id, body.Slug, body.URL, body.Description, body.Category, options)
+	}
+	if err := updateErr; err != nil {
 		if strings.Contains(err.Error(), "UNIQUE") {
 			writeError(w, http.StatusConflict, "slug already exists")
 			return
@@ -152,13 +196,17 @@ func (s *Server) handleExport(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/csv")
 		w.Header().Set("Content-Disposition", "attachment; filename=\"plink-export.csv\"")
 		cw := csv.NewWriter(w)
-		cw.Write([]string{"slug", "url", "description", "category", "active", "clicks", "created_at"})
+		cw.Write([]string{"slug", "url", "description", "category", "active", "featured", "priority", "clicks", "created_at"})
 		for _, l := range links {
 			active := "1"
 			if !l.Active {
 				active = "0"
 			}
-			cw.Write([]string{l.Slug, l.URL, l.Description, l.Category, active, fmt.Sprintf("%d", l.Clicks), fmt.Sprintf("%d", l.CreatedAt)})
+			featured := "0"
+			if l.Featured {
+				featured = "1"
+			}
+			cw.Write([]string{l.Slug, l.URL, l.Description, l.Category, active, featured, fmt.Sprintf("%d", l.Priority), fmt.Sprintf("%d", l.Clicks), fmt.Sprintf("%d", l.CreatedAt)})
 		}
 		cw.Flush()
 		return
@@ -183,5 +231,14 @@ func (s *Server) handleAnalytics(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	writeJSON(w, http.StatusOK, analytics)
+}
+
+func (s *Server) handleOverviewAnalytics(w http.ResponseWriter, r *http.Request) {
+	analytics, err := s.db.GetOverviewAnalytics()
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "db error")
+		return
+	}
 	writeJSON(w, http.StatusOK, analytics)
 }

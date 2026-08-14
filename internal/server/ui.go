@@ -25,18 +25,23 @@ type dashboardData struct {
 	Categories  []string
 	Query       string
 	Category    string
+	Status      string
 	Count       int
 	Total       int
 	TotalClicks int64
 	AdminPath   string
 	Production  bool
+	OOB         bool
 }
 
 type linkFormData struct {
-	Link       *db.Link
-	Categories []string
-	Error      string
-	AdminPath  string
+	Link           *db.Link
+	Categories     []string
+	Error          string
+	Query          string
+	CategoryFilter string
+	StatusFilter   string
+	AdminPath      string
 }
 
 type analyticsData struct {
@@ -47,6 +52,13 @@ type analyticsData struct {
 	TopSource string
 	ChartSVG  template.HTML
 	Referrers []db.Referrer
+}
+
+type overviewAnalyticsData struct {
+	Total     int64
+	Last30d   int64
+	TopSource string
+	Referrers []db.SourceSummary
 }
 
 type dailyFill struct {
@@ -69,14 +81,31 @@ func (s *Server) serveLinksSection(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "db error", http.StatusInternalServerError)
 		return
 	}
-	q := r.FormValue("q")
-	cat := r.FormValue("category")
-	s.renderTemplate(w, "links-section", buildDashboardData(links, q, cat, s.cfg.AdminPath, s.cfg.Production))
+	q, cat, status := dashboardFilters(r)
+	data := buildDashboardData(links, q, cat, status, s.cfg.AdminPath, s.cfg.Production)
+	data.OOB = true
+	s.renderTemplate(w, "links-section", data)
 }
 
-func buildDashboardData(links []db.Link, q, cat, adminPath string, production bool) dashboardData {
+func dashboardFilters(r *http.Request) (q, cat, status string) {
+	q = r.FormValue("q")
+	cat = r.FormValue("category")
+	status = r.FormValue("status")
+	if _, ok := r.Form["filter_q"]; ok {
+		q = r.FormValue("filter_q")
+	}
+	if _, ok := r.Form["filter_category"]; ok {
+		cat = r.FormValue("filter_category")
+	}
+	if _, ok := r.Form["filter_status"]; ok {
+		status = r.FormValue("filter_status")
+	}
+	return q, cat, status
+}
+
+func buildDashboardData(links []db.Link, q, cat, status, adminPath string, production bool) dashboardData {
 	categories := extractCategories(links)
-	filtered := filterLinks(links, q, cat)
+	filtered := filterLinks(links, q, cat, status)
 	var totalClicks int64
 	for _, link := range links {
 		totalClicks += link.Clicks
@@ -86,6 +115,7 @@ func buildDashboardData(links []db.Link, q, cat, adminPath string, production bo
 		Categories:  categories,
 		Query:       q,
 		Category:    cat,
+		Status:      status,
 		Count:       len(filtered),
 		Total:       len(links),
 		TotalClicks: totalClicks,
@@ -107,13 +137,19 @@ func extractCategories(links []db.Link) []string {
 	return cats
 }
 
-func filterLinks(links []db.Link, q, cat string) []db.Link {
-	if q == "" && cat == "" {
+func filterLinks(links []db.Link, q, cat, status string) []db.Link {
+	if q == "" && cat == "" && status == "" {
 		return links
 	}
 	q = strings.ToLower(q)
 	var result []db.Link
 	for _, l := range links {
+		if status == "active" && !l.Active {
+			continue
+		}
+		if status == "paused" && l.Active {
+			continue
+		}
 		if cat != "" && l.Category != cat {
 			continue
 		}
@@ -202,7 +238,7 @@ func (s *Server) handleDashboard(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "db error", http.StatusInternalServerError)
 		return
 	}
-	data := buildDashboardData(links, r.URL.Query().Get("q"), r.URL.Query().Get("category"), s.cfg.AdminPath, s.cfg.Production)
+	data := buildDashboardData(links, r.URL.Query().Get("q"), r.URL.Query().Get("category"), r.URL.Query().Get("status"), s.cfg.AdminPath, s.cfg.Production)
 	s.renderTemplate(w, "dashboard", data)
 }
 
@@ -214,7 +250,11 @@ func (s *Server) handleLinksSection(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) handleNewLinkForm(w http.ResponseWriter, r *http.Request) {
 	links, _ := s.db.ListLinks()
-	s.renderTemplate(w, "link-form", linkFormData{Categories: extractCategories(links), AdminPath: s.cfg.AdminPath})
+	q, cat, status := dashboardFilters(r)
+	s.renderTemplate(w, "link-form", linkFormData{
+		Categories: extractCategories(links), Query: q, CategoryFilter: cat, StatusFilter: status,
+		AdminPath: s.cfg.AdminPath,
+	})
 }
 
 func (s *Server) handleEditLinkForm(w http.ResponseWriter, r *http.Request) {
@@ -237,7 +277,25 @@ func (s *Server) handleEditLinkForm(w http.ResponseWriter, r *http.Request) {
 		http.NotFound(w, r)
 		return
 	}
-	s.renderTemplate(w, "link-form", linkFormData{Link: link, Categories: cats, AdminPath: s.cfg.AdminPath})
+	q, cat, status := dashboardFilters(r)
+	s.renderTemplate(w, "link-form", linkFormData{
+		Link: link, Categories: cats, Query: q, CategoryFilter: cat, StatusFilter: status,
+		AdminPath: s.cfg.AdminPath,
+	})
+}
+
+func parseLinkOptions(r *http.Request) (db.LinkOptions, error) {
+	priority := 0
+	priorityValue := strings.TrimSpace(r.FormValue("priority"))
+	if priorityValue != "" {
+		parsed, err := strconv.Atoi(priorityValue)
+		if err != nil || parsed < 0 {
+			return db.LinkOptions{}, fmt.Errorf("priority must be a non-negative number")
+		}
+		priority = parsed
+	}
+	featured := r.FormValue("featured") == "1" || r.FormValue("featured") == "on" || r.FormValue("featured") == "true"
+	return db.LinkOptions{Featured: featured, Priority: priority}, nil
 }
 
 func (s *Server) handleCreateLinkUI(w http.ResponseWriter, r *http.Request) {
@@ -249,6 +307,8 @@ func (s *Server) handleCreateLinkUI(w http.ResponseWriter, r *http.Request) {
 	url := strings.TrimSpace(r.FormValue("url"))
 	desc := strings.TrimSpace(r.FormValue("description"))
 	cat := strings.TrimSpace(r.FormValue("category"))
+	options, optionsErr := parseLinkOptions(r)
+	q, filterCat, filterStatus := dashboardFilters(r)
 
 	links, _ := s.db.ListLinks()
 	cats := extractCategories(links)
@@ -256,7 +316,10 @@ func (s *Server) handleCreateLinkUI(w http.ResponseWriter, r *http.Request) {
 	formErr := func(msg string, link *db.Link) {
 		w.Header().Set("HX-Retarget", "#modal-body")
 		w.Header().Set("HX-Reswap", "innerHTML")
-		s.renderTemplate(w, "link-form", linkFormData{Link: link, Categories: cats, Error: msg, AdminPath: s.cfg.AdminPath})
+		s.renderTemplate(w, "link-form", linkFormData{
+			Link: link, Categories: cats, Error: msg, Query: q, CategoryFilter: filterCat,
+			StatusFilter: filterStatus, AdminPath: s.cfg.AdminPath,
+		})
 	}
 
 	if slug == "" || url == "" {
@@ -264,16 +327,20 @@ func (s *Server) handleCreateLinkUI(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if reservedSlugs[slug] || slug == s.cfg.AdminPath {
-		formErr("slug is reserved", &db.Link{Slug: slug, URL: url, Description: desc, Category: cat})
+		formErr("slug is reserved", &db.Link{Slug: slug, URL: url, Description: desc, Category: cat, Featured: options.Featured, Priority: options.Priority})
+		return
+	}
+	if optionsErr != nil {
+		formErr(optionsErr.Error(), &db.Link{Slug: slug, URL: url, Description: desc, Category: cat, Featured: options.Featured, Priority: options.Priority})
 		return
 	}
 
-	if _, err := s.db.CreateLink(slug, url, desc, cat); err != nil {
+	if _, err := s.db.CreateLinkWithOptions(slug, url, desc, cat, options); err != nil {
 		msg := "failed to create link"
 		if strings.Contains(err.Error(), "UNIQUE") {
 			msg = "slug already exists"
 		}
-		formErr(msg, &db.Link{Slug: slug, URL: url, Description: desc, Category: cat})
+		formErr(msg, &db.Link{Slug: slug, URL: url, Description: desc, Category: cat, Featured: options.Featured, Priority: options.Priority})
 		return
 	}
 
@@ -295,6 +362,8 @@ func (s *Server) handleUpdateLinkUI(w http.ResponseWriter, r *http.Request) {
 	url := strings.TrimSpace(r.FormValue("url"))
 	desc := strings.TrimSpace(r.FormValue("description"))
 	cat := strings.TrimSpace(r.FormValue("category"))
+	options, optionsErr := parseLinkOptions(r)
+	q, filterCat, filterStatus := dashboardFilters(r)
 
 	links, _ := s.db.ListLinks()
 	cats := extractCategories(links)
@@ -303,10 +372,9 @@ func (s *Server) handleUpdateLinkUI(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("HX-Retarget", "#modal-body")
 		w.Header().Set("HX-Reswap", "innerHTML")
 		s.renderTemplate(w, "link-form", linkFormData{
-			Link:       &db.Link{ID: id, Slug: slug, URL: url, Description: desc, Category: cat},
-			Categories: cats,
-			Error:      msg,
-			AdminPath:  s.cfg.AdminPath,
+			Link:       &db.Link{ID: id, Slug: slug, URL: url, Description: desc, Category: cat, Featured: options.Featured, Priority: options.Priority},
+			Categories: cats, Error: msg, Query: q, CategoryFilter: filterCat,
+			StatusFilter: filterStatus, AdminPath: s.cfg.AdminPath,
 		})
 	}
 
@@ -315,7 +383,12 @@ func (s *Server) handleUpdateLinkUI(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := s.db.UpdateLink(id, slug, url, desc, cat); err != nil {
+	if optionsErr != nil {
+		formErr(optionsErr.Error())
+		return
+	}
+
+	if err := s.db.UpdateLinkWithOptions(id, slug, url, desc, cat, options); err != nil {
 		msg := "failed to update link"
 		if strings.Contains(err.Error(), "UNIQUE") {
 			msg = "slug already exists"
@@ -395,5 +468,22 @@ func (s *Server) handleAnalyticsUI(w http.ResponseWriter, r *http.Request) {
 		TopSource: topSource,
 		ChartSVG:  buildChartSVG(daily),
 		Referrers: data.Referrers,
+	})
+}
+
+func (s *Server) handleOverviewAnalyticsUI(w http.ResponseWriter, r *http.Request) {
+	data, err := s.db.GetOverviewAnalytics()
+	if err != nil {
+		http.Error(w, "db error", http.StatusInternalServerError)
+		return
+	}
+
+	topSource := "—"
+	if len(data.Referrers) > 0 {
+		topSource = data.Referrers[0].Source
+	}
+
+	s.renderTemplate(w, "overview-analytics", overviewAnalyticsData{
+		Total: data.TotalClicks, Last30d: data.Last30d, TopSource: topSource, Referrers: data.Referrers,
 	})
 }

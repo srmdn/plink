@@ -29,7 +29,7 @@ cp .env.example .env
 go run ./cmd
 ```
 
-The admin UI is at `http://localhost:8080/admin/login` (default path — configurable via `ADMIN_PATH` in `.env`). Log in with the password you set in `.env`.
+Open the configured admin login path in a local browser and sign in with the password you set in `.env`.
 
 ## Project structure
 
@@ -41,7 +41,6 @@ plink/
 │   ├── db/         # SQLite init, migrations, queries
 │   └── server/     # HTTP handlers, auth, routing
 ├── web/            # Templates: home, dashboard, login + partials (embedded into binary)
-├── deploy/         # systemd + nginx examples
 └── plink.go        # package plink — embed + Run()
 ```
 

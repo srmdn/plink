@@ -16,8 +16,10 @@ yourdomain.com/tokopedia-promo  →  https://tokopedia.com/...
 - Categories — organize links with filterable labels
 - Public resource search — find links by slug, description, or category
 - Curated homepage — highlight recommended links before the full catalog
+- Homepage curation — mark featured links and control priority from the dashboard
 - Dashboard metrics — see link counts and total clicks at a glance
 - Link management — search, filter, copy, export, edit, pause, and review analytics
+- Source overview — see referrers across all links as well as per-link breakdowns
 - Single binary — no runtime, no Docker required
 - Self-hosted — your data stays on your server
 
@@ -29,7 +31,7 @@ yourdomain.com/tokopedia-promo  →  https://tokopedia.com/...
 
 ## Quick start
 
-**Requires Go 1.22+** (built and tested with Go 1.26)
+**Requires Go 1.26.6+**
 
 ```bash
 git clone https://github.com/srmdn/plink
@@ -37,22 +39,8 @@ cd plink
 cp .env.example .env
 # edit .env — set ADMIN_PASSWORD (required, no default)
 go run ./cmd
-# open http://localhost:8080/<ADMIN_PATH>/login  (default: http://localhost:8080/admin/login)
+# open the configured admin login path in your browser
 ```
-
-## Configuration
-
-Copy `.env.example` to `.env` and edit:
-
-| Variable         | Default          | Description               |
-|------------------|------------------|---------------------------|
-| `ADDR`           | `:8080`          | Listen address            |
-| `DB_PATH`        | `plink.db`       | SQLite database file path |
-| `ADMIN_PASSWORD` | (required)       | Admin password — **no default, must be set** |
-| `APP_ENV`        | `development`    | Set to `production` to enable Secure cookie flag (required when running behind HTTPS) |
-| `ADMIN_PATH`     | `admin`          | Admin URL path — set to something hard to guess for security by obscurity |
-| `SITE_NAME`      | `plink`          | Site name shown on the public homepage |
-| `SITE_DESC`      | `personal links` | Short description shown on the public homepage |
 
 ## Security
 
@@ -74,36 +62,15 @@ the project without exposing deployment-specific configuration.
 ## Dashboard
 
 The admin dashboard keeps daily link management compact. It includes summary
-metrics, live search, category filtering, JSON and CSV export, link controls,
-and per-link analytics.
+metrics, live search, category and status filtering, JSON and CSV export, link
+controls, featured-link ordering, source overview analytics, and per-link
+analytics.
 
 ## Build
 
 ```bash
 go build -o plink ./cmd
 ./plink
-```
-
-## Deployment (VPS)
-
-See [`deploy/`](deploy/) for:
-- `plink.service` — systemd unit file
-- `nginx.conf` — Nginx reverse proxy config
-
-Basic setup:
-
-```bash
-# Build binary
-go build -o plink ./cmd
-
-# Copy to server
-scp plink user@yourserver:/opt/plink/plink
-scp .env.example user@yourserver:/opt/plink/.env
-# edit /opt/plink/.env on the server
-
-# Install and start service
-sudo cp deploy/plink.service /etc/systemd/system/
-sudo systemctl enable --now plink
 ```
 
 ## Contributing

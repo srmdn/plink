@@ -1,11 +1,23 @@
+{{define "dashboard-summary"}}
+<section id="dashboard-summary" class="dashboard-stats" hx-swap-oob="outerHTML">
+  <div class="stat-card"><div class="stat-value">{{.Total}}</div><div class="stat-label">total links</div></div>
+  <div class="stat-card"><div class="stat-value">{{.Count}}</div><div class="stat-label">matching links</div></div>
+  <div class="stat-card"><div class="stat-value">{{.TotalClicks}}</div><div class="stat-label">total clicks</div></div>
+</section>
+{{end}}
+
+{{define "dashboard-toolbar-count"}}
+<span class="count" id="link-count" hx-swap-oob="outerHTML">
+  {{if or .Query .Category .Status}}{{.Count}} of {{.Total}}{{else}}{{.Total}} link{{if ne .Total 1}}s{{end}}{{end}}
+</span>
+{{end}}
+
 {{define "dashboard"}}
 <!DOCTYPE html>
 <html lang="en">
 {{template "head" .}}
 <body>
 <div id="app">
-  <style>main{max-width:1120px}.dashboard-table-wrap{overflow-x:auto}</style>
-
   <header>
     <div class="logo">plink <span>/ admin</span></div>
     <div style="display:flex;align-items:center;gap:8px;">
@@ -17,11 +29,7 @@
   </header>
 
   <main>
-    <section style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:22px">
-      <div class="stat-card"><div class="stat-value">{{.Total}}</div><div class="stat-label">total links</div></div>
-      <div class="stat-card"><div class="stat-value">{{.Count}}</div><div class="stat-label">matching links</div></div>
-      <div class="stat-card"><div class="stat-value">{{.TotalClicks}}</div><div class="stat-label">total clicks</div></div>
-    </section>
+    {{template "dashboard-summary" .}}
     <div class="toolbar">
       <div class="toolbar-left">
         <input
@@ -36,12 +44,16 @@
           hx-trigger="input changed delay:200ms"
           hx-target="#links-section"
           hx-swap="innerHTML"
-          hx-include="#search, select[name='category']"
+          hx-include="#search, select[name='category'], select[name='status']"
         />
-        <span class="count" id="link-count">
-          {{if or .Query .Category}}{{.Count}} of {{.Total}}{{else}}{{.Total}} link{{if ne .Total 1}}s{{end}}{{end}}
-        </span>
+        {{template "dashboard-toolbar-count" .}}
       </div>
+      <button
+        class="btn btn-ghost btn-sm"
+        hx-get="/{{.AdminPath}}/analytics"
+        hx-target="#analytics-body"
+        hx-swap="innerHTML"
+      >sources</button>
       <div class="export-wrap">
         <button class="btn btn-ghost btn-sm" onclick="toggleExportMenu(event)">export ↓</button>
         <div class="export-menu hidden" id="export-menu">
@@ -54,6 +66,7 @@
         hx-get="/{{.AdminPath}}/links/new"
         hx-target="#modal-body"
         hx-swap="innerHTML"
+        hx-include="#search, select[name='category'], select[name='status']"
       >+ add link</button>
     </div>
 

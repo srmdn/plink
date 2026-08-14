@@ -22,34 +22,13 @@ type homeData struct {
 	Production bool
 }
 
-func pickFeatured(links []db.PublicLink) []db.PublicLink {
-	preferred := map[string]bool{"Jasa-SaidWP": true, "FastpanelMastery": true, "lifetime": true}
-	featured := make([]db.PublicLink, 0, 3)
-	for _, link := range links {
-		if preferred[link.Slug] {
-			featured = append(featured, link)
-		}
-	}
-	for _, link := range links {
-		if len(featured) == 3 {
-			break
-		}
-		duplicate := false
-		for _, existing := range featured {
-			if existing.ID == link.ID {
-				duplicate = true
-				break
-			}
-		}
-		if !duplicate {
-			featured = append(featured, link)
-		}
-	}
-	return featured
-}
-
 func (s *Server) handleHome(w http.ResponseWriter, r *http.Request) {
 	all, err := s.db.ListPublicLinks()
+	if err != nil {
+		http.Error(w, "db error", http.StatusInternalServerError)
+		return
+	}
+	featured, err := s.db.ListFeaturedLinks(3)
 	if err != nil {
 		http.Error(w, "db error", http.StatusInternalServerError)
 		return
@@ -94,7 +73,7 @@ func (s *Server) handleHome(w http.ResponseWriter, r *http.Request) {
 
 	s.renderTemplate(w, "home", homeData{
 		Links:      links,
-		Featured:   pickFeatured(all),
+		Featured:   featured,
 		Categories: categories,
 		Category:   cat,
 		Query:      query,

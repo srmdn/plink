@@ -50,6 +50,10 @@ var migrations = []string{
 
 	// v3: add active flag to links
 	`ALTER TABLE links ADD COLUMN active INTEGER NOT NULL DEFAULT 1`,
+
+	// v4: add homepage curation metadata
+	`ALTER TABLE links ADD COLUMN featured INTEGER NOT NULL DEFAULT 0;
+	 ALTER TABLE links ADD COLUMN priority INTEGER NOT NULL DEFAULT 0`,
 }
 
 func migrate(conn *sql.DB) error {

@@ -1,5 +1,114 @@
 {{define "links-section"}}
-<style>.link-table{width:100%;table-layout:fixed;border-collapse:separate;border-spacing:0 8px}.link-table th{text-align:left;color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.08em;padding:0 12px 6px}.link-table th:nth-child(1){width:34%}.link-table th:nth-child(2){width:32%}.link-table th:nth-child(3){width:8%}.link-table th:nth-child(4){width:10%}.link-table th:nth-child(5){width:16%}.link-table td{overflow:hidden;background:var(--surface);padding:13px 12px;border-top:1px solid var(--border);border-bottom:1px solid var(--border)}.link-table td:first-child{border-left:1px solid var(--border);border-radius:var(--radius) 0 0 var(--radius)}.link-table td:last-child{border-right:1px solid var(--border);border-radius:0 var(--radius) var(--radius) 0}.link-destination{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--muted);font-size:11px}.row-actions{display:flex;gap:5px;justify-content:flex-end}.status{font-size:11px}.status.on{color:var(--accent)}.status.off{color:var(--muted)}@media(max-width:700px){.link-table thead,.link-table td.destination{display:none}.link-table,.link-table tbody,.link-table tr,.link-table td{display:block;width:100%}.link-table tr{margin-bottom:8px}.link-table td{border-left:1px solid var(--border);border-right:1px solid var(--border)}.link-table td:first-child{border-radius:var(--radius) var(--radius) 0 0}.link-table td:last-child{border-radius:0 0 var(--radius) var(--radius)}.row-actions{justify-content:flex-start}}</style>
-<div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap"><select class="cat-filter" name="category" hx-get="/{{.AdminPath}}/links" hx-trigger="change" hx-target="#links-section" hx-swap="innerHTML" hx-include="#search, select[name='category']"><option value="">all categories</option>{{range .Categories}}<option value="{{.}}" {{if eq . $.Category}}selected{{end}}>{{.}}</option>{{end}}</select><span class="count">{{.Count}} of {{.Total}} links</span></div>
-{{if .Links}}<table class="link-table"><thead><tr><th>Link</th><th class="destination">Destination</th><th>Clicks</th><th>Status</th><th></th></tr></thead><tbody>{{range .Links}}<tr><td><span class="slug">/{{.Slug}}</span>{{if .Category}} <span class="cat-badge">{{.Category}}</span>{{end}}{{if .Description}}<div class="card-desc">{{.Description}}</div>{{end}}</td><td class="destination"><a class="link-destination" href="{{.URL}}" target="_blank" rel="noopener">{{.URL}}</a></td><td>{{.Clicks}}</td><td><span class="status {{if .Active}}on{{else}}off{{end}}">{{if .Active}}active{{else}}paused{{end}}</span></td><td><div class="row-actions">{{if .Active}}<button class="btn btn-ghost btn-sm btn-copy" onclick="copyLink(this,'{{.Slug}}')">copy</button>{{end}}<button class="btn btn-ghost btn-sm" hx-get="/{{$.AdminPath}}/links/{{.ID}}/analytics" hx-target="#analytics-body" hx-swap="innerHTML">stats</button><button class="btn btn-ghost btn-sm" hx-get="/{{$.AdminPath}}/links/{{.ID}}/edit" hx-target="#modal-body" hx-swap="innerHTML">edit</button><button class="btn btn-ghost btn-sm" hx-patch="/{{$.AdminPath}}/links/{{.ID}}/toggle" hx-target="#links-section" hx-swap="innerHTML" hx-include="#search, select[name='category']">{{if .Active}}pause{{else}}activate{{end}}</button></div></td></tr>{{end}}</tbody></table>{{else}}<div class="empty-state">no links match the current filter</div>{{end}}
+{{if .OOB}}
+  {{template "dashboard-summary" .}}
+  {{template "dashboard-toolbar-count" .}}
+{{end}}
+
+<div class="links-controls">
+  <div class="filter-group">
+    <label class="sr-only" for="category-filter">category</label>
+    <select
+      class="cat-filter"
+      id="category-filter"
+      name="category"
+      hx-get="/{{.AdminPath}}/links"
+      hx-trigger="change"
+      hx-target="#links-section"
+      hx-swap="innerHTML"
+      hx-include="#search, select[name='category'], select[name='status']"
+    >
+      <option value="">all categories</option>
+      {{range .Categories}}<option value="{{.}}" {{if eq . $.Category}}selected{{end}}>{{.}}</option>{{end}}
+    </select>
+
+    <label class="sr-only" for="status-filter">status</label>
+    <select
+      class="cat-filter"
+      id="status-filter"
+      name="status"
+      hx-get="/{{.AdminPath}}/links"
+      hx-trigger="change"
+      hx-target="#links-section"
+      hx-swap="innerHTML"
+      hx-include="#search, select[name='category'], select[name='status']"
+    >
+      <option value="">all statuses</option>
+      <option value="active" {{if eq .Status "active"}}selected{{end}}>active</option>
+      <option value="paused" {{if eq .Status "paused"}}selected{{end}}>paused</option>
+    </select>
+  </div>
+
+  {{if or .Query .Category .Status}}
+  <a class="clear-filters" href="/{{.AdminPath}}">clear filters</a>
+  {{end}}
+</div>
+
+{{if .Links}}
+<div class="table-wrap">
+  <table class="link-table">
+    <thead>
+      <tr>
+        <th>Link</th>
+        <th class="destination">Destination</th>
+        <th>Clicks</th>
+        <th>Status</th>
+        <th><span class="sr-only">Actions</span></th>
+      </tr>
+    </thead>
+    <tbody>
+      {{range .Links}}
+      <tr>
+        <td>
+          <div class="link-main">
+            <div class="link-copy">
+              <div class="slug-line">
+                <span class="slug">/{{.Slug}}</span>
+                {{if .Featured}}<span class="cat-badge featured-badge">featured</span>{{end}}
+                {{if .Priority}}<span class="priority-badge">p{{.Priority}}</span>{{end}}
+                {{if .Category}}<span class="cat-badge">{{.Category}}</span>{{end}}
+              </div>
+              {{if .Description}}<div class="card-desc">{{.Description}}</div>{{end}}
+            </div>
+          </div>
+        </td>
+        <td class="destination">
+          <a class="link-destination" href="{{.URL}}" target="_blank" rel="noopener">{{.URL}}</a>
+        </td>
+        <td class="clicks-cell">{{.Clicks}}</td>
+        <td class="status-cell"><span class="status {{if .Active}}on{{else}}off{{end}}">{{if .Active}}active{{else}}paused{{end}}</span></td>
+        <td class="actions-cell">
+          <div class="row-actions">
+            {{if .Active}}<button class="btn btn-ghost btn-sm btn-copy" onclick="copyLink(this,'{{.Slug}}')">copy</button>{{end}}
+            <button class="btn btn-ghost btn-sm" hx-get="/{{$.AdminPath}}/links/{{.ID}}/analytics" hx-target="#analytics-body" hx-swap="innerHTML">stats</button>
+            <button class="btn btn-ghost btn-sm" hx-get="/{{$.AdminPath}}/links/{{.ID}}/edit" hx-target="#modal-body" hx-swap="innerHTML" hx-include="#search, select[name='category'], select[name='status']">edit</button>
+            <details class="row-menu">
+              <summary class="btn btn-ghost btn-sm" aria-label="more actions for /{{.Slug}}">more</summary>
+              <div class="row-menu-panel">
+                <button
+                  class="row-menu-item"
+                  hx-patch="/{{$.AdminPath}}/links/{{.ID}}/toggle"
+                  hx-target="#links-section"
+                  hx-swap="innerHTML"
+                  hx-include="#search, select[name='category'], select[name='status']"
+                >{{if .Active}}pause{{else}}activate{{end}}</button>
+                <button
+                  class="row-menu-item row-menu-danger"
+                  hx-delete="/{{$.AdminPath}}/links/{{.ID}}"
+                  hx-target="#links-section"
+                  hx-swap="innerHTML"
+                  hx-confirm="delete /{{.Slug}}? this cannot be undone"
+                  hx-include="#search, select[name='category'], select[name='status']"
+                >delete</button>
+              </div>
+            </details>
+          </div>
+        </td>
+      </tr>
+      {{end}}
+    </tbody>
+  </table>
+</div>
+{{else}}
+<div class="empty-state">no links match the current filter</div>
+{{end}}
 {{end}}

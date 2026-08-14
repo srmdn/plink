@@ -78,6 +78,7 @@ func New(cfg *config.Config, database *db.DB, webFS embed.FS) http.Handler {
 	mux.HandleFunc("GET "+ap+"/links/new", s.requireAuth(s.handleNewLinkForm))
 	mux.HandleFunc("GET "+ap+"/links/{id}/edit", s.requireAuth(s.handleEditLinkForm))
 	mux.HandleFunc("GET "+ap+"/links/{id}/analytics", s.requireAuth(s.handleAnalyticsUI))
+	mux.HandleFunc("GET "+ap+"/analytics", s.requireAuth(s.handleOverviewAnalyticsUI))
 	mux.HandleFunc("POST "+ap+"/links", s.requireAuth(s.requireCSRF(s.handleCreateLinkUI)))
 	mux.HandleFunc("PUT "+ap+"/links/{id}", s.requireAuth(s.requireCSRF(s.handleUpdateLinkUI)))
 	mux.HandleFunc("DELETE "+ap+"/links/{id}", s.requireAuth(s.requireCSRF(s.handleDeleteLinkUI)))
@@ -89,6 +90,7 @@ func New(cfg *config.Config, database *db.DB, webFS embed.FS) http.Handler {
 	mux.HandleFunc("PUT /api/links/{id}", s.requireAuth(s.requireCSRF(s.handleUpdateLink)))
 	mux.HandleFunc("DELETE /api/links/{id}", s.requireAuth(s.requireCSRF(s.handleDeleteLink)))
 	mux.HandleFunc("GET /api/links/{id}/analytics", s.requireAuth(s.handleAnalytics))
+	mux.HandleFunc("GET /api/analytics", s.requireAuth(s.handleOverviewAnalytics))
 	mux.HandleFunc("PATCH /api/links/{id}/toggle", s.requireAuth(s.requireCSRF(s.handleToggleLink)))
 	mux.HandleFunc("GET /api/export", s.requireAuth(s.handleExport))
 

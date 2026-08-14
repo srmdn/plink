@@ -9,6 +9,9 @@
   hx-target="#links-section"
   hx-swap="innerHTML"
 >
+  <input type="hidden" name="filter_q" value="{{.Query}}" />
+  <input type="hidden" name="filter_category" value="{{.CategoryFilter}}" />
+  <input type="hidden" name="filter_status" value="{{.StatusFilter}}" />
   <div class="field">
     <label for="f-slug">slug</label>
     <input type="text" id="f-slug" name="slug" value="{{if .Link}}{{.Link.Slug}}{{end}}" placeholder="my-referral-link" autocomplete="off" spellcheck="false" {{if not .Link}}autofocus{{end}} />
@@ -27,6 +30,17 @@
     <datalist id="cat-suggestions">
       {{range .Categories}}<option value="{{.}}">{{end}}
     </datalist>
+  </div>
+  <div class="form-pair">
+    <div class="field">
+      <label for="f-priority">homepage priority</label>
+      <input type="number" id="f-priority" name="priority" value="{{if .Link}}{{.Link.Priority}}{{else}}0{{end}}" min="0" step="1" inputmode="numeric" />
+      <div class="field-help">higher values appear first</div>
+    </div>
+    <label class="check-row" for="f-featured">
+      <input type="checkbox" id="f-featured" name="featured" value="1" {{if and .Link .Link.Featured}}checked{{end}} />
+      <span>show in featured</span>
+    </label>
   </div>
   <div class="modal-footer">
     <button type="button" class="btn btn-ghost" onclick="closeModal()">cancel</button>
