@@ -1,6 +1,9 @@
 # Environment
 .env
 
+# Local agent instructions
+AGENTS.md
+
 # Database
 *.db
 *.db-shm
