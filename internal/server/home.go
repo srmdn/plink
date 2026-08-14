@@ -14,6 +14,7 @@ type homeData struct {
 	Categories []string
 	Category   string
 	Query      string
+	ShowAll    bool
 	SiteName   string
 	SiteDesc   string
 	IsLoggedIn bool
@@ -56,6 +57,7 @@ func (s *Server) handleHome(w http.ResponseWriter, r *http.Request) {
 
 	cat := r.URL.Query().Get("category")
 	query := strings.TrimSpace(r.URL.Query().Get("q"))
+	showAll := r.URL.Query().Get("all") == "1"
 
 	// Extract unique categories
 	seen := make(map[string]bool)
@@ -81,6 +83,9 @@ func (s *Server) handleHome(w http.ResponseWriter, r *http.Request) {
 		}
 		links = append(links, l)
 	}
+	if cat == "" && query == "" && !showAll && len(links) > 6 {
+		links = links[:6]
+	}
 
 	loggedIn := false
 	if cookie, err := r.Cookie(cookieName); err == nil && s.sessions.valid(cookie.Value) {
@@ -93,6 +98,7 @@ func (s *Server) handleHome(w http.ResponseWriter, r *http.Request) {
 		Categories: categories,
 		Category:   cat,
 		Query:      query,
+		ShowAll:    showAll,
 		SiteName:   s.cfg.SiteName,
 		SiteDesc:   s.cfg.SiteDesc,
 		IsLoggedIn: loggedIn,
