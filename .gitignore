@@ -1,5 +1,7 @@
 # Environment
 .env
+.env.*
+!.env.example
 
 # Local agent instructions
 AGENTS.md
@@ -8,6 +10,9 @@ AGENTS.md
 *.db
 *.db-shm
 *.db-wal
+*.sqlite
+*.sqlite3
+*.db.bak
 
 # Binary
 plink

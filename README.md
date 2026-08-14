@@ -14,8 +14,10 @@ yourdomain.com/tokopedia-promo  →  https://tokopedia.com/...
 - Clean slugs — no `s/` prefix
 - Click analytics — total clicks, last 30 days chart, referrer breakdown
 - Categories — organize links with filterable labels
-- Instant search — filter by slug, URL, description, or category
-- Simple admin UI — add, edit, delete links
+- Public resource search — find links by slug, description, or category
+- Curated homepage — highlight recommended links before the full catalog
+- Dashboard metrics — see link counts and total clicks at a glance
+- Link management — search, filter, copy, export, edit, pause, and review analytics
 - Single binary — no runtime, no Docker required
 - Self-hosted — your data stays on your server
 
@@ -59,6 +61,21 @@ Copy `.env.example` to `.env` and edit:
 - **Secure cookies** — set `APP_ENV=production` to enable `Secure` flag (HTTPS only)
 - **Security headers** — CSP, HSTS, X-Frame-Options, and more applied automatically
 - **URL validation** — only `http`/`https` redirect targets accepted
+
+## Public homepage
+
+Plink includes a conversion-focused public homepage with recommended links,
+category browsing, and search. Visitors can expand the full resource catalog
+when they need more than the curated view.
+
+The footer links to Plink's GitHub repository so you can share or self-host
+the project without exposing deployment-specific configuration.
+
+## Dashboard
+
+The admin dashboard keeps daily link management compact. It includes summary
+metrics, live search, category filtering, JSON and CSV export, link controls,
+and per-link analytics.
 
 ## Build
 
