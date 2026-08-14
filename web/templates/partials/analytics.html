@@ -8,15 +8,6 @@
   <div class="analytics-actions">
     <button class="btn btn-ghost btn-sm" data-label="copy" data-url="{{.ShortURL}}" onclick="copyURL(this)">copy</button>
     <button class="btn btn-ghost btn-sm" data-label="share" data-url="{{.ShortURL}}" onclick="shareURL(this)">share</button>
-    <details class="share-tools">
-      <summary class="btn btn-ghost btn-sm">QR</summary>
-      <div class="share-tools-panel">
-        <div class="qr-wrap">
-          <div id="qr-{{.Slug | js}}" data-url="{{.ShortURL}}"></div>
-          <span class="qr-url">{{.ShortURL}}</span>
-        </div>
-      </div>
-    </details>
   </div>
 </div>
 
@@ -69,10 +60,4 @@
   {{end}}
 </div>
 
-<script>
-(function(){
-  var el = document.getElementById('qr-{{.Slug | js}}');
-  if (el && window.QR) el.innerHTML = QR.toSVG(el.dataset.url, 5);
-}());
-</script>
 {{end}}

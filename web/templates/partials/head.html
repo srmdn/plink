@@ -271,10 +271,6 @@
   .analytics-url { display: block; color: var(--text); font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-decoration: none; }
   .analytics-url:hover { color: var(--accent); }
   .analytics-actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
-  .share-tools { position: relative; }
-  .share-tools summary { list-style: none; }
-  .share-tools summary::-webkit-details-marker { display: none; }
-  .share-tools-panel { position: absolute; right: 0; top: calc(100% + 4px); z-index: 60; min-width: 190px; padding: 4px 12px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: 0 12px 28px rgba(0,0,0,.35); }
   .link-analytics-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
   .stat-value-text { font-size: 12px; line-height: 1.35; overflow-wrap: anywhere; }
   @media (max-width: 420px) { .analytics-grid { grid-template-columns: 1fr 1fr; } }
@@ -299,13 +295,9 @@
   .ref-percent { color: var(--muted); font-size: 10px; min-width: 34px; text-align: right; flex-shrink: 0; }
   .ref-links { color: var(--muted); font-size: 10px; white-space: nowrap; flex-shrink: 0; }
 
-  .qr-wrap { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 16px 0; }
-  .qr-url  { font-size: 11px; color: var(--muted); word-break: break-all; text-align: center; }
-
   @media (max-width: 520px) {
     .analytics-linkbar { align-items: stretch; flex-direction: column; }
     .analytics-actions { justify-content: flex-start; }
-    .share-tools-panel { position: static; margin-top: 4px; }
   }
 
   .htmx-indicator { opacity: 0; transition: opacity 0.2s; }
@@ -314,55 +306,6 @@
 </style>
 {{if .Production}}<script defer src="https://analytics.srmdn.com/script.js" data-website-id="3c25cb51-83c4-4302-9f91-fa8319fe593e"></script>{{end}}
 <script>
-/* ── Tiny QR code generator (Byte mode, EC level M) ────────────────────────
-   Adapted from qrcodegen by Project Nayuki (MIT License)                  */
-window.QR = (() => {
-  const G = 0x11D;
-  function gfMul(a, b) { let r=0; for(let i=7;i>=0;i--) { r=(r<<1)^((r>>7)*G); if((b>>i)&1) r^=a; } return r; }
-  function gfPow(a, p) { let r=1; for(let i=0;i<p;i++) r=gfMul(r,a); return r; }
-  function rsGen(n) { let g=[1]; for(let i=0;i<n;i++) { let c=gfPow(2,i); g=g.map((v,j)=>gfMul(v,c)^(g[j+1]||0)); g.push(gfMul(g[g.length-1],c)); } return g.slice(0,-1); }
-  function rsDiv(data, ec) { let g=rsGen(ec), r=[...data]; for(let i=0;i<data.length;i++) { let c=r.shift(); if(c) g.forEach((v,j)=>{ r[j]=(r[j]||0)^gfMul(v,c); }); else r.push(0); } return r.slice(0,ec); }
-  const CAPS = [null,null,null,null,null,null,null,null,null,null,
-    {total:26,ec:10,data:16},{total:44,ec:16,data:28},{total:70,ec:26,data:44},
-    {total:100,ec:36,data:64},{total:134,ec:48,data:86}];
-  function encode(text) {
-    const bytes=[...new TextEncoder().encode(text)]; const n=bytes.length;
-    let ver=1; for(let v=1;v<=14;v++){if(CAPS[v]&&CAPS[v].data>=n){ver=v;break;}}
-    const cap=CAPS[ver]; let bits=[];
-    const push=(v,l)=>{for(let i=l-1;i>=0;i--)bits.push((v>>i)&1);};
-    push(4,4);push(n,8);bytes.forEach(b=>push(b,8));push(0,4);
-    while(bits.length%8)bits.push(0);
-    const pads=[0xEC,0x11];let pi=0;
-    while(bits.length<cap.data*8){push(pads[pi++%2],8);}
-    let cw=[];for(let i=0;i<cap.data;i++){let b=0;for(let j=0;j<8;j++)b=(b<<1)|bits[i*8+j];cw.push(b);}
-    const ec=rsDiv(cw,cap.total-cap.data);cw=cw.concat(ec);
-    const size=ver*4+17;
-    const M=Array.from({length:size},()=>new Array(size).fill(-1));
-    const isFunc=Array.from({length:size},()=>new Array(size).fill(false));
-    const setF=(r,c,v)=>{M[r][c]=v?1:0;isFunc[r][c]=true;};
-    const finder=(r,c)=>{for(let i=-1;i<=7;i++)for(let j=-1;j<=7;j++){if(r+i>=0&&r+i<size&&c+j>=0&&c+j<size)setF(r+i,c+j,i>=0&&i<=6&&j>=0&&j<=6&&(i==0||i==6||j==0||j==6||(i>=2&&i<=4&&j>=2&&j<=4)));} };
-    finder(0,0);finder(0,size-7);finder(size-7,0);
-    for(let i=8;i<size-8;i++){setF(6,i,(i%2)==0);setF(i,6,(i%2)==0);}
-    setF(size-8,8,true);
-    if(ver>=2){const ap=[6,size-7];for(const r of ap)for(const c of ap){if(isFunc[r][c])continue;for(let i=-2;i<=2;i++)for(let j=-2;j<=2;j++)setF(r+i,c+j,i==-2||i==2||j==-2||j==2||(i==0&&j==0));}}
-    const fmtMask=0b101010000010010;
-    const fmtBits=Array.from({length:15},(_,i)=>(fmtMask>>i)&1);
-    const fpos=[0,1,2,3,4,5,7,8,size-7,size-6,size-5,size-4,size-3,size-2,size-1];
-    fpos.forEach((p,i)=>{setF(8,p,fmtBits[i]);setF(p,8,fmtBits[14-i]);});
-    let bi=0;const dataBits=[];cw.forEach(b=>{for(let i=7;i>=0;i--)dataBits.push((b>>i)&1);});
-    for(let right=size-1;right>=1;right-=2){if(right==6)right=5;for(let vert=0;vert<size;vert++){const r=((right+1)&2)?vert:size-1-vert;for(let k=0;k<2;k++){const c=right-k;if(!isFunc[r][c]){M[r][c]=(bi<dataBits.length)?dataBits[bi++]:0;}}}}
-    return{matrix:M,size};
-  }
-  function toSVG(text,px=4){
-    try{
-      const{matrix,size}=encode(text);const dim=size*px;let rects='';
-      for(let r=0;r<size;r++)for(let c=0;c<size;c++)if(matrix[r][c]===1)rects+=`<rect x="${c*px}" y="${r*px}" width="${px}" height="${px}"/>`;
-      return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${dim} ${dim}" width="${dim}" height="${dim}" shape-rendering="crispEdges"><rect width="${dim}" height="${dim}" fill="#fff"/><g fill="#000">${rects}</g></svg>`;
-    }catch(e){return '<p style="color:var(--danger)">qr generation failed</p>';}
-  }
-  return{toSVG};
-})();
-
 function openModal() {
   document.getElementById('link-modal').classList.remove('hidden');
 }
