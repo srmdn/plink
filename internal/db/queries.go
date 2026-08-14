@@ -37,6 +37,7 @@ type SourceSummary struct {
 
 type Analytics struct {
 	TotalClicks int64         `json:"total_clicks"`
+	LastClickAt int64         `json:"last_click_at"`
 	Daily       []DailyClicks `json:"daily"`
 	Referrers   []Referrer    `json:"referrers"`
 }
@@ -222,8 +223,8 @@ func (db *DB) RecordClick(linkID int64, referrer, userAgent string) error {
 }
 
 func (db *DB) GetAnalytics(linkID int64) (*Analytics, error) {
-	var total int64
-	if err := db.QueryRow(`SELECT COUNT(*) FROM clicks WHERE link_id = ?`, linkID).Scan(&total); err != nil {
+	var total, lastClickAt sql.NullInt64
+	if err := db.QueryRow(`SELECT COUNT(*), MAX(clicked_at) FROM clicks WHERE link_id = ?`, linkID).Scan(&total, &lastClickAt); err != nil {
 		return nil, err
 	}
 
@@ -272,7 +273,8 @@ func (db *DB) GetAnalytics(linkID int64) (*Analytics, error) {
 	}
 
 	return &Analytics{
-		TotalClicks: total,
+		TotalClicks: total.Int64,
+		LastClickAt: lastClickAt.Int64,
 		Daily:       daily,
 		Referrers:   referrers,
 	}, refRows.Err()

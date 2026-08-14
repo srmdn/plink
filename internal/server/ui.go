@@ -28,8 +28,11 @@ type dashboardData struct {
 	Status      string
 	Count       int
 	Total       int
+	ActiveCount int
+	PausedCount int
 	TotalClicks int64
 	AdminPath   string
+	PublicURL   string
 	Production  bool
 	OOB         bool
 }
@@ -45,13 +48,15 @@ type linkFormData struct {
 }
 
 type analyticsData struct {
-	Slug      string
-	ShortURL  string
-	Total     int64
-	Last30d   int64
-	TopSource string
-	ChartSVG  template.HTML
-	Referrers []db.Referrer
+	Slug            string
+	ShortURL        string
+	Total           int64
+	Last30d         int64
+	LastClick       string
+	TopSource       string
+	HasRecentClicks bool
+	ChartSVG        template.HTML
+	Referrers       []db.Referrer
 }
 
 type overviewAnalyticsData struct {
@@ -83,6 +88,7 @@ func (s *Server) serveLinksSection(w http.ResponseWriter, r *http.Request) {
 	}
 	q, cat, status := dashboardFilters(r)
 	data := buildDashboardData(links, q, cat, status, s.cfg.AdminPath, s.cfg.Production)
+	data.PublicURL = publicBaseURL(s.cfg.PublicURL, r)
 	data.OOB = true
 	s.renderTemplate(w, "links-section", data)
 }
@@ -91,6 +97,10 @@ func dashboardFilters(r *http.Request) (q, cat, status string) {
 	q = r.FormValue("q")
 	cat = r.FormValue("category")
 	status = r.FormValue("status")
+	statusSet := false
+	if _, ok := r.Form["status"]; ok {
+		statusSet = true
+	}
 	if _, ok := r.Form["filter_q"]; ok {
 		q = r.FormValue("filter_q")
 	}
@@ -99,6 +109,10 @@ func dashboardFilters(r *http.Request) (q, cat, status string) {
 	}
 	if _, ok := r.Form["filter_status"]; ok {
 		status = r.FormValue("filter_status")
+		statusSet = true
+	}
+	if !statusSet {
+		status = "active"
 	}
 	return q, cat, status
 }
@@ -107,8 +121,14 @@ func buildDashboardData(links []db.Link, q, cat, status, adminPath string, produ
 	categories := extractCategories(links)
 	filtered := filterLinks(links, q, cat, status)
 	var totalClicks int64
+	activeCount, pausedCount := 0, 0
 	for _, link := range links {
 		totalClicks += link.Clicks
+		if link.Active {
+			activeCount++
+		} else {
+			pausedCount++
+		}
 	}
 	return dashboardData{
 		Links:       filtered,
@@ -118,6 +138,8 @@ func buildDashboardData(links []db.Link, q, cat, status, adminPath string, produ
 		Status:      status,
 		Count:       len(filtered),
 		Total:       len(links),
+		ActiveCount: activeCount,
+		PausedCount: pausedCount,
 		TotalClicks: totalClicks,
 		AdminPath:   adminPath,
 		Production:  production,
@@ -198,7 +220,7 @@ func buildChartSVG(daily []dailyFill) template.HTML {
 		h := 60.0 * float64(d.Clicks) / float64(max)
 		x := float64(i) * barW
 		w := barW - 0.4
-		fmt.Fprintf(&bars, `<rect x="%.2f%%" y="%.1f" width="%.2f%%" height="%.1f" fill="#22c55e" opacity="0.75" rx="1"/>`, x, 60-h, w, h)
+		fmt.Fprintf(&bars, `<g><title>%s: %d clicks</title><rect x="%.2f%%" y="%.1f" width="%.2f%%" height="%.1f" fill="#22c55e" opacity="0.75" rx="1"/></g>`, d.Date, d.Clicks, x, 60-h, w, h)
 	}
 	for _, i := range []int{0, n / 2, n - 1} {
 		x := (float64(i) + 0.5) / float64(n) * 100
@@ -222,6 +244,27 @@ func baseURL(r *http.Request) string {
 	return scheme + "://" + r.Host
 }
 
+func publicBaseURL(configured string, r *http.Request) string {
+	if configured = strings.TrimRight(strings.TrimSpace(configured), "/"); configured != "" {
+		return configured
+	}
+	return baseURL(r)
+}
+
+func formatAnalyticsTimestamp(unix int64) string {
+	if unix <= 0 {
+		return "—"
+	}
+	return time.Unix(unix, 0).Local().Format("02 Jan 2006, 15:04")
+}
+
+func referrerLabel(source string) string {
+	if source == "direct" || source == "" {
+		return "Direct / no referrer"
+	}
+	return source
+}
+
 // ── Page handlers ────────────────────────────────────────────────────────────
 
 func (s *Server) handleLoginPage(w http.ResponseWriter, r *http.Request) {
@@ -238,7 +281,9 @@ func (s *Server) handleDashboard(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "db error", http.StatusInternalServerError)
 		return
 	}
-	data := buildDashboardData(links, r.URL.Query().Get("q"), r.URL.Query().Get("category"), r.URL.Query().Get("status"), s.cfg.AdminPath, s.cfg.Production)
+	q, cat, status := dashboardFilters(r)
+	data := buildDashboardData(links, q, cat, status, s.cfg.AdminPath, s.cfg.Production)
+	data.PublicURL = publicBaseURL(s.cfg.PublicURL, r)
 	s.renderTemplate(w, "dashboard", data)
 }
 
@@ -457,17 +502,19 @@ func (s *Server) handleAnalyticsUI(w http.ResponseWriter, r *http.Request) {
 
 	topSource := "—"
 	if len(data.Referrers) > 0 {
-		topSource = data.Referrers[0].Source
+		topSource = referrerLabel(data.Referrers[0].Source)
 	}
 
 	s.renderTemplate(w, "analytics", analyticsData{
-		Slug:      slug,
-		ShortURL:  baseURL(r) + "/" + slug,
-		Total:     data.TotalClicks,
-		Last30d:   last30d,
-		TopSource: topSource,
-		ChartSVG:  buildChartSVG(daily),
-		Referrers: data.Referrers,
+		Slug:            slug,
+		ShortURL:        publicBaseURL(s.cfg.PublicURL, r) + "/" + slug,
+		Total:           data.TotalClicks,
+		Last30d:         last30d,
+		LastClick:       formatAnalyticsTimestamp(data.LastClickAt),
+		TopSource:       topSource,
+		HasRecentClicks: last30d > 0,
+		ChartSVG:        buildChartSVG(daily),
+		Referrers:       data.Referrers,
 	})
 }
 
@@ -480,7 +527,7 @@ func (s *Server) handleOverviewAnalyticsUI(w http.ResponseWriter, r *http.Reques
 
 	topSource := "—"
 	if len(data.Referrers) > 0 {
-		topSource = data.Referrers[0].Source
+		topSource = referrerLabel(data.Referrers[0].Source)
 	}
 
 	s.renderTemplate(w, "overview-analytics", overviewAnalyticsData{

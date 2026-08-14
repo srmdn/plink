@@ -1,6 +1,26 @@
 {{define "analytics"}}
 <script>document.getElementById('analytics-title').textContent = '/{{.Slug | js}}';</script>
-<div class="analytics-grid">
+<div class="analytics-linkbar">
+  <div class="analytics-url-wrap">
+    <div class="section-label">public link</div>
+    <a class="analytics-url" href="{{.ShortURL}}" target="_blank" rel="noopener">{{.ShortURL}}</a>
+  </div>
+  <div class="analytics-actions">
+    <button class="btn btn-ghost btn-sm" data-label="copy" data-url="{{.ShortURL}}" onclick="copyURL(this)">copy</button>
+    <button class="btn btn-ghost btn-sm" data-label="share" data-url="{{.ShortURL}}" onclick="shareURL(this)">share</button>
+    <details class="share-tools">
+      <summary class="btn btn-ghost btn-sm">QR</summary>
+      <div class="share-tools-panel">
+        <div class="qr-wrap">
+          <div id="qr-{{.Slug | js}}" data-url="{{.ShortURL}}"></div>
+          <span class="qr-url">{{.ShortURL}}</span>
+        </div>
+      </div>
+    </details>
+  </div>
+</div>
+
+<div class="analytics-grid link-analytics-grid">
   <div class="stat-card">
     <div class="stat-value">{{.Total}}</div>
     <div class="stat-label">total</div>
@@ -10,27 +30,38 @@
     <div class="stat-label">last 30d</div>
   </div>
   <div class="stat-card">
-    <div class="stat-value" style="font-size:13px;word-break:break-all">{{.TopSource}}</div>
-    <div class="stat-label">top source</div>
+    <div class="stat-value stat-value-text">{{.LastClick}}</div>
+    <div class="stat-label">last click</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-value stat-value-text" title="{{.TopSource}}">{{.TopSource}}</div>
+    <div class="stat-label">top referrer</div>
   </div>
 </div>
 
 <div class="chart-wrap">
-  <div class="section-label">clicks — last 30 days</div>
-  {{.ChartSVG}}
+  <div class="section-heading">
+    <div class="section-label">clicks — last 30 days</div>
+    <span class="section-meta">{{.Last30d}} clicks</span>
+  </div>
+  {{if .HasRecentClicks}}{{.ChartSVG}}{{else}}<div class="chart-empty">no clicks in the last 30 days</div>{{end}}
 </div>
 
 <div style="margin-bottom:20px">
-  <div class="section-label">referrers</div>
+  <div class="section-heading">
+    <div class="section-label">referrers</div>
+    <span class="section-meta">all time</span>
+  </div>
   {{if .Referrers}}
   {{$max := (index .Referrers 0).Clicks}}
   {{range .Referrers}}
   <div class="ref-row">
-    <span class="ref-source">{{.Source}}</span>
+    <span class="ref-source" title="{{.Source}}">{{referrerLabel .Source}}</span>
     <div class="ref-bar-wrap">
       <div class="ref-bar" style="width:{{percent .Clicks $max}}%"></div>
     </div>
     <span class="ref-count">{{.Clicks}}</span>
+    <span class="ref-percent">{{percentOf .Clicks $.Total}}%</span>
   </div>
   {{end}}
   {{else}}
@@ -38,13 +69,6 @@
   {{end}}
 </div>
 
-<div>
-  <div class="section-label">qr code</div>
-  <div class="qr-wrap">
-    <div id="qr-{{.Slug | js}}" data-url="{{.ShortURL}}"></div>
-    <span class="qr-url">{{.ShortURL}}</span>
-  </div>
-</div>
 <script>
 (function(){
   var el = document.getElementById('qr-{{.Slug | js}}');

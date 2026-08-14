@@ -106,3 +106,27 @@ func TestOverviewAnalyticsGroupsReferrers(t *testing.T) {
 		t.Fatalf("top referrer = %#v", analytics.Referrers[0])
 	}
 }
+
+func TestLinkAnalyticsTracksLastClick(t *testing.T) {
+	database, err := Init(filepath.Join(t.TempDir(), "link-analytics.db"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer database.Close()
+
+	link, err := database.CreateLink("analytics", "https://example.com/analytics", "", "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := database.RecordClick(link.ID, "", ""); err != nil {
+		t.Fatal(err)
+	}
+
+	analytics, err := database.GetAnalytics(link.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if analytics.TotalClicks != 1 || analytics.LastClickAt <= 0 {
+		t.Fatalf("link analytics = %#v, want one click and a timestamp", analytics)
+	}
+}

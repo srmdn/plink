@@ -8,7 +8,7 @@
 
 {{define "dashboard-toolbar-count"}}
 <span class="count" id="link-count" hx-swap-oob="outerHTML">
-  {{if or .Query .Category .Status}}{{.Count}} of {{.Total}}{{else}}{{.Total}} link{{if ne .Total 1}}s{{end}}{{end}}
+  {{if or .Query .Category (ne .Status "active")}}{{.Count}} of {{.Total}}{{else}}{{.Count}} active link{{if ne .Count 1}}s{{end}}{{end}}
 </span>
 {{end}}
 
@@ -16,7 +16,7 @@
 <!DOCTYPE html>
 <html lang="en">
 {{template "head" .}}
-<body>
+<body data-public-url="{{.PublicURL}}">
 <div id="app">
   <header>
     <div class="logo">plink <span>/ admin</span></div>

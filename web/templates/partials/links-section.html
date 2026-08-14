@@ -32,26 +32,28 @@
       hx-swap="innerHTML"
       hx-include="#search, select[name='category'], select[name='status']"
     >
-      <option value="">all statuses</option>
-      <option value="active" {{if eq .Status "active"}}selected{{end}}>active</option>
+      <option value="active" {{if eq .Status "active"}}selected{{end}}>active only</option>
+      <option value="" {{if eq .Status ""}}selected{{end}}>all statuses</option>
       <option value="paused" {{if eq .Status "paused"}}selected{{end}}>paused</option>
     </select>
   </div>
 
-  {{if or .Query .Category .Status}}
+  <span class="status-summary"><strong>{{.ActiveCount}}</strong> active <span aria-hidden="true">·</span> <strong>{{.PausedCount}}</strong> paused</span>
+
+  {{if or .Query .Category (ne .Status "active")}}
   <a class="clear-filters" href="/{{.AdminPath}}">clear filters</a>
   {{end}}
 </div>
 
 {{if .Links}}
 <div class="table-wrap">
-  <table class="link-table">
+  <table class="link-table {{if eq .Status "active"}}status-hidden{{end}}">
     <thead>
       <tr>
         <th>Link</th>
         <th class="destination">Destination</th>
         <th>Clicks</th>
-        <th>Status</th>
+        {{if ne .Status "active"}}<th>Status</th>{{end}}
         <th><span class="sr-only">Actions</span></th>
       </tr>
     </thead>
@@ -75,10 +77,10 @@
           <a class="link-destination" href="{{.URL}}" target="_blank" rel="noopener">{{.URL}}</a>
         </td>
         <td class="clicks-cell">{{.Clicks}}</td>
-        <td class="status-cell"><span class="status {{if .Active}}on{{else}}off{{end}}">{{if .Active}}active{{else}}paused{{end}}</span></td>
+        {{if ne $.Status "active"}}<td class="status-cell"><span class="status {{if .Active}}on{{else}}off{{end}}">{{if .Active}}active{{else}}paused{{end}}</span></td>{{end}}
         <td class="actions-cell">
           <div class="row-actions">
-            {{if .Active}}<button class="btn btn-ghost btn-sm btn-copy" onclick="copyLink(this,'{{.Slug}}')">copy</button>{{end}}
+            {{if .Active}}<button class="btn btn-ghost btn-sm btn-copy" data-label="copy" data-slug="{{.Slug}}" onclick="copyLink(this)">copy</button>{{end}}
             <button class="btn btn-ghost btn-sm" hx-get="/{{$.AdminPath}}/links/{{.ID}}/analytics" hx-target="#analytics-body" hx-swap="innerHTML">stats</button>
             <button class="btn btn-ghost btn-sm" hx-get="/{{$.AdminPath}}/links/{{.ID}}/edit" hx-target="#modal-body" hx-swap="innerHTML" hx-include="#search, select[name='category'], select[name='status']">edit</button>
             <details class="row-menu">

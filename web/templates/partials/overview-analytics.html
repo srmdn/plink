@@ -10,22 +10,26 @@
     <div class="stat-label">last 30d</div>
   </div>
   <div class="stat-card">
-    <div class="stat-value" style="font-size:13px;word-break:break-all">{{.TopSource}}</div>
-    <div class="stat-label">top source</div>
+    <div class="stat-value stat-value-text" title="{{.TopSource}}">{{.TopSource}}</div>
+    <div class="stat-label">top referrer</div>
   </div>
 </div>
 
 <div>
-  <div class="section-label">top referrers across all links</div>
+  <div class="section-heading">
+    <div class="section-label">top referrers across all links</div>
+    <span class="section-meta">all time</span>
+  </div>
   {{if .Referrers}}
   {{$max := (index .Referrers 0).Clicks}}
   {{range .Referrers}}
   <div class="ref-row">
-    <span class="ref-source" title="{{.Source}}">{{.Source}}</span>
+    <span class="ref-source" title="{{.Source}}">{{referrerLabel .Source}}</span>
     <div class="ref-bar-wrap">
       <div class="ref-bar" style="width:{{percent .Clicks $max}}%"></div>
     </div>
     <span class="ref-count">{{.Clicks}}</span>
+    <span class="ref-percent">{{percentOf .Clicks $.Total}}%</span>
     <span class="ref-links">{{.LinkCount}} links</span>
   </div>
   {{end}}

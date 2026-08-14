@@ -41,7 +41,14 @@ func New(cfg *config.Config, database *db.DB, webFS embed.FS) http.Handler {
 				}
 				return val * 100 / max
 			},
-			"js": template.JSEscaper,
+			"percentOf": func(val, total int64) int64 {
+				if total == 0 {
+					return 0
+				}
+				return val * 100 / total
+			},
+			"referrerLabel": referrerLabel,
+			"js":            template.JSEscaper,
 		}).ParseFS(webFS,
 			"web/templates/*.html",
 			"web/templates/partials/*.html",

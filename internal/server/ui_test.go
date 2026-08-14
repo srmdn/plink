@@ -43,3 +43,42 @@ func TestDashboardFiltersPreferFormStateOnLinkSubmit(t *testing.T) {
 		t.Fatalf("filters = %q, %q, %q", q, category, status)
 	}
 }
+
+func TestDashboardFiltersDefaultToActive(t *testing.T) {
+	r := httptest.NewRequest("GET", "/admin", nil)
+	_, _, status := dashboardFilters(r)
+	if status != "active" {
+		t.Fatalf("default status = %q, want active", status)
+	}
+
+	r = httptest.NewRequest("GET", "/admin?status=", nil)
+	_, _, status = dashboardFilters(r)
+	if status != "" {
+		t.Fatalf("explicit all status = %q, want empty", status)
+	}
+
+	r = httptest.NewRequest("GET", "/admin?status=paused", nil)
+	_, _, status = dashboardFilters(r)
+	if status != "paused" {
+		t.Fatalf("paused status = %q, want paused", status)
+	}
+}
+
+func TestPublicBaseURL(t *testing.T) {
+	r := httptest.NewRequest("GET", "http://example.test/admin", nil)
+	if got := publicBaseURL("https://example.com/", r); got != "https://example.com" {
+		t.Fatalf("configured public URL = %q", got)
+	}
+	if got := publicBaseURL("", r); got != "http://example.test" {
+		t.Fatalf("request public URL = %q", got)
+	}
+}
+
+func TestReferrerLabel(t *testing.T) {
+	if got := referrerLabel("direct"); got != "Direct / no referrer" {
+		t.Fatalf("direct label = %q", got)
+	}
+	if got := referrerLabel("https://example.com"); got != "https://example.com" {
+		t.Fatalf("referrer label = %q", got)
+	}
+}

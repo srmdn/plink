@@ -117,6 +117,8 @@
   /* ── Link table ── */
   .links-controls { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; }
   .filter-group { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .status-summary { color: var(--muted); font-size: 11px; margin-left: auto; white-space: nowrap; }
+  .status-summary strong { color: var(--text); font-weight: 500; }
   .cat-filter { min-width: 142px; }
   .clear-filters { color: var(--accent); font-size: 11px; text-decoration: none; }
   .clear-filters:hover { text-decoration: underline; }
@@ -128,6 +130,10 @@
   .link-table th:nth-child(3) { width: 8%; }
   .link-table th:nth-child(4) { width: 10%; }
   .link-table th:nth-child(5) { width: 22%; }
+  .link-table.status-hidden th:nth-child(1) { width: 32%; }
+  .link-table.status-hidden th:nth-child(2) { width: 31%; }
+  .link-table.status-hidden th:nth-child(3) { width: 9%; }
+  .link-table.status-hidden th:nth-child(4) { width: 28%; }
   .link-table td { overflow: hidden; background: var(--surface); padding: 13px 12px; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); vertical-align: top; }
   .link-table td:first-child { border-left: 1px solid var(--border); border-radius: var(--radius) 0 0 var(--radius); }
   .link-table td:last-child { border-right: 1px solid var(--border); border-radius: 0 var(--radius) var(--radius) 0; overflow: visible; }
@@ -254,11 +260,23 @@
     .link-table td:last-child { grid-column: 1 / -1; border-top: 0 !important; }
     .row-actions { justify-content: flex-start; flex-wrap: wrap; }
     .row-menu-panel { right: auto; left: 0; }
+    .status-summary { margin-left: 0; }
   }
 
   /* ── Analytics ── */
   .analytics-modal { max-width: 560px; }
   .analytics-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px; }
+  .analytics-linkbar { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; padding-bottom: 14px; margin-bottom: 14px; border-bottom: 1px solid var(--border); }
+  .analytics-url-wrap { min-width: 0; flex: 1; }
+  .analytics-url { display: block; color: var(--text); font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-decoration: none; }
+  .analytics-url:hover { color: var(--accent); }
+  .analytics-actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+  .share-tools { position: relative; }
+  .share-tools summary { list-style: none; }
+  .share-tools summary::-webkit-details-marker { display: none; }
+  .share-tools-panel { position: absolute; right: 0; top: calc(100% + 4px); z-index: 60; min-width: 190px; padding: 4px 12px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: 0 12px 28px rgba(0,0,0,.35); }
+  .link-analytics-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .stat-value-text { font-size: 12px; line-height: 1.35; overflow-wrap: anywhere; }
   @media (max-width: 420px) { .analytics-grid { grid-template-columns: 1fr 1fr; } }
 
   .stat-card { background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 14px; }
@@ -266,19 +284,29 @@
   .stat-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin-top: 2px; }
 
   .chart-wrap { margin-bottom: 20px; }
+  .section-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
   .section-label { font-size: 10px; color: var(--muted); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.08em; }
+  .section-meta { color: var(--muted); font-size: 10px; white-space: nowrap; }
   .chart-svg { width: 100%; display: block; overflow: visible; }
+  .chart-empty { min-height: 72px; display: flex; align-items: center; justify-content: center; color: var(--muted); border: 1px dashed var(--border); border-radius: var(--radius); font-size: 11px; }
 
   .ref-row { display: flex; align-items: center; padding: 7px 0; border-bottom: 1px solid var(--border); gap: 10px; }
   .ref-row:last-child { border-bottom: none; }
-  .ref-source { color: var(--text); font-size: 12px; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .ref-source { color: var(--text); font-size: 12px; flex: 0 1 40%; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .ref-bar-wrap { flex: 1; height: 4px; background: var(--border); border-radius: 2px; flex-shrink: 0; min-width: 40px; }
   .ref-bar { height: 100%; background: var(--accent); border-radius: 2px; opacity: 0.6; }
   .ref-count { color: var(--muted); font-size: 11px; min-width: 28px; text-align: right; flex-shrink: 0; }
+  .ref-percent { color: var(--muted); font-size: 10px; min-width: 34px; text-align: right; flex-shrink: 0; }
   .ref-links { color: var(--muted); font-size: 10px; white-space: nowrap; flex-shrink: 0; }
 
   .qr-wrap { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 16px 0; }
   .qr-url  { font-size: 11px; color: var(--muted); word-break: break-all; text-align: center; }
+
+  @media (max-width: 520px) {
+    .analytics-linkbar { align-items: stretch; flex-direction: column; }
+    .analytics-actions { justify-content: flex-start; }
+    .share-tools-panel { position: static; margin-top: 4px; }
+  }
 
   .htmx-indicator { opacity: 0; transition: opacity 0.2s; }
   .htmx-request .htmx-indicator { opacity: 1; }
@@ -288,7 +316,7 @@
 <script>
 /* ── Tiny QR code generator (Byte mode, EC level M) ────────────────────────
    Adapted from qrcodegen by Project Nayuki (MIT License)                  */
-const QR = (() => {
+window.QR = (() => {
   const G = 0x11D;
   function gfMul(a, b) { let r=0; for(let i=7;i>=0;i--) { r=(r<<1)^((r>>7)*G); if((b>>i)&1) r^=a; } return r; }
   function gfPow(a, p) { let r=1; for(let i=0;i<p;i++) r=gfMul(r,a); return r; }
@@ -347,11 +375,92 @@ function openAnalyticsModal() {
 function closeAnalyticsModal() {
   document.getElementById('analytics-modal').classList.add('hidden');
 }
-function copyLink(btn, slug) {
-  navigator.clipboard.writeText(location.origin + '/' + slug);
-  btn.textContent = 'copied!';
+function publicBaseURL() {
+  var configured = document.body && document.body.dataset ? document.body.dataset.publicUrl : '';
+  return (configured || location.origin).replace(/\/+$/, '');
+}
+function linkURL(slug) {
+  return new URL('/' + encodeURIComponent(slug), publicBaseURL()).href;
+}
+function copyTextFallback(text) {
+  return new Promise(function(resolve, reject) {
+    var textarea = document.createElement('textarea');
+    textarea.value = text;
+    textarea.setAttribute('readonly', '');
+    textarea.style.position = 'fixed';
+    textarea.style.opacity = '0';
+    document.body.appendChild(textarea);
+    textarea.select();
+    var copied = false;
+    try { copied = document.execCommand('copy'); } catch (e) { copied = false; }
+    textarea.remove();
+    if (copied) resolve(); else reject(new Error('clipboard unavailable'));
+  });
+}
+function copyText(text) {
+  if (navigator.clipboard && window.isSecureContext) {
+    var clipboardWrite = navigator.clipboard.writeText(text);
+    var clipboardTimeout = new Promise(function(_, reject) {
+      setTimeout(function() { reject(new Error('clipboard timeout')); }, 800);
+    });
+    return Promise.race([clipboardWrite, clipboardTimeout]).catch(function() {
+      return copyTextFallback(text);
+    });
+  }
+  return copyTextFallback(text);
+}
+function feedbackButton(btn, text) {
+  if (!btn.dataset.label) btn.dataset.label = btn.textContent;
+  btn.textContent = text;
   btn.classList.add('copied');
-  setTimeout(() => { btn.textContent = 'copy'; btn.classList.remove('copied'); }, 1500);
+  clearTimeout(btn._feedbackTimer);
+  btn._feedbackTimer = setTimeout(function() {
+    btn.textContent = btn.dataset.label;
+    btn.classList.remove('copied');
+  }, 1500);
+}
+function copyLink(btn) {
+  var slug = btn.dataset.slug;
+  if (!slug) return;
+  feedbackButton(btn, 'copying…');
+  copyText(linkURL(slug)).then(function() {
+    feedbackButton(btn, 'copied!');
+  }).catch(function() {
+    feedbackButton(btn, 'copy failed');
+  });
+}
+function copyURL(btn) {
+  var url = btn.dataset.url;
+  if (!url) return;
+  feedbackButton(btn, 'copying…');
+  copyText(url).then(function() {
+    feedbackButton(btn, 'copied!');
+  }).catch(function() {
+    feedbackButton(btn, 'copy failed');
+  });
+}
+function shareURL(btn) {
+  var url = btn.dataset.url;
+  if (!url) return;
+  feedbackButton(btn, 'sharing…');
+  if (navigator.share) {
+    navigator.share({title: url, url: url}).then(function() {
+      feedbackButton(btn, 'shared!');
+    }).catch(function(error) {
+      if (error && error.name === 'AbortError') return;
+      copyText(url).then(function() {
+        feedbackButton(btn, 'copied!');
+      }).catch(function() {
+        feedbackButton(btn, 'share failed');
+      });
+    });
+    return;
+  }
+  copyText(url).then(function() {
+    feedbackButton(btn, 'copied!');
+  }).catch(function() {
+    feedbackButton(btn, 'share failed');
+  });
 }
 function toggleExportMenu(e) {
   e.stopPropagation();
