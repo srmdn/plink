@@ -3,7 +3,9 @@ package server
 import (
 	"net/http/httptest"
 	"net/url"
+	"strings"
 	"testing"
+	"time"
 
 	"github.com/srmdn/plink/internal/db"
 )
@@ -64,6 +66,24 @@ func TestDashboardFiltersDefaultToActive(t *testing.T) {
 	}
 }
 
+func TestDashboardDateFilterPrefersFormState(t *testing.T) {
+	form := url.Values{
+		"date":        {"2026-08-24"},
+		"filter_date": {"2026-08-25"},
+	}
+	r := httptest.NewRequest("POST", "/admin/links", nil)
+	r.PostForm = form
+	r.Form = form
+	if got := dashboardDateFilter(r); got != "2026-08-25" {
+		t.Fatalf("dashboard date = %q, want 2026-08-25", got)
+	}
+
+	r = httptest.NewRequest("GET", "/admin/links?date=2026-02-30", nil)
+	if got := dashboardDateFilter(r); got != "" {
+		t.Fatalf("invalid dashboard date = %q, want empty", got)
+	}
+}
+
 func TestPublicBaseURL(t *testing.T) {
 	r := httptest.NewRequest("GET", "http://example.test/admin", nil)
 	if got := publicBaseURL("https://example.com/", r); got != "https://example.com" {
@@ -80,5 +100,83 @@ func TestReferrerLabel(t *testing.T) {
 	}
 	if got := referrerLabel("https://example.com"); got != "https://example.com" {
 		t.Fatalf("referrer label = %q", got)
+	}
+}
+
+func TestPercentOfLabel(t *testing.T) {
+	tests := []struct {
+		value int64
+		total int64
+		want  string
+	}{
+		{value: 0, total: 100, want: "0%"},
+		{value: 2, total: 8688, want: "<1%"},
+		{value: 88, total: 1032, want: "8%"},
+		{value: 73, total: 100, want: "73%"},
+	}
+	for _, test := range tests {
+		if got := percentOfLabel(test.value, test.total); got != test.want {
+			t.Errorf("percentOfLabel(%d, %d) = %q, want %q", test.value, test.total, got, test.want)
+		}
+	}
+}
+
+func TestDashboardCountLabelMatchesFilterSemantics(t *testing.T) {
+	links := []db.Link{{Slug: "active", Active: true}, {Slug: "paused", Active: false}}
+	tests := []struct {
+		q, category, status string
+		want                string
+	}{
+		{status: "active", want: "active links"},
+		{status: "paused", want: "paused links"},
+		{status: "", want: "visible links"},
+		{q: "active", status: "active", want: "matching links"},
+		{category: "Tools", status: "active", want: "matching links"},
+	}
+	for _, test := range tests {
+		data := buildDashboardData(links, test.q, test.category, test.status, "admin", false)
+		if data.CountLabel != test.want {
+			t.Errorf("count label for q=%q category=%q status=%q = %q, want %q", test.q, test.category, test.status, data.CountLabel, test.want)
+		}
+	}
+}
+
+func TestBuildDashboardDataForDateSortsAndScopesClicks(t *testing.T) {
+	links := []db.Link{
+		{ID: 1, Slug: "quiet", Active: true, Clicks: 40},
+		{ID: 2, Slug: "top", Active: true, Clicks: 100},
+		{ID: 3, Slug: "paused", Active: false, Clicks: 20},
+	}
+	data := buildDashboardDataForDate(
+		links, "", "", "", "2026-08-25",
+		map[int64]int64{1: 2, 2: 5, 3: 3}, "admin", false,
+	)
+	if len(data.Links) != 3 || data.Links[0].Slug != "top" || data.Links[1].Slug != "paused" || data.Links[2].Slug != "quiet" {
+		t.Fatalf("daily link order = %#v, want top, paused, quiet", data.Links)
+	}
+	if data.Links[0].Clicks != 5 || data.TotalClicks != 10 {
+		t.Fatalf("daily clicks = %#v, total = %d, want top=5 total=10", data.Links, data.TotalClicks)
+	}
+	if data.CountLabel != "clicked links" || data.ClicksLabel != "clicks · 25 Aug" || data.DateLabel != "25 Aug" {
+		t.Fatalf("daily labels = count %q clicks %q date %q", data.CountLabel, data.ClicksLabel, data.DateLabel)
+	}
+
+	data = buildDashboardDataForDate(links, "", "", "active", "2026-08-25", map[int64]int64{2: 5}, "admin", false)
+	if len(data.Links) != 1 || data.Links[0].Slug != "top" {
+		t.Fatalf("active daily links = %#v, want top only", data.Links)
+	}
+
+	if got := dashboardDateLabel(time.Now().In(time.Local).Format(dashboardDateLayout)); got == "" {
+		t.Fatal("today should have a dashboard date label")
+	}
+}
+
+func TestBuildChartSVGIncludesAccessibleZeroClickTargets(t *testing.T) {
+	chart := string(buildChartSVG([]dailyFill{{Date: "2026-08-25", Clicks: 0}}))
+	if !strings.Contains(chart, `class="chart-day"`) || !strings.Contains(chart, `class="chart-hit"`) {
+		t.Fatalf("chart = %s, want accessible day and hit-area elements", chart)
+	}
+	if !strings.Contains(chart, `aria-label="Aug 25, 0 clicks"`) {
+		t.Fatalf("chart aria label = %s, want zero-click day label", chart)
 	}
 }

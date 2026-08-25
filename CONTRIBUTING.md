@@ -56,7 +56,8 @@ Schema changes go in `internal/db/db.go` as new entries in the `migrations` slic
 
 ## Reporting security issues
 
-Report security vulnerabilities privately through the repository's security channel.
+Please do not open a public issue for security vulnerabilities. Use the
+repository's private security reporting channel instead.
 
 ## License
 

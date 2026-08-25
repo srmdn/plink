@@ -1,15 +1,17 @@
 {{define "dashboard-summary"}}
 <section id="dashboard-summary" class="dashboard-stats" hx-swap-oob="outerHTML">
   <div class="stat-card"><div class="stat-value">{{.Total}}</div><div class="stat-label">total links</div></div>
-  <div class="stat-card"><div class="stat-value">{{.Count}}</div><div class="stat-label">matching links</div></div>
-  <div class="stat-card"><div class="stat-value">{{.TotalClicks}}</div><div class="stat-label">total clicks</div></div>
+  <div class="stat-card"><div class="stat-value">{{.Count}}</div><div class="stat-label">{{.CountLabel}}</div></div>
+  <div class="stat-card"><div class="stat-value">{{.TotalClicks}}</div><div class="stat-label">{{.ClicksLabel}}</div></div>
 </section>
 {{end}}
 
-{{define "dashboard-toolbar-count"}}
-<span class="count" id="link-count" hx-swap-oob="outerHTML">
-  {{if or .Query .Category (ne .Status "active")}}{{.Count}} of {{.Total}}{{else}}{{.Count}} active link{{if ne .Count 1}}s{{end}}{{end}}
-</span>
+{{define "dashboard-daily-export"}}
+<a id="daily-report-export" href="/api/export?format=daily-csv&amp;date={{.DailyExportDate}}">{{.DailyExportLabel}}</a>
+{{end}}
+
+{{define "dashboard-daily-export-oob"}}
+<a id="daily-report-export" hx-swap-oob="outerHTML" href="/api/export?format=daily-csv&amp;date={{.DailyExportDate}}">{{.DailyExportLabel}}</a>
 {{end}}
 
 {{define "dashboard"}}
@@ -44,9 +46,8 @@
           hx-trigger="input changed delay:200ms"
           hx-target="#links-section"
           hx-swap="innerHTML"
-          hx-include="#search, select[name='category'], select[name='status']"
+          hx-include="#search, select[name='category'], select[name='status'], #date-filter"
         />
-        {{template "dashboard-toolbar-count" .}}
       </div>
       <button
         class="btn btn-ghost btn-sm"
@@ -57,8 +58,9 @@
       <div class="export-wrap">
         <button class="btn btn-ghost btn-sm" onclick="toggleExportMenu(event)">export ↓</button>
         <div class="export-menu hidden" id="export-menu">
-          <a href="/api/export?format=json">JSON</a>
-          <a href="/api/export?format=csv">CSV</a>
+          <a href="/api/export?format=json">link catalog · JSON</a>
+          <a href="/api/export?format=csv">link catalog · CSV</a>
+          {{template "dashboard-daily-export" .}}
         </div>
       </div>
       <button
@@ -66,7 +68,7 @@
         hx-get="/{{.AdminPath}}/links/new"
         hx-target="#modal-body"
         hx-swap="innerHTML"
-        hx-include="#search, select[name='category'], select[name='status']"
+        hx-include="#search, select[name='category'], select[name='status'], #date-filter"
       >+ add link</button>
     </div>
 

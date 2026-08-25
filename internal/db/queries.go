@@ -2,6 +2,7 @@ package db
 
 import (
 	"database/sql"
+	"sort"
 	"time"
 )
 
@@ -25,14 +26,21 @@ type DailyClicks struct {
 }
 
 type Referrer struct {
+	Source  string           `json:"source"`
+	Clicks  int64            `json:"clicks"`
+	Details []ReferrerDetail `json:"details,omitempty"`
+}
+
+type ReferrerDetail struct {
 	Source string `json:"source"`
 	Clicks int64  `json:"clicks"`
 }
 
 type SourceSummary struct {
-	Source    string `json:"source"`
-	Clicks    int64  `json:"clicks"`
-	LinkCount int64  `json:"link_count"`
+	Source    string           `json:"source"`
+	Clicks    int64            `json:"clicks"`
+	LinkCount int64            `json:"link_count"`
+	Details   []ReferrerDetail `json:"details,omitempty"`
 }
 
 type Analytics struct {
@@ -135,6 +143,35 @@ func (db *DB) ListLinks() ([]Link, error) {
 	return links, rows.Err()
 }
 
+// ClickCountsBetween returns per-link click totals for the half-open Unix
+// timestamp range [start, end).
+func (db *DB) ClickCountsBetween(start, end int64) (map[int64]int64, error) {
+	counts := make(map[int64]int64)
+	if end <= start {
+		return counts, nil
+	}
+
+	rows, err := db.Query(`
+		SELECT link_id, COUNT(*)
+		FROM clicks
+		WHERE clicked_at >= ? AND clicked_at < ?
+		GROUP BY link_id
+	`, start, end)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var linkID, clicks int64
+		if err := rows.Scan(&linkID, &clicks); err != nil {
+			return nil, err
+		}
+		counts[linkID] = clicks
+	}
+	return counts, rows.Err()
+}
+
 func (db *DB) GetLinkBySlug(slug string) (*Link, error) {
 	var l Link
 	err := db.QueryRow(
@@ -223,96 +260,102 @@ func (db *DB) RecordClick(linkID int64, referrer, userAgent string) error {
 }
 
 func (db *DB) GetAnalytics(linkID int64) (*Analytics, error) {
+	return db.GetAnalyticsInLocation(linkID, time.UTC)
+}
+
+func (db *DB) GetAnalyticsInLocation(linkID int64, location *time.Location) (*Analytics, error) {
+	location = analyticsLocation(location)
 	var total, lastClickAt sql.NullInt64
 	if err := db.QueryRow(`SELECT COUNT(*), MAX(clicked_at) FROM clicks WHERE link_id = ?`, linkID).Scan(&total, &lastClickAt); err != nil {
 		return nil, err
 	}
 
 	rows, err := db.Query(`
-		SELECT date(clicked_at, 'unixepoch') AS day, COUNT(*) AS cnt
+		SELECT clicked_at
 		FROM clicks
 		WHERE link_id = ? AND clicked_at >= ?
-		GROUP BY day
-		ORDER BY day ASC
-	`, linkID, time.Now().AddDate(0, 0, -30).Unix())
+		ORDER BY clicked_at ASC
+	`, linkID, time.Now().In(location).AddDate(0, 0, -30).Unix())
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
-	var daily []DailyClicks
+	dailyCounts := make(map[string]int64)
 	for rows.Next() {
-		var d DailyClicks
-		if err := rows.Scan(&d.Date, &d.Clicks); err != nil {
+		var clickedAt int64
+		if err := rows.Scan(&clickedAt); err != nil {
 			return nil, err
 		}
-		daily = append(daily, d)
+		day := time.Unix(clickedAt, 0).In(location).Format("2006-01-02")
+		dailyCounts[day]++
 	}
-	rows.Close()
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	daily := make([]DailyClicks, 0, len(dailyCounts))
+	for day, clicks := range dailyCounts {
+		daily = append(daily, DailyClicks{Date: day, Clicks: clicks})
+	}
+	sort.Slice(daily, func(i, j int) bool { return daily[i].Date < daily[j].Date })
 
-	refRows, err := db.Query(`
-		SELECT COALESCE(NULLIF(referrer, ''), 'direct') AS src, COUNT(*) AS cnt
-		FROM clicks
-		WHERE link_id = ?
-		GROUP BY src
-		ORDER BY cnt DESC
-		LIMIT 10
-	`, linkID)
+	refRows, err := db.Query(`SELECT referrer FROM clicks WHERE link_id = ?`, linkID)
 	if err != nil {
 		return nil, err
 	}
 	defer refRows.Close()
 
-	var referrers []Referrer
+	groups := make(map[string]*referrerAggregate)
 	for refRows.Next() {
-		var r Referrer
-		if err := refRows.Scan(&r.Source, &r.Clicks); err != nil {
+		var raw string
+		if err := refRows.Scan(&raw); err != nil {
 			return nil, err
 		}
-		referrers = append(referrers, r)
+		addReferrer(groups, raw, linkID)
+	}
+	if err := refRows.Err(); err != nil {
+		return nil, err
 	}
 
 	return &Analytics{
 		TotalClicks: total.Int64,
 		LastClickAt: lastClickAt.Int64,
 		Daily:       daily,
-		Referrers:   referrers,
-	}, refRows.Err()
+		Referrers:   buildReferrers(groups, 10),
+	}, nil
 }
 
 func (db *DB) GetOverviewAnalytics() (*OverviewAnalytics, error) {
+	return db.GetOverviewAnalyticsInLocation(time.UTC)
+}
+
+func (db *DB) GetOverviewAnalyticsInLocation(location *time.Location) (*OverviewAnalytics, error) {
+	location = analyticsLocation(location)
 	var total, last30d int64
 	if err := db.QueryRow(`SELECT COUNT(*) FROM clicks`).Scan(&total); err != nil {
 		return nil, err
 	}
 	if err := db.QueryRow(
 		`SELECT COUNT(*) FROM clicks WHERE clicked_at >= ?`,
-		time.Now().AddDate(0, 0, -30).Unix(),
+		time.Now().In(location).AddDate(0, 0, -30).Unix(),
 	).Scan(&last30d); err != nil {
 		return nil, err
 	}
 
-	rows, err := db.Query(`
-		SELECT COALESCE(NULLIF(referrer, ''), 'direct') AS src,
-		       COUNT(*) AS clicks,
-		       COUNT(DISTINCT link_id) AS link_count
-		FROM clicks
-		GROUP BY src
-		ORDER BY clicks DESC, src ASC
-		LIMIT 10
-	`)
+	rows, err := db.Query(`SELECT referrer, link_id FROM clicks`)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
-	var referrers []SourceSummary
+	groups := make(map[string]*referrerAggregate)
 	for rows.Next() {
-		var source SourceSummary
-		if err := rows.Scan(&source.Source, &source.Clicks, &source.LinkCount); err != nil {
+		var raw string
+		var linkID int64
+		if err := rows.Scan(&raw, &linkID); err != nil {
 			return nil, err
 		}
-		referrers = append(referrers, source)
+		addReferrer(groups, raw, linkID)
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err
@@ -321,6 +364,13 @@ func (db *DB) GetOverviewAnalytics() (*OverviewAnalytics, error) {
 	return &OverviewAnalytics{
 		TotalClicks: total,
 		Last30d:     last30d,
-		Referrers:   referrers,
+		Referrers:   buildSourceSummaries(groups, 10),
 	}, nil
+}
+
+func analyticsLocation(location *time.Location) *time.Location {
+	if location == nil {
+		return time.UTC
+	}
+	return location
 }

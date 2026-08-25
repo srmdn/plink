@@ -1,7 +1,7 @@
 {{define "links-section"}}
 {{if .OOB}}
   {{template "dashboard-summary" .}}
-  {{template "dashboard-toolbar-count" .}}
+  {{template "dashboard-daily-export-oob" .}}
 {{end}}
 
 <div class="links-controls">
@@ -15,7 +15,7 @@
       hx-trigger="change"
       hx-target="#links-section"
       hx-swap="innerHTML"
-      hx-include="#search, select[name='category'], select[name='status']"
+      hx-include="#search, select[name='category'], select[name='status'], #date-filter"
     >
       <option value="">all categories</option>
       {{range .Categories}}<option value="{{.}}" {{if eq . $.Category}}selected{{end}}>{{.}}</option>{{end}}
@@ -30,17 +30,32 @@
       hx-trigger="change"
       hx-target="#links-section"
       hx-swap="innerHTML"
-      hx-include="#search, select[name='category'], select[name='status']"
+      hx-include="#search, select[name='category'], select[name='status'], #date-filter"
     >
       <option value="active" {{if eq .Status "active"}}selected{{end}}>active only</option>
       <option value="" {{if eq .Status ""}}selected{{end}}>all statuses</option>
       <option value="paused" {{if eq .Status "paused"}}selected{{end}}>paused</option>
     </select>
+
+    <label class="sr-only" for="date-filter">report date</label>
+    <input
+      class="date-filter"
+      id="date-filter"
+      type="date"
+      name="date"
+      value="{{.Date}}"
+      aria-label="filter by date"
+      hx-get="/{{.AdminPath}}/links"
+      hx-trigger="change"
+      hx-target="#links-section"
+      hx-swap="innerHTML"
+      hx-include="#search, select[name='category'], select[name='status'], #date-filter"
+    />
   </div>
 
   <span class="status-summary"><strong>{{.ActiveCount}}</strong> active <span aria-hidden="true">·</span> <strong>{{.PausedCount}}</strong> paused</span>
 
-  {{if or .Query .Category (ne .Status "active")}}
+  {{if or .Query .Category .Date (ne .Status "active")}}
   <a class="clear-filters" href="/{{.AdminPath}}">clear filters</a>
   {{end}}
 </div>
@@ -52,7 +67,7 @@
       <tr>
         <th>Link</th>
         <th class="destination">Destination</th>
-        <th>Clicks</th>
+        <th>{{if .Date}}Clicks · {{.DateLabel}}{{else}}Clicks{{end}}</th>
         {{if ne .Status "active"}}<th>Status</th>{{end}}
         <th><span class="sr-only">Actions</span></th>
       </tr>
@@ -74,7 +89,7 @@
           </div>
         </td>
         <td class="destination">
-          <a class="link-destination" href="{{.URL}}" target="_blank" rel="noopener">{{.URL}}</a>
+          <a class="link-destination" href="{{.URL}}" title="{{.URL}}" target="_blank" rel="noopener">{{.URL}}</a>
         </td>
         <td class="clicks-cell">{{.Clicks}}</td>
         {{if ne $.Status "active"}}<td class="status-cell"><span class="status {{if .Active}}on{{else}}off{{end}}">{{if .Active}}active{{else}}paused{{end}}</span></td>{{end}}
@@ -82,16 +97,22 @@
           <div class="row-actions">
             {{if .Active}}<button class="btn btn-ghost btn-sm btn-copy" data-label="copy" data-slug="{{.Slug}}" onclick="copyLink(this)">copy</button>{{end}}
             <button class="btn btn-ghost btn-sm" hx-get="/{{$.AdminPath}}/links/{{.ID}}/analytics" hx-target="#analytics-body" hx-swap="innerHTML">stats</button>
-            <button class="btn btn-ghost btn-sm" hx-get="/{{$.AdminPath}}/links/{{.ID}}/edit" hx-target="#modal-body" hx-swap="innerHTML" hx-include="#search, select[name='category'], select[name='status']">edit</button>
             <details class="row-menu">
               <summary class="btn btn-ghost btn-sm" aria-label="more actions for /{{.Slug}}">more</summary>
               <div class="row-menu-panel">
                 <button
                   class="row-menu-item"
+                  hx-get="/{{$.AdminPath}}/links/{{.ID}}/edit"
+                  hx-target="#modal-body"
+                  hx-swap="innerHTML"
+                  hx-include="#search, select[name='category'], select[name='status'], #date-filter"
+                >edit</button>
+                <button
+                  class="row-menu-item"
                   hx-patch="/{{$.AdminPath}}/links/{{.ID}}/toggle"
                   hx-target="#links-section"
                   hx-swap="innerHTML"
-                  hx-include="#search, select[name='category'], select[name='status']"
+                  hx-include="#search, select[name='category'], select[name='status'], #date-filter"
                 >{{if .Active}}pause{{else}}activate{{end}}</button>
                 <button
                   class="row-menu-item row-menu-danger"
@@ -99,7 +120,7 @@
                   hx-target="#links-section"
                   hx-swap="innerHTML"
                   hx-confirm="delete /{{.Slug}}? this cannot be undone"
-                  hx-include="#search, select[name='category'], select[name='status']"
+                  hx-include="#search, select[name='category'], select[name='status'], #date-filter"
                 >delete</button>
               </div>
             </details>

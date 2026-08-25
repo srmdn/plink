@@ -12,6 +12,7 @@
   <input type="hidden" name="filter_q" value="{{.Query}}" />
   <input type="hidden" name="filter_category" value="{{.CategoryFilter}}" />
   <input type="hidden" name="filter_status" value="{{.StatusFilter}}" />
+  <input type="hidden" name="filter_date" value="{{.DateFilter}}" />
   <div class="field">
     <label for="f-slug">slug</label>
     <input type="text" id="f-slug" name="slug" value="{{if .Link}}{{.Link.Slug}}{{end}}" placeholder="my-referral-link" autocomplete="off" spellcheck="false" {{if not .Link}}autofocus{{end}} />
@@ -26,7 +27,7 @@
   </div>
   <div class="field">
     <label for="f-cat">category <span style="color:var(--border)">(optional)</span></label>
-    <input type="text" id="f-cat" name="category" value="{{if .Link}}{{.Link.Category}}{{end}}" placeholder="VPS, Courses, Shopping..." autocomplete="off" list="cat-suggestions" />
+    <input type="text" id="f-cat" name="category" value="{{if .Link}}{{.Link.Category}}{{end}}" placeholder="Tools, Courses, Shopping..." autocomplete="off" list="cat-suggestions" />
     <datalist id="cat-suggestions">
       {{range .Categories}}<option value="{{.}}">{{end}}
     </datalist>

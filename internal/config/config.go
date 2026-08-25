@@ -5,18 +5,23 @@ import (
 	"log"
 	"os"
 	"strings"
+	"time"
+
+	_ "time/tzdata"
 )
 
 type Config struct {
-	Addr          string
-	DBPath        string
-	AdminPassword string
-	AdminPath     string
-	PublicURL     string
-	SecureCookies bool
-	Production    bool
-	SiteName      string
-	SiteDesc      string
+	Addr           string
+	DBPath         string
+	AdminPassword  string
+	AdminPath      string
+	PublicURL      string
+	Timezone       string
+	SecureCookies  bool
+	Production     bool
+	SiteName       string
+	SiteDesc       string
+	reportLocation *time.Location
 }
 
 func Load() *Config {
@@ -27,17 +32,40 @@ func Load() *Config {
 		log.Fatal("ADMIN_PASSWORD must be set in .env or environment")
 	}
 
-	return &Config{
-		Addr:          getEnv("ADDR", ":8080"),
-		DBPath:        getEnv("DB_PATH", "plink.db"),
-		AdminPassword: password,
-		AdminPath:     getEnv("ADMIN_PATH", "admin"),
-		PublicURL:     getEnv("PUBLIC_URL", ""),
-		SecureCookies: getEnv("APP_ENV", "development") == "production",
-		Production:    getEnv("APP_ENV", "development") == "production",
-		SiteName:      getEnv("SITE_NAME", "plink"),
-		SiteDesc:      getEnv("SITE_DESC", "personal links"),
+	timezone := getEnv("APP_TIMEZONE", "UTC")
+	reportLocation, err := time.LoadLocation(timezone)
+	if err != nil {
+		log.Fatalf("APP_TIMEZONE must be a valid IANA timezone, such as Asia/Jakarta: %v", err)
 	}
+
+	return &Config{
+		Addr:           getEnv("ADDR", ":8080"),
+		DBPath:         getEnv("DB_PATH", "plink.db"),
+		AdminPassword:  password,
+		AdminPath:      getEnv("ADMIN_PATH", "admin"),
+		PublicURL:      getEnv("PUBLIC_URL", ""),
+		Timezone:       timezone,
+		SecureCookies:  getEnv("APP_ENV", "development") == "production",
+		Production:     getEnv("APP_ENV", "development") == "production",
+		SiteName:       getEnv("SITE_NAME", "plink"),
+		SiteDesc:       getEnv("SITE_DESC", "personal links"),
+		reportLocation: reportLocation,
+	}
+}
+
+// ReportLocation returns the timezone used for calendar-day analytics. The
+// loader validates APP_TIMEZONE, while this fallback keeps manually-created
+// Config values safe in tests and integrations.
+func (c *Config) ReportLocation() *time.Location {
+	if c != nil && c.reportLocation != nil {
+		return c.reportLocation
+	}
+	if c != nil && c.Timezone != "" {
+		if location, err := time.LoadLocation(c.Timezone); err == nil {
+			return location
+		}
+	}
+	return time.UTC
 }
 
 func loadEnvFile(path string) {

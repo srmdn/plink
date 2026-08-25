@@ -42,6 +42,20 @@ go run ./cmd
 # open the configured admin login path in your browser
 ```
 
+## Configuration
+
+Plink reads configuration from `.env` when it starts. Set `APP_TIMEZONE` to an
+IANA timezone name to control the calendar-day boundaries used by analytics:
+
+```env
+APP_TIMEZONE=Asia/Jakarta
+```
+
+The default is `UTC`, which keeps a fresh installation predictable across
+servers. Use the timezone for the people who operate the instance. The setting
+controls the dashboard date filter, daily click export, last-30-days chart, and
+last-click display. It does not change the Unix timestamps stored in SQLite.
+
 ## Security
 
 - **CSRF protection** — double-submit cookie token on all state-changing requests
@@ -62,8 +76,8 @@ the project without exposing deployment-specific configuration.
 ## Dashboard
 
 The admin dashboard keeps daily link management compact. It includes summary
-metrics, live search, category and status filtering, JSON and CSV export, link
-controls, featured-link ordering, source overview analytics, and per-link
+metrics, live search, category, status, and date filtering, JSON and CSV export,
+link controls, featured-link ordering, source overview analytics, and per-link
 analytics.
 
 ## Build

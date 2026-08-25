@@ -3,6 +3,7 @@ package db
 import (
 	"path/filepath"
 	"testing"
+	"time"
 )
 
 func TestCurationMigrationAndPublicOrdering(t *testing.T) {
@@ -83,12 +84,22 @@ func TestOverviewAnalyticsGroupsReferrers(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	for i := 0; i < 2; i++ {
-		if err := database.RecordClick(first.ID, "https://search.example/results", ""); err != nil {
+	third, err := database.CreateLink("third", "https://example.com/third", "", "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, referrer := range []string{
+		"https://search.example/results",
+		"http://SEARCH.example/other?query=1",
+	} {
+		if err := database.RecordClick(first.ID, referrer, ""); err != nil {
 			t.Fatal(err)
 		}
 	}
 	if err := database.RecordClick(second.ID, "", ""); err != nil {
+		t.Fatal(err)
+	}
+	if err := database.RecordClick(third.ID, "https://search.example/results", ""); err != nil {
 		t.Fatal(err)
 	}
 
@@ -96,14 +107,34 @@ func TestOverviewAnalyticsGroupsReferrers(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if analytics.TotalClicks != 3 || analytics.Last30d != 3 {
-		t.Fatalf("overview totals = %#v, want 3/3", analytics)
+	if analytics.TotalClicks != 4 || analytics.Last30d != 4 {
+		t.Fatalf("overview totals = %#v, want 4/4", analytics)
 	}
 	if len(analytics.Referrers) != 2 {
 		t.Fatalf("referrer count = %d, want 2", len(analytics.Referrers))
 	}
-	if analytics.Referrers[0].Source != "https://search.example/results" || analytics.Referrers[0].Clicks != 2 || analytics.Referrers[0].LinkCount != 1 {
-		t.Fatalf("top referrer = %#v", analytics.Referrers[0])
+	top := analytics.Referrers[0]
+	if top.Source != "search.example" || top.Clicks != 3 || top.LinkCount != 2 || len(top.Details) != 2 {
+		t.Fatalf("top referrer = %#v", top)
+	}
+	if top.Details[1].Source != "http://SEARCH.example/other?query=1" || top.Details[1].Clicks != 1 {
+		t.Fatalf("raw referrer details = %#v", top.Details)
+	}
+}
+
+func TestNormalizeReferrer(t *testing.T) {
+	tests := map[string]string{
+		"":                                      "direct",
+		"direct":                                "direct",
+		"DIRECT":                                "direct",
+		"https://Example.com/path/?q=1#section": "example.com",
+		"http://example.com:80/":                "example.com",
+		"https://example.com.":                  "example.com",
+	}
+	for input, want := range tests {
+		if got := normalizeReferrer(input); got != want {
+			t.Errorf("normalizeReferrer(%q) = %q, want %q", input, got, want)
+		}
 	}
 }
 
@@ -128,5 +159,77 @@ func TestLinkAnalyticsTracksLastClick(t *testing.T) {
 	}
 	if analytics.TotalClicks != 1 || analytics.LastClickAt <= 0 {
 		t.Fatalf("link analytics = %#v, want one click and a timestamp", analytics)
+	}
+}
+
+func TestAnalyticsDailyUsesProvidedLocation(t *testing.T) {
+	database, err := Init(filepath.Join(t.TempDir(), "timezone.db"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer database.Close()
+
+	link, err := database.CreateLink("timezone", "https://example.com/timezone", "", "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	location, err := time.LoadLocation("Asia/Jakarta")
+	if err != nil {
+		t.Fatal(err)
+	}
+	now := time.Now().In(location)
+	day := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, location)
+	for _, clickedAt := range []time.Time{day.Add(30 * time.Minute), day.Add(23 * time.Hour)} {
+		if _, err := database.Exec(`INSERT INTO clicks (link_id, clicked_at, referrer, user_agent) VALUES (?, ?, '', '')`, link.ID, clickedAt.Unix()); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	analytics, err := database.GetAnalyticsInLocation(link.ID, location)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(analytics.Daily) != 1 || analytics.Daily[0].Date != day.Format("2006-01-02") || analytics.Daily[0].Clicks != 2 {
+		t.Fatalf("daily analytics = %#v, want two clicks on %s", analytics.Daily, day.Format("2006-01-02"))
+	}
+}
+
+func TestClickCountsBetweenUsesHalfOpenRange(t *testing.T) {
+	database, err := Init(filepath.Join(t.TempDir(), "daily.db"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer database.Close()
+
+	first, err := database.CreateLink("first", "https://example.com/first", "", "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	second, err := database.CreateLink("second", "https://example.com/second", "", "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	start := time.Date(2026, time.August, 25, 0, 0, 0, 0, time.UTC)
+	end := start.AddDate(0, 0, 1)
+	for _, click := range []struct {
+		linkID int64
+		at     int64
+	}{
+		{first.ID, start.Unix()},
+		{first.ID, start.Add(time.Hour).Unix()},
+		{second.ID, end.Add(-time.Second).Unix()},
+		{second.ID, end.Unix()},
+	} {
+		if _, err := database.Exec(`INSERT INTO clicks (link_id, clicked_at, referrer, user_agent) VALUES (?, ?, '', '')`, click.linkID, click.at); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	counts, err := database.ClickCountsBetween(start.Unix(), end.Unix())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if counts[first.ID] != 2 || counts[second.ID] != 1 {
+		t.Fatalf("daily counts = %#v, want first=2 second=1", counts)
 	}
 }

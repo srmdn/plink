@@ -5,8 +5,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"sort"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/srmdn/plink/internal/db"
 )
@@ -185,6 +187,11 @@ func (s *Server) handleToggleLink(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) handleExport(w http.ResponseWriter, r *http.Request) {
+	if r.URL.Query().Get("format") == "daily-csv" {
+		s.handleDailyExport(w, r)
+		return
+	}
+
 	links, err := s.db.ListLinks()
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "db error")
@@ -218,6 +225,63 @@ func (s *Server) handleExport(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(links)
 }
 
+func (s *Server) handleDailyExport(w http.ResponseWriter, r *http.Request) {
+	date := strings.TrimSpace(r.URL.Query().Get("date"))
+	if date == "" {
+		date = time.Now().In(s.cfg.ReportLocation()).Format(dashboardDateLayout)
+	}
+	day, ok := parseDashboardDateIn(date, s.cfg.ReportLocation())
+	if !ok {
+		writeError(w, http.StatusBadRequest, "date must use YYYY-MM-DD")
+		return
+	}
+
+	counts, err := s.db.ClickCountsBetween(day.Unix(), day.AddDate(0, 0, 1).Unix())
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "db error")
+		return
+	}
+	links, err := s.db.ListLinks()
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "db error")
+		return
+	}
+
+	type dailyExportRow struct {
+		link   db.Link
+		clicks int64
+	}
+	rows := make([]dailyExportRow, 0, len(counts))
+	for _, link := range links {
+		if clicks := counts[link.ID]; clicks > 0 {
+			rows = append(rows, dailyExportRow{link: link, clicks: clicks})
+		}
+	}
+	sort.SliceStable(rows, func(i, j int) bool {
+		if rows[i].clicks != rows[j].clicks {
+			return rows[i].clicks > rows[j].clicks
+		}
+		return rows[i].link.Slug < rows[j].link.Slug
+	})
+
+	w.Header().Set("Content-Type", "text/csv")
+	w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=\"plink-daily-clicks-%s.csv\"", date))
+	cw := csv.NewWriter(w)
+	_ = cw.Write([]string{"date", "slug", "short_url", "destination", "category", "clicks"})
+	shortBase := publicBaseURL(s.cfg.PublicURL, r)
+	for _, row := range rows {
+		_ = cw.Write([]string{
+			date,
+			row.link.Slug,
+			shortBase + "/" + row.link.Slug,
+			row.link.URL,
+			row.link.Category,
+			strconv.FormatInt(row.clicks, 10),
+		})
+	}
+	cw.Flush()
+}
+
 func (s *Server) handleAnalytics(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
 	if err != nil {
@@ -225,7 +289,7 @@ func (s *Server) handleAnalytics(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	analytics, err := s.db.GetAnalytics(id)
+	analytics, err := s.db.GetAnalyticsInLocation(id, s.cfg.ReportLocation())
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "db error")
 		return
@@ -235,7 +299,7 @@ func (s *Server) handleAnalytics(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) handleOverviewAnalytics(w http.ResponseWriter, r *http.Request) {
-	analytics, err := s.db.GetOverviewAnalytics()
+	analytics, err := s.db.GetOverviewAnalyticsInLocation(s.cfg.ReportLocation())
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "db error")
 		return

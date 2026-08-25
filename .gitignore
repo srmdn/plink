@@ -20,7 +20,7 @@ data/
 
 # Binary
 plink
-plink
+plink-*
 
 # Runtime
 *.log
