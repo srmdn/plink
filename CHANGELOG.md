@@ -4,12 +4,17 @@ All notable changes to Plink are documented in this file.
 
 ## Unreleased
 
+## v1.2.0
+
 ### Added
 
 - Configurable analytics timezone through `APP_TIMEZONE`, with `UTC` as the
   default.
 - Date-filtered dashboard reporting and a daily click CSV export.
 - Grouped referrer sources with expandable raw referrer details.
+- Date-aware traffic source reports for individual links and the dashboard
+  overview.
+- Clickable days in per-link analytics charts to set the dashboard report date.
 
 ### Changed
 
@@ -17,6 +22,7 @@ All notable changes to Plink are documented in this file.
   the configured reporting timezone.
 - Clarified the export menu so link catalog exports are separate from daily
   click reports.
+- Dashboard filters now persist in the main dashboard URL.
 
 ## v1.1.0
 

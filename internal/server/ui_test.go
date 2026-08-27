@@ -7,6 +7,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/srmdn/plink/internal/config"
 	"github.com/srmdn/plink/internal/db"
 )
 
@@ -81,6 +82,19 @@ func TestDashboardDateFilterPrefersFormState(t *testing.T) {
 	r = httptest.NewRequest("GET", "/admin/links?date=2026-02-30", nil)
 	if got := dashboardDateFilter(r); got != "" {
 		t.Fatalf("invalid dashboard date = %q, want empty", got)
+	}
+}
+
+func TestDashboardURLUsesDashboardRouteAndActiveFilterDefaults(t *testing.T) {
+	s := &Server{cfg: &config.Config{AdminPath: "admin"}}
+	r := httptest.NewRequest("GET", "/admin/links?q=hello&category=Tools&status=paused&date=2026-08-25", nil)
+	if got := s.dashboardURL(r); got != "/admin?category=Tools&date=2026-08-25&q=hello&status=paused" {
+		t.Fatalf("dashboard URL = %q", got)
+	}
+
+	r = httptest.NewRequest("GET", "/admin/links?status=active", nil)
+	if got := s.dashboardURL(r); got != "/admin" {
+		t.Fatalf("default dashboard URL = %q, want /admin", got)
 	}
 }
 
@@ -176,7 +190,10 @@ func TestBuildChartSVGIncludesAccessibleZeroClickTargets(t *testing.T) {
 	if !strings.Contains(chart, `class="chart-day"`) || !strings.Contains(chart, `class="chart-hit"`) {
 		t.Fatalf("chart = %s, want accessible day and hit-area elements", chart)
 	}
-	if !strings.Contains(chart, `aria-label="Aug 25, 0 clicks"`) {
-		t.Fatalf("chart aria label = %s, want zero-click day label", chart)
+	if !strings.Contains(chart, `aria-label="Filter report to Aug 25, 0 clicks"`) {
+		t.Fatalf("chart aria label = %s, want zero-click filter label", chart)
+	}
+	if !strings.Contains(chart, `data-date="2026-08-25"`) || !strings.Contains(chart, `onclick="selectReportDate(this.dataset.date)"`) {
+		t.Fatalf("chart = %s, want date filter action", chart)
 	}
 }

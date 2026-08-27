@@ -45,6 +45,7 @@
       name="date"
       value="{{.Date}}"
       aria-label="filter by date"
+      onchange="refreshOpenAnalytics()"
       hx-get="/{{.AdminPath}}/links"
       hx-trigger="change"
       hx-target="#links-section"
@@ -96,7 +97,7 @@
         <td class="actions-cell">
           <div class="row-actions">
             {{if .Active}}<button class="btn btn-ghost btn-sm btn-copy" data-label="copy" data-slug="{{.Slug}}" onclick="copyLink(this)">copy</button>{{end}}
-            <button class="btn btn-ghost btn-sm" hx-get="/{{$.AdminPath}}/links/{{.ID}}/analytics" hx-target="#analytics-body" hx-swap="innerHTML">stats</button>
+            <button class="btn btn-ghost btn-sm" hx-get="/{{$.AdminPath}}/links/{{.ID}}/analytics" hx-target="#analytics-body" hx-swap="innerHTML" hx-include="#date-filter">stats</button>
             <details class="row-menu">
               <summary class="btn btn-ghost btn-sm" aria-label="more actions for /{{.Slug}}">more</summary>
               <div class="row-menu-panel">

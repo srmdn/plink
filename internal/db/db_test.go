@@ -233,3 +233,107 @@ func TestClickCountsBetweenUsesHalfOpenRange(t *testing.T) {
 		t.Fatalf("daily counts = %#v, want first=2 second=1", counts)
 	}
 }
+
+func TestGetReferrersBetweenUsesReportingDayBoundaries(t *testing.T) {
+	database, err := Init(filepath.Join(t.TempDir(), "referrer-day.db"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer database.Close()
+
+	link, err := database.CreateLink("referrers", "https://example.com/referrers", "", "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	location, err := time.LoadLocation("Asia/Jakarta")
+	if err != nil {
+		t.Fatal(err)
+	}
+	start := time.Date(2026, time.August, 25, 0, 0, 0, 0, location)
+	for _, click := range []struct {
+		at       time.Time
+		referrer string
+	}{
+		{start.Add(-time.Second), "https://before.example/page"},
+		{start, "https://search.example/first"},
+		{start.Add(12 * time.Hour), "https://search.example/second"},
+		{start.AddDate(0, 0, 1).Add(-time.Second), ""},
+		{start.AddDate(0, 0, 1), "https://after.example/page"},
+	} {
+		if _, err := database.Exec(`INSERT INTO clicks (link_id, clicked_at, referrer, user_agent) VALUES (?, ?, ?, '')`, link.ID, click.at.Unix(), click.referrer); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	referrers, err := database.GetReferrersBetween(link.ID, start.Unix(), start.AddDate(0, 0, 1).Unix())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(referrers) != 2 || referrers[0].Source != "search.example" || referrers[0].Clicks != 2 || referrers[1].Source != "direct" || referrers[1].Clicks != 1 {
+		t.Fatalf("daily referrers = %#v", referrers)
+	}
+
+	referrers, err = database.GetReferrersBetween(link.ID, start.AddDate(0, 0, 2).Unix(), start.AddDate(0, 0, 3).Unix())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(referrers) != 0 {
+		t.Fatalf("empty-day referrers = %#v, want none", referrers)
+	}
+}
+
+func TestGetOverviewAnalyticsBetweenUsesReportingDayBoundaries(t *testing.T) {
+	database, err := Init(filepath.Join(t.TempDir(), "overview-referrer-day.db"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer database.Close()
+
+	first, err := database.CreateLink("first", "https://example.com/first", "", "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	second, err := database.CreateLink("second", "https://example.com/second", "", "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	location, err := time.LoadLocation("Asia/Jakarta")
+	if err != nil {
+		t.Fatal(err)
+	}
+	start := time.Date(2026, time.August, 25, 0, 0, 0, 0, location)
+	for _, click := range []struct {
+		linkID   int64
+		at       time.Time
+		referrer string
+	}{
+		{first.ID, start.Add(-time.Second), "https://before.example/page"},
+		{first.ID, start, "https://search.example/first"},
+		{second.ID, start.Add(2 * time.Hour), "https://search.example/second"},
+		{second.ID, start.AddDate(0, 0, 1), "https://after.example/page"},
+	} {
+		if _, err := database.Exec(`INSERT INTO clicks (link_id, clicked_at, referrer, user_agent) VALUES (?, ?, ?, '')`, click.linkID, click.at.Unix(), click.referrer); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	analytics, err := database.GetOverviewAnalyticsBetween(start.Unix(), start.AddDate(0, 0, 1).Unix())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if analytics.TotalClicks != 2 || len(analytics.Referrers) != 1 {
+		t.Fatalf("daily overview = %#v", analytics)
+	}
+	referrer := analytics.Referrers[0]
+	if referrer.Source != "search.example" || referrer.Clicks != 2 || referrer.LinkCount != 2 {
+		t.Fatalf("daily overview referrer = %#v", referrer)
+	}
+
+	analytics, err = database.GetOverviewAnalyticsBetween(start.AddDate(0, 0, 2).Unix(), start.AddDate(0, 0, 3).Unix())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if analytics.TotalClicks != 0 || len(analytics.Referrers) != 0 {
+		t.Fatalf("empty-day overview = %#v", analytics)
+	}
+}

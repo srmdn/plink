@@ -1,24 +1,27 @@
 {{define "overview-analytics"}}
 <script>document.getElementById('analytics-title').textContent = 'traffic sources';</script>
-<div class="analytics-grid">
+<div id="analytics-refresh" data-analytics-url="{{.AnalyticsURL}}">
+<div class="analytics-grid{{if .DateSelected}} analytics-grid-compact{{end}}">
   <div class="stat-card">
     <div class="stat-value">{{.Total}}</div>
-    <div class="stat-label">total clicks</div>
+    <div class="stat-label">{{.TotalLabel}}</div>
   </div>
+  {{if .ShowLast30d}}
   <div class="stat-card">
     <div class="stat-value">{{.Last30d}}</div>
     <div class="stat-label">last 30d</div>
   </div>
+  {{end}}
   <div class="stat-card">
     <div class="stat-value">{{.DirectTraffic}}</div>
-    <div class="stat-label">direct traffic</div>
+    <div class="stat-label">{{.DirectTrafficLabel}}</div>
   </div>
 </div>
 
 <div>
   <div class="section-heading">
     <div class="section-label">top traffic sources across all links</div>
-    <span class="section-meta">all time</span>
+    <span class="section-meta">{{.TrafficSourcesLabel}}</span>
   </div>
   {{if .Referrers}}
   {{$max := (index .Referrers 0).Clicks}}
@@ -53,7 +56,8 @@
   {{end}}
   {{end}}
   {{else}}
-  <p style="color:var(--muted);padding:12px 0;font-size:12px">no clicks yet</p>
+  <p style="color:var(--muted);padding:12px 0;font-size:12px">{{.TrafficSourcesEmpty}}</p>
   {{end}}
+</div>
 </div>
 {{end}}

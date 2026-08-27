@@ -12,7 +12,8 @@ yourdomain.com/tokopedia-promo  →  https://tokopedia.com/...
 ## Features
 
 - Clean slugs — no `s/` prefix
-- Click analytics — total clicks, last 30 days chart, referrer breakdown
+- Click analytics — date-aware source reports, a last 30 days chart, and
+  referrer breakdowns
 - Categories — organize links with filterable labels
 - Public resource search — find links by slug, description, or category
 - Curated homepage — highlight recommended links before the full catalog

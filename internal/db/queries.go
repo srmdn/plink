@@ -325,6 +325,35 @@ func (db *DB) GetAnalyticsInLocation(linkID int64, location *time.Location) (*An
 	}, nil
 }
 
+// GetReferrersBetween returns the top traffic sources for one link in the
+// half-open click range [start, end). Callers should derive the boundaries in
+// their reporting timezone before querying.
+func (db *DB) GetReferrersBetween(linkID, start, end int64) ([]Referrer, error) {
+	rows, err := db.Query(`
+		SELECT referrer
+		FROM clicks
+		WHERE link_id = ? AND clicked_at >= ? AND clicked_at < ?
+	`, linkID, start, end)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	groups := make(map[string]*referrerAggregate)
+	for rows.Next() {
+		var raw string
+		if err := rows.Scan(&raw); err != nil {
+			return nil, err
+		}
+		addReferrer(groups, raw, linkID)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return buildReferrers(groups, 10), nil
+}
+
 func (db *DB) GetOverviewAnalytics() (*OverviewAnalytics, error) {
 	return db.GetOverviewAnalyticsInLocation(time.UTC)
 }
@@ -364,6 +393,44 @@ func (db *DB) GetOverviewAnalyticsInLocation(location *time.Location) (*Overview
 	return &OverviewAnalytics{
 		TotalClicks: total,
 		Last30d:     last30d,
+		Referrers:   buildSourceSummaries(groups, 10),
+	}, nil
+}
+
+// GetOverviewAnalyticsBetween returns aggregate analytics for the half-open
+// click range [start, end). Callers should derive the boundaries in their
+// reporting timezone before querying.
+func (db *DB) GetOverviewAnalyticsBetween(start, end int64) (*OverviewAnalytics, error) {
+	var total int64
+	if err := db.QueryRow(`SELECT COUNT(*) FROM clicks WHERE clicked_at >= ? AND clicked_at < ?`, start, end).Scan(&total); err != nil {
+		return nil, err
+	}
+
+	rows, err := db.Query(`
+		SELECT referrer, link_id
+		FROM clicks
+		WHERE clicked_at >= ? AND clicked_at < ?
+	`, start, end)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	groups := make(map[string]*referrerAggregate)
+	for rows.Next() {
+		var raw string
+		var linkID int64
+		if err := rows.Scan(&raw, &linkID); err != nil {
+			return nil, err
+		}
+		addReferrer(groups, raw, linkID)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return &OverviewAnalytics{
+		TotalClicks: total,
 		Referrers:   buildSourceSummaries(groups, 10),
 	}, nil
 }

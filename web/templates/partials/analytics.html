@@ -1,5 +1,6 @@
 {{define "analytics"}}
 <script>document.getElementById('analytics-title').textContent = '/{{.Slug | js}}';</script>
+<div id="analytics-refresh" data-analytics-url="{{.AnalyticsURL}}">
 <div class="analytics-linkbar">
   <div class="analytics-url-wrap">
     <div class="section-label">public link</div>
@@ -26,14 +27,14 @@
   </div>
   <div class="stat-card">
     <div class="stat-value">{{.DirectTraffic}}</div>
-    <div class="stat-label">direct traffic</div>
+    <div class="stat-label">{{.DirectTrafficLabel}}</div>
   </div>
 </div>
 
 <div class="chart-wrap">
   <div class="section-heading">
     <div class="section-label">clicks — last 30 days</div>
-    <span class="section-meta">{{.Last30d}} clicks</span>
+    <span class="section-meta">{{.Last30d}} clicks · select a day to filter</span>
   </div>
   {{if .HasRecentClicks}}{{.ChartSVG}}{{else}}<div class="chart-empty">no clicks in the last 30 days</div>{{end}}
 </div>
@@ -41,7 +42,7 @@
 <div style="margin-bottom:20px">
   <div class="section-heading">
     <div class="section-label">traffic sources</div>
-    <span class="section-meta">all time</span>
+    <span class="section-meta">{{.TrafficSourcesLabel}}</span>
   </div>
   {{if .Referrers}}
   {{$max := (index .Referrers 0).Clicks}}
@@ -52,7 +53,7 @@
       <span class="ref-source" title="{{.Source}}">{{referrerLabel .Source}}</span>
       <span class="ref-bar-wrap"><span class="ref-bar" style="width:{{percent .Clicks $max}}%"></span></span>
       <span class="ref-count">{{.Clicks}}</span>
-      <span class="ref-percent">{{percentOfLabel .Clicks $.Total}}</span>
+      <span class="ref-percent">{{percentOfLabel .Clicks $.ReferrerTotal}}</span>
       <span class="ref-expand" aria-hidden="true">+</span>
     </summary>
     <div class="referrer-details">
@@ -68,14 +69,15 @@
       <span class="ref-source" title="{{.Source}}">{{referrerLabel .Source}}</span>
       <div class="ref-bar-wrap"><div class="ref-bar" style="width:{{percent .Clicks $max}}%"></div></div>
       <span class="ref-count">{{.Clicks}}</span>
-      <span class="ref-percent">{{percentOfLabel .Clicks $.Total}}</span>
+      <span class="ref-percent">{{percentOfLabel .Clicks $.ReferrerTotal}}</span>
     </div>
   </div>
   {{end}}
   {{end}}
   {{else}}
-  <p style="color:var(--muted);padding:12px 0;font-size:12px">no clicks yet</p>
+  <p style="color:var(--muted);padding:12px 0;font-size:12px">{{.TrafficSourcesEmpty}}</p>
   {{end}}
 </div>
 
+</div>
 {{end}}

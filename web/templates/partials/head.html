@@ -275,6 +275,7 @@
   .analytics-modal > .modal-header { flex-shrink: 0; margin-bottom: 18px; padding: 22px 22px 0; background: var(--surface); }
   .analytics-modal > #analytics-body { min-height: 0; overflow-y: auto; padding: 0 22px 22px; }
   .analytics-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px; }
+  .analytics-grid-compact { grid-template-columns: repeat(2, 1fr); }
   .analytics-linkbar { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; padding-bottom: 14px; margin-bottom: 14px; border-bottom: 1px solid var(--border); }
   .analytics-url-wrap { min-width: 0; flex: 1; }
   .analytics-url { display: block; color: var(--text); font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-decoration: none; }
@@ -339,6 +340,21 @@ function openAnalyticsModal() {
 }
 function closeAnalyticsModal() {
   document.getElementById('analytics-modal').classList.add('hidden');
+}
+function refreshOpenAnalytics() {
+  var modal = document.getElementById('analytics-modal');
+  var content = document.getElementById('analytics-refresh');
+  var date = document.getElementById('date-filter');
+  if (!modal || modal.classList.contains('hidden') || !content || !content.dataset.analyticsUrl) return;
+  var url = content.dataset.analyticsUrl;
+  if (date && date.value) url += '?date=' + encodeURIComponent(date.value);
+  htmx.ajax('GET', url, {target: '#analytics-body', swap: 'innerHTML'});
+}
+function selectReportDate(value) {
+  var date = document.getElementById('date-filter');
+  if (!date || !value) return;
+  date.value = value;
+  date.dispatchEvent(new Event('change', {bubbles: true}));
 }
 function publicBaseURL() {
   var configured = document.body && document.body.dataset ? document.body.dataset.publicUrl : '';

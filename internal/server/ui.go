@@ -5,6 +5,7 @@ import (
 	"html"
 	"html/template"
 	"net/http"
+	"net/url"
 	"sort"
 	"strconv"
 	"strings"
@@ -56,23 +57,35 @@ type linkFormData struct {
 }
 
 type analyticsData struct {
-	Slug            string
-	ShortURL        string
-	Total           int64
-	Last30d         int64
-	LastClick       string
-	LastClickTitle  string
-	DirectTraffic   string
-	HasRecentClicks bool
-	ChartSVG        template.HTML
-	Referrers       []db.Referrer
+	Slug                string
+	ShortURL            string
+	AnalyticsURL        string
+	Total               int64
+	Last30d             int64
+	LastClick           string
+	LastClickTitle      string
+	DirectTraffic       string
+	DirectTrafficLabel  string
+	HasRecentClicks     bool
+	ChartSVG            template.HTML
+	Referrers           []db.Referrer
+	ReferrerTotal       int64
+	TrafficSourcesLabel string
+	TrafficSourcesEmpty string
 }
 
 type overviewAnalyticsData struct {
-	Total         int64
-	Last30d       int64
-	DirectTraffic string
-	Referrers     []db.SourceSummary
+	Total               int64
+	TotalLabel          string
+	Last30d             int64
+	ShowLast30d         bool
+	DirectTraffic       string
+	DirectTrafficLabel  string
+	Referrers           []db.SourceSummary
+	TrafficSourcesLabel string
+	TrafficSourcesEmpty string
+	AnalyticsURL        string
+	DateSelected        bool
 }
 
 type dailyFill struct {
@@ -102,7 +115,33 @@ func (s *Server) serveLinksSection(w http.ResponseWriter, r *http.Request) {
 	}
 	data.PublicURL = publicBaseURL(s.cfg.PublicURL, r)
 	data.OOB = true
+	if r.Header.Get("HX-Request") == "true" {
+		w.Header().Set("HX-Push-Url", s.dashboardURL(r))
+	}
 	s.renderTemplate(w, "links-section", data)
+}
+
+func (s *Server) dashboardURL(r *http.Request) string {
+	q, category, status := dashboardFilters(r)
+	date := dashboardDateFilter(r)
+	values := make(url.Values)
+	if q != "" {
+		values.Set("q", q)
+	}
+	if category != "" {
+		values.Set("category", category)
+	}
+	if status != "active" {
+		values.Set("status", status)
+	}
+	if date != "" {
+		values.Set("date", date)
+	}
+	path := "/" + s.cfg.AdminPath
+	if encoded := values.Encode(); encoded != "" {
+		path += "?" + encoded
+	}
+	return path
 }
 
 func dashboardFilters(r *http.Request) (q, cat, status string) {
@@ -338,7 +377,7 @@ func buildChartSVG(daily []dailyFill) template.HTML {
 		}
 		ariaLabel := html.EscapeString(fmt.Sprintf("%s, %d clicks", label, d.Clicks))
 		safeLabel := html.EscapeString(label)
-		fmt.Fprintf(&bars, `<g class="chart-day" tabindex="0" focusable="true" role="img" aria-label="%s"><title>%s — %d clicks</title><rect class="chart-hit" x="%.2f%%" y="0" width="%.2f%%" height="60" fill="transparent"/><rect class="chart-bar" x="%.2f%%" y="%.1f" width="%.2f%%" height="%.1f" fill="#22c55e" opacity="0.75" rx="1"/></g>`, ariaLabel, safeLabel, d.Clicks, x, w, x, 60-h, w, h)
+		fmt.Fprintf(&bars, `<g class="chart-day" tabindex="0" focusable="true" role="button" aria-label="Filter report to %s" data-date="%s" onclick="selectReportDate(this.dataset.date)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();selectReportDate(this.dataset.date)}"><title>%s — %d clicks. Click to filter the report.</title><rect class="chart-hit" x="%.2f%%" y="0" width="%.2f%%" height="60" fill="transparent"/><rect class="chart-bar" x="%.2f%%" y="%.1f" width="%.2f%%" height="%.1f" fill="#22c55e" opacity="0.75" rx="1"/></g>`, ariaLabel, d.Date, safeLabel, d.Clicks, x, w, x, 60-h, w, h)
 	}
 	for _, i := range []int{0, n / 2, n - 1} {
 		x := (float64(i) + 0.5) / float64(n) * 100
@@ -707,18 +746,45 @@ func (s *Server) handleAnalyticsUI(w http.ResponseWriter, r *http.Request) {
 	}
 
 	lastClick, lastClickTitle := formatAnalyticsLastClickIn(data.LastClickAt, location)
+	referrers := data.Referrers
+	referrerTotal := data.TotalClicks
+	trafficSourcesLabel := "all time"
+	trafficSourcesEmpty := "no clicks yet"
+	if date := dashboardDateFilter(r); date != "" {
+		day, _ := parseDashboardDateIn(date, location)
+		referrers, err = s.db.GetReferrersBetween(id, day.Unix(), day.AddDate(0, 0, 1).Unix())
+		if err != nil {
+			http.Error(w, "db error", http.StatusInternalServerError)
+			return
+		}
+		referrerTotal = 0
+		for _, referrer := range referrers {
+			referrerTotal += referrer.Clicks
+		}
+		trafficSourcesLabel = dashboardDateLabel(date)
+		trafficSourcesEmpty = "no clicks on " + trafficSourcesLabel
+	}
+	directTrafficText := "direct traffic"
+	if trafficSourcesLabel != "all time" {
+		directTrafficText += " · " + trafficSourcesLabel
+	}
 
 	s.renderTemplate(w, "analytics", analyticsData{
-		Slug:            slug,
-		ShortURL:        publicBaseURL(s.cfg.PublicURL, r) + "/" + slug,
-		Total:           data.TotalClicks,
-		Last30d:         last30d,
-		LastClick:       lastClick,
-		LastClickTitle:  lastClickTitle,
-		DirectTraffic:   directTrafficLabel(data.Referrers, data.TotalClicks),
-		HasRecentClicks: last30d > 0,
-		ChartSVG:        buildChartSVG(daily),
-		Referrers:       data.Referrers,
+		Slug:                slug,
+		ShortURL:            publicBaseURL(s.cfg.PublicURL, r) + "/" + slug,
+		AnalyticsURL:        "/" + s.cfg.AdminPath + "/links/" + strconv.FormatInt(id, 10) + "/analytics",
+		Total:               data.TotalClicks,
+		Last30d:             last30d,
+		LastClick:           lastClick,
+		LastClickTitle:      lastClickTitle,
+		DirectTraffic:       directTrafficLabel(referrers, referrerTotal),
+		DirectTrafficLabel:  directTrafficText,
+		HasRecentClicks:     last30d > 0,
+		ChartSVG:            buildChartSVG(daily),
+		Referrers:           referrers,
+		ReferrerTotal:       referrerTotal,
+		TrafficSourcesLabel: trafficSourcesLabel,
+		TrafficSourcesEmpty: trafficSourcesEmpty,
 	})
 }
 
@@ -728,11 +794,41 @@ func (s *Server) handleOverviewAnalyticsUI(w http.ResponseWriter, r *http.Reques
 		http.Error(w, "db error", http.StatusInternalServerError)
 		return
 	}
+	date := dashboardDateFilter(r)
+	dateLabel := ""
+	if date != "" {
+		location := s.cfg.ReportLocation()
+		day, _ := parseDashboardDateIn(date, location)
+		data, err = s.db.GetOverviewAnalyticsBetween(day.Unix(), day.AddDate(0, 0, 1).Unix())
+		if err != nil {
+			http.Error(w, "db error", http.StatusInternalServerError)
+			return
+		}
+		dateLabel = dashboardDateLabel(date)
+	}
+
+	totalLabel := "total clicks"
+	directTrafficText := "direct traffic"
+	trafficSourcesLabel := "all time"
+	trafficSourcesEmpty := "no clicks yet"
+	if dateLabel != "" {
+		totalLabel = "clicks · " + dateLabel
+		directTrafficText += " · " + dateLabel
+		trafficSourcesLabel = dateLabel
+		trafficSourcesEmpty = "no clicks on " + dateLabel
+	}
 
 	s.renderTemplate(w, "overview-analytics", overviewAnalyticsData{
-		Total:         data.TotalClicks,
-		Last30d:       data.Last30d,
-		DirectTraffic: directTrafficSummaryLabel(data.Referrers, data.TotalClicks),
-		Referrers:     data.Referrers,
+		Total:               data.TotalClicks,
+		TotalLabel:          totalLabel,
+		Last30d:             data.Last30d,
+		ShowLast30d:         dateLabel == "",
+		DirectTraffic:       directTrafficSummaryLabel(data.Referrers, data.TotalClicks),
+		DirectTrafficLabel:  directTrafficText,
+		Referrers:           data.Referrers,
+		TrafficSourcesLabel: trafficSourcesLabel,
+		TrafficSourcesEmpty: trafficSourcesEmpty,
+		AnalyticsURL:        "/" + s.cfg.AdminPath + "/analytics",
+		DateSelected:        dateLabel != "",
 	})
 }

@@ -54,6 +54,7 @@
         hx-get="/{{.AdminPath}}/analytics"
         hx-target="#analytics-body"
         hx-swap="innerHTML"
+        hx-include="#date-filter"
       >sources</button>
       <div class="export-wrap">
         <button class="btn btn-ghost btn-sm" onclick="toggleExportMenu(event)">export ↓</button>
