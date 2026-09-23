@@ -197,3 +197,109 @@ func TestBuildChartSVGIncludesAccessibleZeroClickTargets(t *testing.T) {
 		t.Fatalf("chart = %s, want date filter action", chart)
 	}
 }
+
+func TestAnalyticsPeriodDefaultsAndRejectsUnknownValues(t *testing.T) {
+	if got := analyticsPeriodFromRequest(httptest.NewRequest("GET", "/admin/analytics/dashboard", nil)); got != "30d" {
+		t.Fatalf("default analytics period = %q, want 30d", got)
+	}
+	if got := analyticsPeriodFromRequest(httptest.NewRequest("GET", "/admin/analytics/dashboard?period=90d", nil)); got != "90d" {
+		t.Fatalf("analytics period = %q, want 90d", got)
+	}
+	if got := analyticsPeriodFromRequest(httptest.NewRequest("GET", "/admin/analytics/dashboard?period=custom", nil)); got != "30d" {
+		t.Fatalf("unknown analytics period = %q, want 30d", got)
+	}
+}
+
+func TestAnalyticsGroupDefaultsAndAggregatesProviderClicks(t *testing.T) {
+	if got := analyticsGroupFromRequest(httptest.NewRequest("GET", "/admin/analytics/dashboard", nil)); got != "link" {
+		t.Fatalf("default analytics group = %q, want link", got)
+	}
+	if got := analyticsGroupFromRequest(httptest.NewRequest("GET", "/admin/analytics/dashboard?group=unknown", nil)); got != "link" {
+		t.Fatalf("unknown analytics group = %q, want link", got)
+	}
+
+	links := []db.Link{
+		{ID: 1, Slug: "greencloud-1", Provider: "GreenCloud", Active: true, Clicks: 7},
+		{ID: 2, Slug: "greencloud-2", Provider: "GreenCloud", Active: true, Clicks: 5},
+		{ID: 3, Slug: "vultr", Provider: "Vultr", Active: true, Clicks: 4},
+	}
+	data := buildAnalyticsPageDataGrouped(links, nil, &db.OverviewAnalytics{TotalClicks: 16}, "all", "", "provider")
+	if data.Group != "provider" || len(data.TopLinks) != 2 {
+		t.Fatalf("provider grouping = %#v, want two groups", data)
+	}
+	if data.TopLinks[0].Slug != "GreenCloud" || data.TopLinks[0].Clicks != 12 || data.TopLinks[0].LinkCount != 2 {
+		t.Fatalf("top provider group = %#v, want GreenCloud/12/2", data.TopLinks[0])
+	}
+	if data.TopLinks[1].Slug != "Vultr" || data.TopLinks[1].Clicks != 4 {
+		t.Fatalf("second provider group = %#v, want Vultr/4", data.TopLinks[1])
+	}
+}
+
+func TestProviderRankingIncludesAverageAndTrend(t *testing.T) {
+	links := []db.Link{
+		{ID: 1, Slug: "greencloud-1", Provider: "GreenCloud", Active: true},
+		{ID: 2, Slug: "greencloud-2", Provider: "GreenCloud", Active: true},
+		{ID: 3, Slug: "vultr", Provider: "Vultr", Active: true},
+	}
+	current := map[int64]int64{1: 9, 2: 3, 3: 5}
+	previous := map[int64]int64{1: 6, 2: 2, 3: 5}
+	data := buildAnalyticsPageDataWithPrevious(links, current, previous, &db.OverviewAnalytics{TotalClicks: 17}, "30d", "", "provider")
+	if !data.HasTrend || len(data.TopLinks) != 2 {
+		t.Fatalf("provider ranking = %#v, want two ranked providers with trend", data)
+	}
+	if got := data.TopLinks[0]; got.Slug != "GreenCloud" || got.Clicks != 12 || got.PreviousClicks != 8 || got.ClicksPerLink != "6.0" || got.TrendLabel != "+50%" || got.TrendClass != "up" {
+		t.Fatalf("top provider ranking = %#v, want GreenCloud/12/8/6.0/+50%%", got)
+	}
+	if got := data.TopLinks[1]; got.Slug != "Vultr" || got.ClicksPerLink != "5.0" || got.TrendLabel != "0%" || got.TrendClass != "flat" {
+		t.Fatalf("second provider ranking = %#v, want Vultr/5.0/0%%", got)
+	}
+}
+
+func TestAnalyticsTrendLabelHandlesNewAndDroppedProviders(t *testing.T) {
+	if label, class := analyticsTrendLabel(4, 0); label != "new" || class != "up" {
+		t.Fatalf("new trend = %q/%q, want new/up", label, class)
+	}
+	if label, class := analyticsTrendLabel(0, 4); label != "-100%" || class != "down" {
+		t.Fatalf("dropped trend = %q/%q, want -100%%/down", label, class)
+	}
+	if label, class := analyticsTrendLabel(0, 0); label != "—" || class != "neutral" {
+		t.Fatalf("zero trend = %q/%q, want —/neutral", label, class)
+	}
+}
+
+func TestBuildAnalyticsSlicesGroupsRemainingLinks(t *testing.T) {
+	links := []analyticsPageLink{
+		{Slug: "one", Clicks: 40},
+		{Slug: "two", Clicks: 30},
+		{Slug: "three", Clicks: 20},
+		{Slug: "four", Clicks: 10},
+		{Slug: "five", Clicks: 5},
+		{Slug: "six", Clicks: 5},
+	}
+	slices := buildAnalyticsSlices(links, 110)
+	if len(slices) != 6 || slices[len(slices)-1].Label != "Other" {
+		t.Fatalf("slices = %#v, want five links plus Other", slices)
+	}
+	var total int64
+	for _, slice := range slices {
+		total += slice.Percent
+	}
+	if total != 100 {
+		t.Fatalf("slice percentages = %d, want 100", total)
+	}
+}
+
+func TestBuildAnalyticsDonutSVGIncludesHoverDetails(t *testing.T) {
+	svg := string(buildAnalyticsDonutSVG([]analyticsSlice{{Label: "GreenCloud", Clicks: 12, Percent: 75, Class: "segment-1"}}, 16))
+	for _, want := range []string{
+		`data-label="GreenCloud"`,
+		`data-clicks="12"`,
+		`data-percent="75"`,
+		`tabindex="0"`,
+		`<title>GreenCloud: 12 clicks (75%)</title>`,
+	} {
+		if !strings.Contains(svg, want) {
+			t.Fatalf("donut svg = %s, want %s", svg, want)
+		}
+	}
+}

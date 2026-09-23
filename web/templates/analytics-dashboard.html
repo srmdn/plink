@@ -1,0 +1,142 @@
+{{define "analytics-dashboard"}}
+<!DOCTYPE html>
+<html lang="en">
+{{template "head" .}}
+<body>
+<div id="app">
+  <header>
+    <div class="logo">plink <span>/ admin</span></div>
+    <nav class="admin-nav" aria-label="admin sections">
+      <a class="btn btn-ghost btn-sm" href="/{{.AdminPath}}">links</a>
+      <a class="btn btn-primary btn-sm" href="/{{.AdminPath}}/analytics/dashboard">analytics</a>
+      <form method="POST" action="/{{.AdminPath}}/logout" style="display:inline">
+        <button type="submit" class="btn btn-ghost btn-sm">logout</button>
+      </form>
+    </nav>
+  </header>
+
+  <main class="analytics-page">
+    <div class="analytics-page-heading">
+      <div>
+        <h1>analytics overview</h1>
+        <p>See what deserves promotion — not just what was clicked.</p>
+      </div>
+      <span class="analytics-page-meta">{{.PeriodLabel}} · reporting timezone</span>
+    </div>
+
+    <div class="analytics-page-filters">
+      <nav class="analytics-periods" aria-label="analytics date range">
+        {{range .Periods}}
+        <a href="?period={{.Key}}{{if $.Category}}&amp;category={{$.Category | urlquery}}{{end}}{{if ne $.Group "link"}}&amp;group={{$.Group | urlquery}}{{end}}" class="analytics-period {{if eq $.Period .Key}}active{{end}}" aria-current="{{if eq $.Period .Key}}page{{end}}">{{.Key}}</a>
+        {{end}}
+      </nav>
+      <div class="analytics-selects">
+        <label class="sr-only" for="analytics-group">breakdown</label>
+        <select id="analytics-group" data-base-url="?period={{.Period}}{{if .Category}}&amp;category={{.Category | urlquery}}{{end}}" onchange="window.location.assign(this.dataset.baseUrl + (this.value &amp;&amp; this.value !== 'link' ? '&amp;group=' + encodeURIComponent(this.value) : ''))">
+          {{range .Groups}}<option value="{{.Key}}" {{if eq .Key $.Group}}selected{{end}}>{{.Label}}</option>{{end}}
+        </select>
+        <label class="sr-only" for="analytics-category">category</label>
+        <select id="analytics-category" data-base-url="?period={{.Period}}{{if ne .Group "link"}}&amp;group={{.Group | urlquery}}{{end}}" onchange="window.location.assign(this.dataset.baseUrl + (this.value ? '&amp;category=' + encodeURIComponent(this.value) : ''))">
+          <option value="">all categories</option>
+          {{range .Categories}}<option value="{{.}}" {{if eq . $.Category}}selected{{end}}>{{.}}</option>{{end}}
+        </select>
+      </div>
+    </div>
+
+    {{if .SelectedLink}}{{template "analytics-link-detail" .SelectedLink}}{{end}}
+
+    <section class="analytics-page-kpis" aria-label="analytics summary">
+      <div class="stat-card"><div class="stat-value">{{.TotalClicks}}</div><div class="stat-label">clicks · {{.PeriodLabel}}</div></div>
+      <div class="stat-card"><div class="stat-value">{{.ActiveLinks}}</div><div class="stat-label">active offers</div></div>
+      <div class="stat-card"><div class="stat-value">{{.DirectTraffic}}</div><div class="stat-label">direct / unknown</div></div>
+      <div class="stat-card"><div class="stat-value">{{.TotalLinks}}</div><div class="stat-label">links in scope</div></div>
+    </section>
+
+    <div class="analytics-page-grid">
+      <section class="analytics-page-panel" aria-labelledby="click-share-heading">
+        <div class="analytics-page-panel-heading">
+          <h2 id="click-share-heading">click share {{.GroupLabel}}</h2>
+          <span class="analytics-page-meta">top 5 + other</span>
+        </div>
+        {{if .DonutSlices}}
+        <div class="analytics-donut-layout">
+          <div class="analytics-donut-wrap">
+            {{.DonutSVG}}
+            <div class="analytics-donut-center"><strong>{{.TotalClicks}}</strong><span>total clicks</span></div>
+            <div class="analytics-donut-tooltip" role="status" aria-live="polite" aria-hidden="true"></div>
+          </div>
+          <div class="analytics-legend">
+            {{range .DonutSlices}}
+            <div class="analytics-legend-row"><span class="donut-dot {{.Class}}" aria-hidden="true"></span><span>{{.Label}}</span><span class="analytics-page-meta">{{.Clicks}} · {{.Percent}}%</span></div>
+            {{end}}
+          </div>
+        </div>
+        {{else}}
+        <div class="analytics-page-empty">no clicks in this period</div>
+        {{end}}
+      </section>
+
+      <section class="analytics-page-panel" aria-labelledby="top-offers-heading">
+        <div class="analytics-page-panel-heading">
+          <h2 id="top-offers-heading">{{if eq .Group "provider"}}provider ranking{{else}}top offers{{end}}</h2>
+          <span class="analytics-page-meta">{{if eq .Group "provider"}}click share · avg per slug{{if .HasTrend}} · vs previous period{{end}}{{else}}ranked by clicks{{end}}</span>
+        </div>
+        {{if .TopLinks}}
+        <div class="analytics-offer-list">
+          {{if eq .Group "provider"}}
+          <div class="analytics-offer-row analytics-provider-row analytics-offer-header"><span>provider</span><span>share</span><span>clicks</span><span>per slug</span><span>trend</span></div>
+          {{else}}
+          <div class="analytics-offer-row analytics-offer-header"><span>offer</span><span>share</span><span>clicks</span></div>
+          {{end}}
+          {{range .TopLinks}}
+          {{if eq $.Group "provider"}}
+          <div class="analytics-offer-row analytics-provider-row">
+            <span>{{if gt .ID 0}}<a class="analytics-offer-link" href="?period={{$.Period}}{{if $.Category}}&amp;category={{$.Category | urlquery}}{{end}}{{if ne $.Group "link"}}&amp;group={{$.Group | urlquery}}{{end}}&amp;link={{.ID}}"><strong>{{.Slug}}</strong></a>{{else}}<strong>{{.Slug}}</strong>{{end}} <em>{{.LinkCount}} slugs</em></span>
+            <span class="analytics-ranking-share"><span class="analytics-bar-track"><span class="analytics-bar" style="width:{{percent .Clicks $.TopMax}}%"></span></span><small>{{percentOfLabel .Clicks $.TotalClicks}}</small></span>
+            <span class="analytics-offer-clicks">{{.Clicks}}</span>
+            <span class="analytics-offer-clicks">{{.ClicksPerLink}}</span>
+            <span class="analytics-trend analytics-trend-{{.TrendClass}}">{{if $.HasTrend}}{{.TrendLabel}}{{else}}—{{end}}</span>
+          </div>
+          {{else}}
+          <div class="analytics-offer-row">
+            <span>{{if gt .ID 0}}<a class="analytics-offer-link" href="?period={{$.Period}}{{if $.Category}}&amp;category={{$.Category | urlquery}}{{end}}{{if ne $.Group "link"}}&amp;group={{$.Group | urlquery}}{{end}}&amp;link={{.ID}}"><strong>{{.Slug}}</strong></a>{{else}}<strong>{{.Slug}}</strong>{{end}}{{if eq $.Group "link"}}{{if .Category}} <em>{{.Category}}</em>{{end}}{{if .Provider}} <em>{{.Provider}}</em>{{end}}{{if .Channel}} <em>{{.Channel}}</em>{{end}}{{else}} <em>{{.LinkCount}} links</em>{{end}}</span>
+            <span class="analytics-bar-track"><span class="analytics-bar" style="width:{{percent .Clicks $.TopMax}}%"></span></span>
+            <span class="analytics-offer-clicks">{{.Clicks}}</span>
+          </div>
+          {{end}}
+          {{end}}
+        </div>
+        {{else}}
+        <div class="analytics-page-empty">no active offers in this scope</div>
+        {{end}}
+      </section>
+    </div>
+
+    <section class="analytics-page-panel analytics-sources-panel" aria-labelledby="sources-heading">
+      <div class="analytics-page-panel-heading">
+        <h2 id="sources-heading">traffic sources</h2>
+        <span class="analytics-page-meta">{{.TrafficSourcesLabel}}</span>
+      </div>
+      {{if .TrafficSources}}
+      {{$max := (index .TrafficSources 0).Clicks}}
+      <div class="analytics-source-list">
+        {{range .TrafficSources}}
+        <div class="analytics-source-row">
+          <span class="analytics-source-name">{{referrerLabel .Source}}</span>
+          <span class="analytics-bar-track"><span class="analytics-bar" style="width:{{percent .Clicks $max}}%"></span></span>
+          <span class="analytics-source-clicks">{{.Clicks}}</span>
+          <span class="analytics-page-meta">{{percentOfLabel .Clicks $.TotalClicks}}</span>
+        </div>
+        {{end}}
+      </div>
+      {{else}}
+      <div class="analytics-page-empty">no traffic in this period</div>
+      {{end}}
+    </section>
+
+    <p class="analytics-page-note">Click counts are link redirects. Conversion and revenue data are not connected yet.</p>
+  </main>
+</div>
+</body>
+</html>
+{{end}}

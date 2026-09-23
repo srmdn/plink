@@ -34,6 +34,51 @@
   </div>
   <div class="form-pair">
     <div class="field">
+      <label for="f-provider">provider <span style="color:var(--border)">(optional)</span></label>
+      <input type="text" id="f-provider" name="provider" value="{{if .Link}}{{.Link.Provider}}{{end}}" placeholder="GreenCloud, Shopee, MidTeknologi..." autocomplete="off" />
+      <div class="field-help">brand or affiliate owner</div>
+    </div>
+    <div class="field">
+      <label for="f-channel">channel <span style="color:var(--border)">(optional)</span></label>
+      <input type="text" id="f-channel" name="channel" value="{{if .Link}}{{.Link.Channel}}{{end}}" placeholder="blog, instagram, telegram..." autocomplete="off" list="channel-suggestions" />
+      <div class="field-help">where you promote this slug</div>
+    </div>
+  </div>
+  <datalist id="channel-suggestions">
+    <option value="website"></option>
+    <option value="blog"></option>
+    <option value="instagram"></option>
+    <option value="youtube"></option>
+    <option value="facebook"></option>
+    <option value="twitter"></option>
+    <option value="threads"></option>
+    <option value="telegram"></option>
+    <option value="whatsapp"></option>
+    <option value="email"></option>
+    <option value="legacy"></option>
+  </datalist>
+  <div class="field">
+    <label for="f-campaign">campaign / placement <span style="color:var(--border)">(optional)</span></label>
+    <input type="text" id="f-campaign" name="campaign" value="{{if .Link}}{{.Link.Campaign}}{{end}}" placeholder="review-vps, q4-promo, legacy..." autocomplete="off" list="campaign-suggestions" />
+    <div class="field-help">keep the public slug stable; use this field for strategy grouping</div>
+  </div>
+  <datalist id="campaign-suggestions">
+    <option value="always-on"></option>
+    <option value="review-vps"></option>
+    <option value="vps-review"></option>
+    <option value="evergreen-vps"></option>
+    <option value="evergreen-courses"></option>
+    <option value="evergreen-ebook"></option>
+    <option value="evergreen-shopping"></option>
+    <option value="evergreen-coffee"></option>
+    <option value="evergreen-themes"></option>
+    <option value="evergreen-blog"></option>
+    <option value="billionmail"></option>
+    <option value="services"></option>
+    <option value="legacy"></option>
+  </datalist>
+  <div class="form-pair">
+    <div class="field">
       <label for="f-priority">homepage priority</label>
       <input type="number" id="f-priority" name="priority" value="{{if .Link}}{{.Link.Priority}}{{else}}0{{end}}" min="0" step="1" inputmode="numeric" />
       <div class="field-help">higher values appear first</div>

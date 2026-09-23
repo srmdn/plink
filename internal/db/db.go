@@ -54,6 +54,13 @@ var migrations = []string{
 	// v4: add homepage curation metadata
 	`ALTER TABLE links ADD COLUMN featured INTEGER NOT NULL DEFAULT 0;
 	 ALTER TABLE links ADD COLUMN priority INTEGER NOT NULL DEFAULT 0`,
+
+	// v5: add promotion grouping metadata without changing public slugs
+	`ALTER TABLE links ADD COLUMN provider TEXT NOT NULL DEFAULT '';
+	 ALTER TABLE links ADD COLUMN channel TEXT NOT NULL DEFAULT '';
+	 ALTER TABLE links ADD COLUMN campaign TEXT NOT NULL DEFAULT '';
+	 CREATE INDEX IF NOT EXISTS idx_links_provider ON links(provider);
+	 CREATE INDEX IF NOT EXISTS idx_links_channel ON links(channel)`,
 }
 
 func migrate(conn *sql.DB) error {

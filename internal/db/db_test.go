@@ -17,14 +17,14 @@ func TestCurationMigrationAndPublicOrdering(t *testing.T) {
 	if err := database.QueryRow(`SELECT MAX(version) FROM _migrations`).Scan(&version); err != nil {
 		t.Fatal(err)
 	}
-	if version != 4 {
-		t.Fatalf("migration version = %d, want 4", version)
+	if version != 5 {
+		t.Fatalf("migration version = %d, want 5", version)
 	}
 
 	if _, err := database.CreateLinkWithOptions("lower", "https://example.com/lower", "", "Tools", LinkOptions{Featured: true, Priority: 10}); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := database.CreateLinkWithOptions("higher", "https://example.com/higher", "", "Tools", LinkOptions{Featured: true, Priority: 20}); err != nil {
+	if _, err := database.CreateLinkWithOptions("higher", "https://example.com/higher", "", "Tools", LinkOptions{Featured: true, Priority: 20, Provider: "Example", Channel: "blog", Campaign: "test"}); err != nil {
 		t.Fatal(err)
 	}
 	if _, err := database.CreateLink("legacy", "https://example.com/legacy", "", "Tools"); err != nil {
@@ -66,6 +66,9 @@ func TestCurationMigrationAndPublicOrdering(t *testing.T) {
 	}
 	if legacy.Featured || legacy.Priority != 0 {
 		t.Fatalf("legacy defaults = featured %v priority %d, want false/0", legacy.Featured, legacy.Priority)
+	}
+	if higher := links[0]; higher.Provider != "Example" || higher.Channel != "blog" || higher.Campaign != "test" {
+		t.Fatalf("grouping metadata = %#v, want Example/blog/test", higher)
 	}
 }
 

@@ -53,6 +53,9 @@ func (s *Server) handleCreateLink(w http.ResponseWriter, r *http.Request) {
 		URL         string `json:"url"`
 		Description string `json:"description"`
 		Category    string `json:"category"`
+		Provider    string `json:"provider"`
+		Channel     string `json:"channel"`
+		Campaign    string `json:"campaign"`
 		Featured    *bool  `json:"featured"`
 		Priority    *int   `json:"priority"`
 	}
@@ -63,6 +66,9 @@ func (s *Server) handleCreateLink(w http.ResponseWriter, r *http.Request) {
 
 	body.Slug = strings.TrimSpace(body.Slug)
 	body.URL = strings.TrimSpace(body.URL)
+	body.Provider = strings.TrimSpace(body.Provider)
+	body.Channel = strings.TrimSpace(body.Channel)
+	body.Campaign = strings.TrimSpace(body.Campaign)
 
 	if body.Slug == "" || body.URL == "" {
 		writeError(w, http.StatusBadRequest, "slug and url are required")
@@ -72,8 +78,12 @@ func (s *Server) handleCreateLink(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusBadRequest, "slug is reserved")
 		return
 	}
+	if err := validateLinkMetadata(body.Provider, body.Channel, body.Campaign); err != nil {
+		writeError(w, http.StatusBadRequest, err.Error())
+		return
+	}
 
-	options := db.LinkOptions{}
+	options := db.LinkOptions{Provider: body.Provider, Channel: body.Channel, Campaign: body.Campaign}
 	if body.Featured != nil {
 		options.Featured = *body.Featured
 	}
@@ -106,12 +116,15 @@ func (s *Server) handleUpdateLink(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var body struct {
-		Slug        string `json:"slug"`
-		URL         string `json:"url"`
-		Description string `json:"description"`
-		Category    string `json:"category"`
-		Featured    *bool  `json:"featured"`
-		Priority    *int   `json:"priority"`
+		Slug        string  `json:"slug"`
+		URL         string  `json:"url"`
+		Description string  `json:"description"`
+		Category    string  `json:"category"`
+		Provider    *string `json:"provider"`
+		Channel     *string `json:"channel"`
+		Campaign    *string `json:"campaign"`
+		Featured    *bool   `json:"featured"`
+		Priority    *int    `json:"priority"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
 		writeError(w, http.StatusBadRequest, "invalid json")
@@ -124,7 +137,7 @@ func (s *Server) handleUpdateLink(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var updateErr error
-	if body.Featured == nil && body.Priority == nil {
+	if body.Featured == nil && body.Priority == nil && body.Provider == nil && body.Channel == nil && body.Campaign == nil {
 		// Preserve the legacy API contract: omitted curation fields do not reset metadata.
 		updateErr = s.db.UpdateLink(id, body.Slug, body.URL, body.Description, body.Category)
 	} else {
@@ -138,11 +151,27 @@ func (s *Server) handleUpdateLink(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		options := db.LinkOptions{Featured: current.Featured, Priority: current.Priority}
+		options.Provider = current.Provider
+		options.Channel = current.Channel
+		options.Campaign = current.Campaign
 		if body.Featured != nil {
 			options.Featured = *body.Featured
 		}
 		if body.Priority != nil {
 			options.Priority = *body.Priority
+		}
+		if body.Provider != nil {
+			options.Provider = strings.TrimSpace(*body.Provider)
+		}
+		if body.Channel != nil {
+			options.Channel = strings.TrimSpace(*body.Channel)
+		}
+		if body.Campaign != nil {
+			options.Campaign = strings.TrimSpace(*body.Campaign)
+		}
+		if err := validateLinkMetadata(options.Provider, options.Channel, options.Campaign); err != nil {
+			writeError(w, http.StatusBadRequest, err.Error())
+			return
 		}
 		updateErr = s.db.UpdateLinkWithOptions(id, body.Slug, body.URL, body.Description, body.Category, options)
 	}
@@ -203,7 +232,7 @@ func (s *Server) handleExport(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/csv")
 		w.Header().Set("Content-Disposition", "attachment; filename=\"plink-export.csv\"")
 		cw := csv.NewWriter(w)
-		cw.Write([]string{"slug", "url", "description", "category", "active", "featured", "priority", "clicks", "created_at"})
+		cw.Write([]string{"slug", "url", "description", "category", "provider", "channel", "campaign", "active", "featured", "priority", "clicks", "created_at"})
 		for _, l := range links {
 			active := "1"
 			if !l.Active {
@@ -213,7 +242,7 @@ func (s *Server) handleExport(w http.ResponseWriter, r *http.Request) {
 			if l.Featured {
 				featured = "1"
 			}
-			cw.Write([]string{l.Slug, l.URL, l.Description, l.Category, active, featured, fmt.Sprintf("%d", l.Priority), fmt.Sprintf("%d", l.Clicks), fmt.Sprintf("%d", l.CreatedAt)})
+			cw.Write([]string{l.Slug, l.URL, l.Description, l.Category, l.Provider, l.Channel, l.Campaign, active, featured, fmt.Sprintf("%d", l.Priority), fmt.Sprintf("%d", l.Clicks), fmt.Sprintf("%d", l.CreatedAt)})
 		}
 		cw.Flush()
 		return
@@ -267,7 +296,7 @@ func (s *Server) handleDailyExport(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/csv")
 	w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=\"plink-daily-clicks-%s.csv\"", date))
 	cw := csv.NewWriter(w)
-	_ = cw.Write([]string{"date", "slug", "short_url", "destination", "category", "clicks"})
+	_ = cw.Write([]string{"date", "slug", "short_url", "destination", "category", "provider", "channel", "campaign", "clicks"})
 	shortBase := publicBaseURL(s.cfg.PublicURL, r)
 	for _, row := range rows {
 		_ = cw.Write([]string{
@@ -276,6 +305,9 @@ func (s *Server) handleDailyExport(w http.ResponseWriter, r *http.Request) {
 			shortBase + "/" + row.link.Slug,
 			row.link.URL,
 			row.link.Category,
+			row.link.Provider,
+			row.link.Channel,
+			row.link.Campaign,
 			strconv.FormatInt(row.clicks, 10),
 		})
 	}

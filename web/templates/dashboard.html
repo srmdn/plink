@@ -23,6 +23,7 @@
   <header>
     <div class="logo">plink <span>/ admin</span></div>
     <div style="display:flex;align-items:center;gap:8px;">
+      <a href="/{{.AdminPath}}/analytics/dashboard" class="btn btn-ghost btn-sm">analytics</a>
       <a href="/" class="btn btn-ghost btn-sm">home</a>
       <form method="POST" action="/{{.AdminPath}}/logout" style="display:inline">
         <button type="submit" class="btn btn-ghost btn-sm">logout</button>
@@ -49,13 +50,6 @@
           hx-include="#search, select[name='category'], select[name='status'], #date-filter"
         />
       </div>
-      <button
-        class="btn btn-ghost btn-sm"
-        hx-get="/{{.AdminPath}}/analytics"
-        hx-target="#analytics-body"
-        hx-swap="innerHTML"
-        hx-include="#date-filter"
-      >sources</button>
       <div class="export-wrap">
         <button class="btn btn-ghost btn-sm" onclick="toggleExportMenu(event)">export ↓</button>
         <div class="export-menu hidden" id="export-menu">
@@ -77,17 +71,6 @@
     <div class="overlay hidden" id="link-modal" onclick="if(event.target===this)closeModal()">
       <div class="modal">
         <div id="modal-body"></div>
-      </div>
-    </div>
-
-    <!-- Analytics modal -->
-    <div class="overlay hidden" id="analytics-modal" onclick="if(event.target===this)closeAnalyticsModal()">
-      <div class="modal analytics-modal">
-        <div class="modal-header">
-          <span class="modal-title" id="analytics-title">analytics</span>
-          <button class="btn btn-ghost btn-sm" onclick="closeAnalyticsModal()">✕</button>
-        </div>
-        <div id="analytics-body"></div>
       </div>
     </div>
 

@@ -50,6 +50,7 @@ func New(cfg *config.Config, database *db.DB, webFS embed.FS) http.Handler {
 			"percentOfLabel": percentOfLabel,
 			"referrerLabel":  referrerLabel,
 			"js":             template.JSEscaper,
+			"urlquery":       template.URLQueryEscaper,
 		}).ParseFS(webFS,
 			"web/templates/*.html",
 			"web/templates/partials/*.html",
@@ -82,6 +83,7 @@ func New(cfg *config.Config, database *db.DB, webFS embed.FS) http.Handler {
 
 	// Admin UI
 	mux.HandleFunc("GET "+ap, s.requireAuth(s.handleDashboard))
+	mux.HandleFunc("GET "+ap+"/analytics/dashboard", s.requireAuth(s.handleAnalyticsDashboard))
 	mux.HandleFunc("GET "+ap+"/links", s.requireAuth(s.handleLinksSection))
 	mux.HandleFunc("GET "+ap+"/links/new", s.requireAuth(s.handleNewLinkForm))
 	mux.HandleFunc("GET "+ap+"/links/{id}/edit", s.requireAuth(s.handleEditLinkForm))

@@ -59,21 +59,21 @@ func TestDailyExportUsesSelectedDateAndClickOrder(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if strings.Join(header, ",") != "date,slug,short_url,destination,category,clicks" {
+	if strings.Join(header, ",") != "date,slug,short_url,destination,category,provider,channel,campaign,clicks" {
 		t.Fatalf("csv header = %q", header)
 	}
 	row, err := reader.Read()
 	if err != nil {
 		t.Fatal(err)
 	}
-	if row[0] != date || row[1] != "top" || row[5] != "5" || row[2] != "https://go.example.com/top" {
+	if row[0] != date || row[1] != "top" || row[8] != "5" || row[2] != "https://go.example.com/top" {
 		t.Fatalf("top csv row = %#v", row)
 	}
 	row, err = reader.Read()
 	if err != nil {
 		t.Fatal(err)
 	}
-	if row[1] != "quiet" || row[5] != "2" {
+	if row[1] != "quiet" || row[8] != "2" {
 		t.Fatalf("quiet csv row = %#v", row)
 	}
 	if _, err := reader.Read(); err != io.EOF {

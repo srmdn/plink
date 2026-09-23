@@ -45,7 +45,6 @@
       name="date"
       value="{{.Date}}"
       aria-label="filter by date"
-      onchange="refreshOpenAnalytics()"
       hx-get="/{{.AdminPath}}/links"
       hx-trigger="change"
       hx-target="#links-section"
@@ -80,11 +79,27 @@
           <div class="link-main">
             <div class="link-copy">
               <div class="slug-line">
-                <span class="slug">/{{.Slug}}</span>
+                <button
+                  type="button"
+                  class="slug slug-edit-trigger"
+                  title="edit /{{.Slug}}"
+                  aria-label="edit /{{.Slug}}"
+                  hx-get="/{{$.AdminPath}}/links/{{.ID}}/edit"
+                  hx-target="#modal-body"
+                  hx-swap="innerHTML"
+                  hx-include="#search, select[name='category'], select[name='status'], #date-filter"
+                >/{{.Slug}}</button>
                 {{if .Featured}}<span class="cat-badge featured-badge">featured</span>{{end}}
                 {{if .Priority}}<span class="priority-badge">p{{.Priority}}</span>{{end}}
                 {{if .Category}}<span class="cat-badge">{{.Category}}</span>{{end}}
               </div>
+              {{if or .Provider .Channel .Campaign}}
+              <div class="link-metadata">
+                {{if .Provider}}<span class="meta-badge">{{.Provider}}</span>{{end}}
+                {{if .Channel}}<span class="meta-badge">{{.Channel}}</span>{{end}}
+                {{if .Campaign}}<span class="meta-badge meta-badge-muted">{{.Campaign}}</span>{{end}}
+              </div>
+              {{end}}
               {{if .Description}}<div class="card-desc">{{.Description}}</div>{{end}}
             </div>
           </div>
@@ -97,17 +112,10 @@
         <td class="actions-cell">
           <div class="row-actions">
             {{if .Active}}<button class="btn btn-ghost btn-sm btn-copy" data-label="copy" data-slug="{{.Slug}}" onclick="copyLink(this)">copy</button>{{end}}
-            <button class="btn btn-ghost btn-sm" hx-get="/{{$.AdminPath}}/links/{{.ID}}/analytics" hx-target="#analytics-body" hx-swap="innerHTML" hx-include="#date-filter">stats</button>
+            <a class="btn btn-ghost btn-sm" href="/{{$.AdminPath}}/analytics/dashboard?link={{.ID}}">analytics</a>
             <details class="row-menu">
               <summary class="btn btn-ghost btn-sm" aria-label="more actions for /{{.Slug}}">more</summary>
               <div class="row-menu-panel">
-                <button
-                  class="row-menu-item"
-                  hx-get="/{{$.AdminPath}}/links/{{.ID}}/edit"
-                  hx-target="#modal-body"
-                  hx-swap="innerHTML"
-                  hx-include="#search, select[name='category'], select[name='status'], #date-filter"
-                >edit</button>
                 <button
                   class="row-menu-item"
                   hx-patch="/{{$.AdminPath}}/links/{{.ID}}/toggle"

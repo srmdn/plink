@@ -3,6 +3,7 @@ package db
 import (
 	"database/sql"
 	"sort"
+	"strings"
 	"time"
 )
 
@@ -12,6 +13,9 @@ type Link struct {
 	URL         string `json:"url"`
 	Description string `json:"description"`
 	Category    string `json:"category"`
+	Provider    string `json:"provider"`
+	Channel     string `json:"channel"`
+	Campaign    string `json:"campaign"`
 	Active      bool   `json:"active"`
 	Featured    bool   `json:"featured"`
 	Priority    int    `json:"priority"`
@@ -59,6 +63,9 @@ type OverviewAnalytics struct {
 type LinkOptions struct {
 	Featured bool
 	Priority int
+	Provider string
+	Channel  string
+	Campaign string
 }
 
 type PublicLink struct {
@@ -119,7 +126,8 @@ func (db *DB) ListFeaturedLinks(limit int) ([]PublicLink, error) {
 
 func (db *DB) ListLinks() ([]Link, error) {
 	rows, err := db.Query(`
-		SELECT l.id, l.slug, l.url, l.description, l.category, l.active, l.featured, l.priority,
+		SELECT l.id, l.slug, l.url, l.description, l.category, l.provider, l.channel, l.campaign,
+		       l.active, l.featured, l.priority,
 		       l.created_at, l.updated_at,
 		       COUNT(c.id) AS clicks
 		FROM links l
@@ -135,7 +143,7 @@ func (db *DB) ListLinks() ([]Link, error) {
 	var links []Link
 	for rows.Next() {
 		var l Link
-		if err := rows.Scan(&l.ID, &l.Slug, &l.URL, &l.Description, &l.Category, &l.Active, &l.Featured, &l.Priority, &l.CreatedAt, &l.UpdatedAt, &l.Clicks); err != nil {
+		if err := rows.Scan(&l.ID, &l.Slug, &l.URL, &l.Description, &l.Category, &l.Provider, &l.Channel, &l.Campaign, &l.Active, &l.Featured, &l.Priority, &l.CreatedAt, &l.UpdatedAt, &l.Clicks); err != nil {
 			return nil, err
 		}
 		links = append(links, l)
@@ -175,9 +183,10 @@ func (db *DB) ClickCountsBetween(start, end int64) (map[int64]int64, error) {
 func (db *DB) GetLinkBySlug(slug string) (*Link, error) {
 	var l Link
 	err := db.QueryRow(
-		`SELECT id, slug, url, description, category, active, featured, priority, created_at, updated_at
-		 FROM links WHERE slug = ? AND active = 1`, slug,
-	).Scan(&l.ID, &l.Slug, &l.URL, &l.Description, &l.Category, &l.Active, &l.Featured, &l.Priority, &l.CreatedAt, &l.UpdatedAt)
+		`SELECT id, slug, url, description, category, provider, channel, campaign,
+		        active, featured, priority, created_at, updated_at
+			 FROM links WHERE slug = ? AND active = 1`, slug,
+	).Scan(&l.ID, &l.Slug, &l.URL, &l.Description, &l.Category, &l.Provider, &l.Channel, &l.Campaign, &l.Active, &l.Featured, &l.Priority, &l.CreatedAt, &l.UpdatedAt)
 	if err == sql.ErrNoRows {
 		return nil, nil
 	}
@@ -187,13 +196,14 @@ func (db *DB) GetLinkBySlug(slug string) (*Link, error) {
 func (db *DB) GetLinkByID(id int64) (*Link, error) {
 	var l Link
 	err := db.QueryRow(`
-		SELECT l.id, l.slug, l.url, l.description, l.category, l.active, l.featured, l.priority,
+		SELECT l.id, l.slug, l.url, l.description, l.category, l.provider, l.channel, l.campaign,
+		       l.active, l.featured, l.priority,
 		       l.created_at, l.updated_at, COUNT(c.id) AS clicks
 		FROM links l
 		LEFT JOIN clicks c ON c.link_id = l.id
 		WHERE l.id = ?
 		GROUP BY l.id
-	`, id).Scan(&l.ID, &l.Slug, &l.URL, &l.Description, &l.Category, &l.Active, &l.Featured, &l.Priority, &l.CreatedAt, &l.UpdatedAt, &l.Clicks)
+	`, id).Scan(&l.ID, &l.Slug, &l.URL, &l.Description, &l.Category, &l.Provider, &l.Channel, &l.Campaign, &l.Active, &l.Featured, &l.Priority, &l.CreatedAt, &l.UpdatedAt, &l.Clicks)
 	if err == sql.ErrNoRows {
 		return nil, nil
 	}
@@ -212,9 +222,9 @@ func (db *DB) CreateLink(slug, url, description, category string) (*Link, error)
 func (db *DB) CreateLinkWithOptions(slug, url, description, category string, options LinkOptions) (*Link, error) {
 	now := time.Now().Unix()
 	res, err := db.Exec(
-		`INSERT INTO links (slug, url, description, category, featured, priority, created_at, updated_at)
-		 VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-		slug, url, description, category, options.Featured, options.Priority, now, now,
+		`INSERT INTO links (slug, url, description, category, provider, channel, campaign, featured, priority, created_at, updated_at)
+		 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+		slug, url, description, category, options.Provider, options.Channel, options.Campaign, options.Featured, options.Priority, now, now,
 	)
 	if err != nil {
 		return nil, err
@@ -222,6 +232,7 @@ func (db *DB) CreateLinkWithOptions(slug, url, description, category string, opt
 	id, _ := res.LastInsertId()
 	return &Link{
 		ID: id, Slug: slug, URL: url, Description: description, Category: category,
+		Provider: options.Provider, Channel: options.Channel, Campaign: options.Campaign,
 		Featured: options.Featured, Priority: options.Priority, CreatedAt: now, UpdatedAt: now,
 	}, nil
 }
@@ -239,9 +250,10 @@ func (db *DB) UpdateLinkWithOptions(id int64, slug, url, description, category s
 	now := time.Now().Unix()
 	_, err := db.Exec(
 		`UPDATE links
-		 SET slug = ?, url = ?, description = ?, category = ?, featured = ?, priority = ?, updated_at = ?
+		 SET slug = ?, url = ?, description = ?, category = ?, provider = ?, channel = ?, campaign = ?,
+		     featured = ?, priority = ?, updated_at = ?
 		 WHERE id = ?`,
-		slug, url, description, category, options.Featured, options.Priority, now, id,
+		slug, url, description, category, options.Provider, options.Channel, options.Campaign, options.Featured, options.Priority, now, id,
 	)
 	return err
 }
@@ -411,6 +423,57 @@ func (db *DB) GetOverviewAnalyticsBetween(start, end int64) (*OverviewAnalytics,
 		FROM clicks
 		WHERE clicked_at >= ? AND clicked_at < ?
 	`, start, end)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	groups := make(map[string]*referrerAggregate)
+	for rows.Next() {
+		var raw string
+		var linkID int64
+		if err := rows.Scan(&raw, &linkID); err != nil {
+			return nil, err
+		}
+		addReferrer(groups, raw, linkID)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return &OverviewAnalytics{
+		TotalClicks: total,
+		Referrers:   buildSourceSummaries(groups, 10),
+	}, nil
+}
+
+// GetOverviewAnalyticsForLinks returns aggregate analytics for a selected set
+// of links. A nil range means all time; otherwise the half-open range
+// [start, end) is used. This keeps overview filters scoped to the same links
+// shown in the dashboard instead of mixing category-specific totals with
+// site-wide traffic sources.
+func (db *DB) GetOverviewAnalyticsForLinks(linkIDs []int64, start, end *int64) (*OverviewAnalytics, error) {
+	if len(linkIDs) == 0 {
+		return &OverviewAnalytics{}, nil
+	}
+
+	placeholders := strings.TrimRight(strings.Repeat("?,", len(linkIDs)), ",")
+	where := "link_id IN (" + placeholders + ")"
+	args := make([]any, 0, len(linkIDs)+2)
+	for _, id := range linkIDs {
+		args = append(args, id)
+	}
+	if start != nil && end != nil {
+		where += " AND clicked_at >= ? AND clicked_at < ?"
+		args = append(args, *start, *end)
+	}
+
+	var total int64
+	if err := db.QueryRow("SELECT COUNT(*) FROM clicks WHERE "+where, args...).Scan(&total); err != nil {
+		return nil, err
+	}
+
+	rows, err := db.Query("SELECT referrer, link_id FROM clicks WHERE "+where, args...)
 	if err != nil {
 		return nil, err
 	}
