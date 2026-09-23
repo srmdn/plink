@@ -14,6 +14,10 @@ yourdomain.com/tokopedia-promo  →  https://tokopedia.com/...
 - Clean slugs — no `s/` prefix
 - Click analytics — date-aware source reports, a last 30 days chart, and
   referrer breakdowns
+- Strategy analytics — compare clicks by provider, channel, campaign, or slug
+  with period filters, share charts, and provider ranking
+- Promotion metadata — annotate each link with its provider, channel, and
+  campaign without changing the public slug
 - Categories — organize links with filterable labels
 - Public resource search — find links by slug, description, or category
 - Curated homepage — highlight recommended links before the full catalog
@@ -80,6 +84,18 @@ The admin dashboard keeps daily link management compact. It includes summary
 metrics, live search, category, status, and date filtering, JSON and CSV export,
 link controls, featured-link ordering, source overview analytics, and per-link
 analytics.
+
+## Analytics dashboard
+
+The analytics dashboard turns redirect clicks into a promotion view. Filter by
+period and group results by provider, channel, campaign, or individual slug.
+The dashboard includes click-share charts, hover details, provider ranking with
+average clicks per slug, and comparison with the previous period when a bounded
+date range is selected.
+
+![Illustrative srmdn.com analytics dashboard showing a click-share pie chart and provider statistics](docs/assets/analytics-overview.webp)
+
+*Illustrative preview with sample data; it is not a production snapshot.*
 
 ## Build
 
