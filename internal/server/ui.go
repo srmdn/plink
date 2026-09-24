@@ -137,7 +137,6 @@ type analyticsPageData struct {
 	TrafficSources      []db.SourceSummary
 	TrafficSourcesLabel string
 	TopLinks            []analyticsPageLink
-	TopMax              int64
 	HasTrend            bool
 	SelectedLink        *analyticsData
 	DonutSlices         []analyticsSlice
@@ -657,6 +656,7 @@ func buildAnalyticsPageDataWithPrevious(links []db.Link, clickCounts, previousCl
 	}
 	filtered := aggregateAnalyticsRows(linkRows, groupSpec.Key)
 	decorateAnalyticsRows(filtered, previousClickCounts != nil)
+	filtered = filterAnalyticsRowsWithClicks(filtered)
 
 	sort.SliceStable(filtered, func(i, j int) bool {
 		if filtered[i].Clicks != filtered[j].Clicks {
@@ -668,11 +668,6 @@ func buildAnalyticsPageDataWithPrevious(links []db.Link, clickCounts, previousCl
 	if len(topLinks) > 8 {
 		topLinks = topLinks[:8]
 	}
-	topMax := int64(0)
-	if len(topLinks) > 0 {
-		topMax = topLinks[0].Clicks
-	}
-
 	data := analyticsPageData{
 		Period:              spec.Key,
 		Periods:             analyticsPeriods,
@@ -689,12 +684,21 @@ func buildAnalyticsPageDataWithPrevious(links []db.Link, clickCounts, previousCl
 		TrafficSources:      overview.Referrers,
 		TrafficSourcesLabel: spec.Label,
 		TopLinks:            topLinks,
-		TopMax:              topMax,
 		HasTrend:            previousClickCounts != nil,
 		DonutSlices:         buildAnalyticsSlices(filtered, totalClicks),
 	}
 	data.DonutSVG = buildAnalyticsDonutSVG(data.DonutSlices, totalClicks)
 	return data
+}
+
+func filterAnalyticsRowsWithClicks(rows []analyticsPageLink) []analyticsPageLink {
+	filtered := rows[:0]
+	for _, row := range rows {
+		if row.Clicks > 0 {
+			filtered = append(filtered, row)
+		}
+	}
+	return filtered
 }
 
 func aggregateAnalyticsRows(rows []analyticsPageLink, group string) []analyticsPageLink {

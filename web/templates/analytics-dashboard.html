@@ -42,6 +42,9 @@
     </aside>
 
   <main class="admin-main analytics-page">
+    {{if .SelectedLink}}
+    {{template "analytics-link-detail" .SelectedLink}}
+    {{else}}
     <div class="analytics-page-heading">
       <div>
         <div class="admin-eyebrow">Performance</div>
@@ -70,15 +73,13 @@
       </div>
     </div>
 
-    {{if .SelectedLink}}{{template "analytics-link-detail" .SelectedLink}}{{end}}
-
     <section class="analytics-page-kpis" aria-label="analytics summary">
       <div class="stat-card">
         <div class="stat-card-top"><div class="stat-label">Clicks · {{.PeriodLabel}}</div><span class="stat-card-icon" aria-hidden="true"><svg viewBox="0 0 20 20"><path d="m4 2 12 9-5.1.8-2.7 4.7L4 2Z"/></svg></span></div>
         <div class="stat-value">{{.TotalClicks}}</div><div class="stat-card-foot">Tracked link visits</div>
       </div>
       <div class="stat-card">
-        <div class="stat-card-top"><div class="stat-label">Active offers</div><span class="stat-card-icon" aria-hidden="true"><svg viewBox="0 0 20 20"><path d="M2 10 10 2h6l2 2v6l-8 8L2 10Z"/><circle cx="14" cy="6" r="1"/></svg></span></div>
+        <div class="stat-card-top"><div class="stat-label">Active links</div><span class="stat-card-icon" aria-hidden="true"><svg viewBox="0 0 20 20"><path d="M2 10 10 2h6l2 2v6l-8 8L2 10Z"/><circle cx="14" cy="6" r="1"/></svg></span></div>
         <div class="stat-value">{{.ActiveLinks}}</div><div class="stat-card-foot">Live links in this scope</div>
       </div>
       <div class="stat-card">
@@ -117,21 +118,21 @@
 
       <section class="analytics-page-panel" aria-labelledby="top-offers-heading">
         <div class="analytics-page-panel-heading">
-          <h2 id="top-offers-heading">{{if eq .Group "provider"}}provider ranking{{else}}top offers{{end}}</h2>
-          <span class="analytics-page-meta">{{if eq .Group "provider"}}click share · avg per slug{{if .HasTrend}} · vs previous period{{end}}{{else}}ranked by clicks{{end}}</span>
+          <h2 id="top-offers-heading">{{if eq .Group "provider"}}top providers{{else if eq .Group "channel"}}top channels{{else if eq .Group "campaign"}}top campaigns{{else}}top links{{end}}</h2>
+          <span class="analytics-page-meta">up to 8 · share of all clicks · {{.PeriodLabel}}{{if and (eq .Group "provider") .HasTrend}} · trend vs previous period{{end}}</span>
         </div>
         {{if .TopLinks}}
         <div class="analytics-offer-list">
           {{if eq .Group "provider"}}
-          <div class="analytics-offer-row analytics-provider-row{{if not $.HasTrend}} analytics-provider-row-no-trend{{end}} analytics-offer-header"><span>provider</span><span>share</span><span>clicks</span><span>per slug</span>{{if $.HasTrend}}<span>trend</span>{{end}}</div>
+          <div class="analytics-offer-row analytics-provider-row{{if not $.HasTrend}} analytics-provider-row-no-trend{{end}} analytics-offer-header"><span>provider</span><span>share</span><span>clicks</span><span>avg/link</span>{{if $.HasTrend}}<span>trend</span>{{end}}</div>
           {{else}}
-          <div class="analytics-offer-row analytics-offer-header"><span>offer</span><span>share</span><span>clicks</span></div>
+          <div class="analytics-offer-row analytics-offer-header"><span>{{if eq $.Group "link"}}link{{else if eq $.Group "channel"}}channel{{else}}campaign{{end}}</span><span>share</span><span>clicks</span></div>
           {{end}}
           {{range .TopLinks}}
           {{if eq $.Group "provider"}}
           <div class="analytics-offer-row analytics-provider-row{{if not $.HasTrend}} analytics-provider-row-no-trend{{end}}">
             <span>{{if gt .ID 0}}<a class="analytics-offer-link" href="?period={{$.Period}}{{if $.Category}}&amp;category={{$.Category | urlquery}}{{end}}{{if ne $.Group "link"}}&amp;group={{$.Group | urlquery}}{{end}}&amp;link={{.ID}}"><strong>{{.Slug}}</strong></a>{{else}}<strong>{{.Slug}}</strong>{{end}} <em>{{.LinkCount}} slugs</em></span>
-            <span class="analytics-ranking-share"><span class="analytics-bar-track"><span class="analytics-bar" style="width:{{percent .Clicks $.TopMax}}%"></span></span><small>{{percentOfLabel .Clicks $.TotalClicks}}</small></span>
+            <span class="analytics-ranking-share"><span class="analytics-bar-track"><span class="analytics-bar" style="width:{{percent .Clicks $.TotalClicks}}%"></span></span><small>{{percentOfLabel .Clicks $.TotalClicks}}</small></span>
             <span class="analytics-offer-clicks">{{.Clicks}}</span>
             <span class="analytics-offer-clicks">{{.ClicksPerLink}}</span>
             {{if $.HasTrend}}<span class="analytics-trend analytics-trend-{{.TrendClass}}">{{.TrendLabel}}</span>{{end}}
@@ -139,14 +140,14 @@
           {{else}}
           <div class="analytics-offer-row">
             <span>{{if gt .ID 0}}<a class="analytics-offer-link" href="?period={{$.Period}}{{if $.Category}}&amp;category={{$.Category | urlquery}}{{end}}{{if ne $.Group "link"}}&amp;group={{$.Group | urlquery}}{{end}}&amp;link={{.ID}}"><strong>{{.Slug}}</strong></a>{{else}}<strong>{{.Slug}}</strong>{{end}}{{if eq $.Group "link"}}{{if .Category}} <em>{{.Category}}</em>{{end}}{{if .Provider}} <em>{{.Provider}}</em>{{end}}{{if .Channel}} <em>{{.Channel}}</em>{{end}}{{else}} <em>{{.LinkCount}} links</em>{{end}}</span>
-            <span class="analytics-bar-track"><span class="analytics-bar" style="width:{{percent .Clicks $.TopMax}}%"></span></span>
+            <span class="analytics-ranking-share"><span class="analytics-bar-track"><span class="analytics-bar" style="width:{{percent .Clicks $.TotalClicks}}%"></span></span><small>{{percentOfLabel .Clicks $.TotalClicks}}</small></span>
             <span class="analytics-offer-clicks">{{.Clicks}}</span>
           </div>
           {{end}}
           {{end}}
         </div>
         {{else}}
-        <div class="analytics-page-empty">no active offers in this scope</div>
+        <div class="analytics-page-empty">no clicks in {{.PeriodLabel}} for these filters</div>
         {{end}}
       </section>
     </div>
@@ -174,6 +175,7 @@
     </section>
 
     <p class="analytics-page-note">Click counts are link redirects. Conversion and revenue data are not connected yet.</p>
+    {{end}}
   </main>
 </div>
 </div>
