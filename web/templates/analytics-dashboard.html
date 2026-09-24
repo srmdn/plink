@@ -2,26 +2,53 @@
 <!DOCTYPE html>
 <html lang="en">
 {{template "head" .}}
-<body>
-<div id="app">
-  <header>
-    <div class="logo">plink <span>/ admin</span></div>
-    <nav class="admin-nav" aria-label="admin sections">
-      <a class="btn btn-ghost btn-sm" href="/{{.AdminPath}}">links</a>
-      <a class="btn btn-primary btn-sm" href="/{{.AdminPath}}/analytics/dashboard">analytics</a>
-      <form method="POST" action="/{{.AdminPath}}/logout" style="display:inline">
-        <button type="submit" class="btn btn-ghost btn-sm">logout</button>
+<body class="admin-page">
+<div id="app" class="admin-app">
+  <header class="admin-topbar">
+    <div class="admin-topbar-leading">
+      <button type="button" class="sidebar-toggle" onclick="toggleAdminSidebar()" aria-label="Collapse sidebar" aria-controls="admin-sidebar-nav" aria-expanded="true" title="Collapse sidebar">
+        <svg viewBox="0 0 20 20" aria-hidden="true"><rect x="2.5" y="3" width="15" height="14" rx="2"/><path d="M7.5 3.5v13"/><path class="sidebar-toggle-chevron" d="m12.5 7-3 3 3 3"/></svg>
+      </button>
+      <a class="admin-brand" href="/{{.AdminPath}}" aria-label="Plink admin home">
+        <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M12.1 19.9 9.8 22.2a5 5 0 0 1-7.1-7.1l6.1-6.1a5 5 0 0 1 7.1 0M19.9 12.1l2.3-2.3a5 5 0 0 1 7.1 7.1l-6.1 6.1a5 5 0 0 1-7.1 0M11.1 20.9l9.8-9.8"/></svg>
+        <span>plink</span><span class="admin-brand-context">admin</span>
+      </a>
+    </div>
+    <div class="admin-topbar-actions">
+      <span class="admin-topbar-label"><span class="admin-status-dot" aria-hidden="true"></span>self-hosted</span>
+      <form method="POST" action="/{{.AdminPath}}/logout">
+        <button type="submit" class="btn btn-ghost btn-sm">log out</button>
       </form>
-    </nav>
+    </div>
   </header>
 
-  <main class="analytics-page">
+  <div class="admin-layout">
+    <aside class="admin-sidebar">
+      <div class="admin-sidebar-label">Workspace</div>
+      <nav class="admin-sidebar-nav" id="admin-sidebar-nav" aria-label="Admin sections">
+        <a href="/{{.AdminPath}}/analytics/dashboard" class="admin-sidebar-link active" aria-current="page" aria-label="Analytics" title="Analytics">
+          <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 10h3v7H3zM8.5 5h3v12h-3zM14 2h3v15h-3z"/></svg>
+          <span>Analytics</span>
+        </a>
+        <a href="/{{.AdminPath}}" class="admin-sidebar-link" aria-label="Links" title="Links">
+          <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M7.8 12.2 6.4 13.6a3.5 3.5 0 0 1-5-5l3-3a3.5 3.5 0 0 1 5 0M12.2 7.8l1.4-1.4a3.5 3.5 0 0 1 5 5l-3 3a3.5 3.5 0 0 1-5 0M6.8 13.2l6.4-6.4"/></svg>
+          <span>Links</span>
+        </a>
+      </nav>
+      <div class="admin-sidebar-foot">
+        <span class="admin-sidebar-accent" aria-hidden="true"></span>
+        <span>Short links.<br />Big results.</span>
+      </div>
+    </aside>
+
+  <main class="admin-main analytics-page">
     <div class="analytics-page-heading">
       <div>
-        <h1>analytics overview</h1>
+        <div class="admin-eyebrow">Performance</div>
+        <h1>Analytics overview</h1>
         <p>See what deserves promotion — not just what was clicked.</p>
       </div>
-      <span class="analytics-page-meta">{{.PeriodLabel}} · reporting timezone</span>
+      <span class="analytics-period-badge"><span class="admin-status-dot" aria-hidden="true"></span>{{.PeriodLabel}} · reporting timezone</span>
     </div>
 
     <div class="analytics-page-filters">
@@ -46,10 +73,22 @@
     {{if .SelectedLink}}{{template "analytics-link-detail" .SelectedLink}}{{end}}
 
     <section class="analytics-page-kpis" aria-label="analytics summary">
-      <div class="stat-card"><div class="stat-value">{{.TotalClicks}}</div><div class="stat-label">clicks · {{.PeriodLabel}}</div></div>
-      <div class="stat-card"><div class="stat-value">{{.ActiveLinks}}</div><div class="stat-label">active offers</div></div>
-      <div class="stat-card"><div class="stat-value">{{.DirectTraffic}}</div><div class="stat-label">direct / unknown</div></div>
-      <div class="stat-card"><div class="stat-value">{{.TotalLinks}}</div><div class="stat-label">links in scope</div></div>
+      <div class="stat-card">
+        <div class="stat-card-top"><div class="stat-label">Clicks · {{.PeriodLabel}}</div><span class="stat-card-icon" aria-hidden="true"><svg viewBox="0 0 20 20"><path d="m4 2 12 9-5.1.8-2.7 4.7L4 2Z"/></svg></span></div>
+        <div class="stat-value">{{.TotalClicks}}</div><div class="stat-card-foot">Tracked link visits</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-top"><div class="stat-label">Active offers</div><span class="stat-card-icon" aria-hidden="true"><svg viewBox="0 0 20 20"><path d="M2 10 10 2h6l2 2v6l-8 8L2 10Z"/><circle cx="14" cy="6" r="1"/></svg></span></div>
+        <div class="stat-value">{{.ActiveLinks}}</div><div class="stat-card-foot">Live links in this scope</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-top"><div class="stat-label">Direct / unknown</div><span class="stat-card-icon" aria-hidden="true"><svg viewBox="0 0 20 20"><circle cx="10" cy="6" r="3"/><path d="M3 17a7 7 0 0 1 14 0"/></svg></span></div>
+        <div class="stat-value">{{.DirectTraffic}}</div><div class="stat-card-foot">Visits without a referrer</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-top"><div class="stat-label">Links in scope</div><span class="stat-card-icon" aria-hidden="true"><svg viewBox="0 0 20 20"><path d="M7.8 12.2 6.4 13.6a3.5 3.5 0 0 1-5-5l3-3a3.5 3.5 0 0 1 5 0M12.2 7.8l1.4-1.4a3.5 3.5 0 0 1 5 5l-3 3a3.5 3.5 0 0 1-5 0M6.8 13.2l6.4-6.4"/></svg></span></div>
+        <div class="stat-value">{{.TotalLinks}}</div><div class="stat-card-foot">Included in this view</div>
+      </div>
     </section>
 
     <div class="analytics-page-grid">
@@ -84,18 +123,18 @@
         {{if .TopLinks}}
         <div class="analytics-offer-list">
           {{if eq .Group "provider"}}
-          <div class="analytics-offer-row analytics-provider-row analytics-offer-header"><span>provider</span><span>share</span><span>clicks</span><span>per slug</span><span>trend</span></div>
+          <div class="analytics-offer-row analytics-provider-row{{if not $.HasTrend}} analytics-provider-row-no-trend{{end}} analytics-offer-header"><span>provider</span><span>share</span><span>clicks</span><span>per slug</span>{{if $.HasTrend}}<span>trend</span>{{end}}</div>
           {{else}}
           <div class="analytics-offer-row analytics-offer-header"><span>offer</span><span>share</span><span>clicks</span></div>
           {{end}}
           {{range .TopLinks}}
           {{if eq $.Group "provider"}}
-          <div class="analytics-offer-row analytics-provider-row">
+          <div class="analytics-offer-row analytics-provider-row{{if not $.HasTrend}} analytics-provider-row-no-trend{{end}}">
             <span>{{if gt .ID 0}}<a class="analytics-offer-link" href="?period={{$.Period}}{{if $.Category}}&amp;category={{$.Category | urlquery}}{{end}}{{if ne $.Group "link"}}&amp;group={{$.Group | urlquery}}{{end}}&amp;link={{.ID}}"><strong>{{.Slug}}</strong></a>{{else}}<strong>{{.Slug}}</strong>{{end}} <em>{{.LinkCount}} slugs</em></span>
             <span class="analytics-ranking-share"><span class="analytics-bar-track"><span class="analytics-bar" style="width:{{percent .Clicks $.TopMax}}%"></span></span><small>{{percentOfLabel .Clicks $.TotalClicks}}</small></span>
             <span class="analytics-offer-clicks">{{.Clicks}}</span>
             <span class="analytics-offer-clicks">{{.ClicksPerLink}}</span>
-            <span class="analytics-trend analytics-trend-{{.TrendClass}}">{{if $.HasTrend}}{{.TrendLabel}}{{else}}—{{end}}</span>
+            {{if $.HasTrend}}<span class="analytics-trend analytics-trend-{{.TrendClass}}">{{.TrendLabel}}</span>{{end}}
           </div>
           {{else}}
           <div class="analytics-offer-row">
@@ -136,6 +175,7 @@
 
     <p class="analytics-page-note">Click counts are link redirects. Conversion and revenue data are not connected yet.</p>
   </main>
+</div>
 </div>
 </body>
 </html>

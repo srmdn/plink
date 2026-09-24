@@ -18,20 +18,54 @@
 <!DOCTYPE html>
 <html lang="en">
 {{template "head" .}}
-<body data-public-url="{{.PublicURL}}">
-<div id="app">
-  <header>
-    <div class="logo">plink <span>/ admin</span></div>
-    <div style="display:flex;align-items:center;gap:8px;">
-      <a href="/{{.AdminPath}}/analytics/dashboard" class="btn btn-ghost btn-sm">analytics</a>
-      <a href="/" class="btn btn-ghost btn-sm">home</a>
-      <form method="POST" action="/{{.AdminPath}}/logout" style="display:inline">
-        <button type="submit" class="btn btn-ghost btn-sm">logout</button>
+<body class="admin-page" data-public-url="{{.PublicURL}}">
+<div id="app" class="admin-app">
+  <header class="admin-topbar">
+    <div class="admin-topbar-leading">
+      <button type="button" class="sidebar-toggle" onclick="toggleAdminSidebar()" aria-label="Collapse sidebar" aria-controls="admin-sidebar-nav" aria-expanded="true" title="Collapse sidebar">
+        <svg viewBox="0 0 20 20" aria-hidden="true"><rect x="2.5" y="3" width="15" height="14" rx="2"/><path d="M7.5 3.5v13"/><path class="sidebar-toggle-chevron" d="m12.5 7-3 3 3 3"/></svg>
+      </button>
+      <a class="admin-brand" href="/{{.AdminPath}}" aria-label="Plink admin home">
+        <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M12.1 19.9 9.8 22.2a5 5 0 0 1-7.1-7.1l6.1-6.1a5 5 0 0 1 7.1 0M19.9 12.1l2.3-2.3a5 5 0 0 1 7.1 7.1l-6.1 6.1a5 5 0 0 1-7.1 0M11.1 20.9l9.8-9.8"/></svg>
+        <span>plink</span><span class="admin-brand-context">admin</span>
+      </a>
+    </div>
+    <div class="admin-topbar-actions">
+      <span class="admin-topbar-label"><span class="admin-status-dot" aria-hidden="true"></span>self-hosted</span>
+      <form method="POST" action="/{{.AdminPath}}/logout">
+        <button type="submit" class="btn btn-ghost btn-sm">log out</button>
       </form>
     </div>
   </header>
 
-  <main>
+  <div class="admin-layout">
+    <aside class="admin-sidebar">
+      <div class="admin-sidebar-label">Workspace</div>
+      <nav class="admin-sidebar-nav" id="admin-sidebar-nav" aria-label="Admin sections">
+        <a href="/{{.AdminPath}}/analytics/dashboard" class="admin-sidebar-link" aria-label="Analytics" title="Analytics">
+          <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 10h3v7H3zM8.5 5h3v12h-3zM14 2h3v15h-3z"/></svg>
+          <span>Analytics</span>
+        </a>
+        <a href="/{{.AdminPath}}" class="admin-sidebar-link active" aria-current="page" aria-label="Links" title="Links">
+          <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M7.8 12.2 6.4 13.6a3.5 3.5 0 0 1-5-5l3-3a3.5 3.5 0 0 1 5 0M12.2 7.8l1.4-1.4a3.5 3.5 0 0 1 5 5l-3 3a3.5 3.5 0 0 1-5 0M6.8 13.2l6.4-6.4"/></svg>
+          <span>Links</span>
+        </a>
+      </nav>
+      <div class="admin-sidebar-foot">
+        <span class="admin-sidebar-accent" aria-hidden="true"></span>
+        <span>Short links.<br />Big results.</span>
+      </div>
+    </aside>
+
+  <main class="admin-main">
+    <div class="admin-page-heading">
+      <div>
+        <div class="admin-eyebrow">Link workspace</div>
+        <h1>Links</h1>
+        <p>Manage, filter, and share your short links.</p>
+      </div>
+      <a href="/" class="btn btn-ghost btn-sm admin-home-link">view public site</a>
+    </div>
     {{template "dashboard-summary" .}}
     <div class="toolbar">
       <div class="toolbar-left">
@@ -79,6 +113,7 @@
     </div>
   </main>
 
+</div>
 </div>
 </body>
 </html>
