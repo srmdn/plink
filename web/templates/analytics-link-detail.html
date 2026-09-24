@@ -26,50 +26,48 @@
     <div class="stat-card"><div class="stat-value">{{.DirectTraffic}}</div><div class="stat-label">{{.DirectTrafficLabel}}</div></div>
   </div>
 
-  <div class="analytics-detail-grid">
-    <div class="analytics-detail-subpanel">
-      <div class="analytics-page-panel-heading">
-        <h3>clicks over time</h3>
-        <span class="analytics-page-meta">last 30 days</span>
-      </div>
-      {{if .HasRecentClicks}}{{.ChartSVG}}{{else}}<div class="chart-empty">no clicks in the last 30 days</div>{{end}}
+  <section class="analytics-page-panel analytics-detail-panel" aria-labelledby="analytics-link-chart-heading">
+    <div class="analytics-page-panel-heading">
+      <h2 id="analytics-link-chart-heading">clicks over time</h2>
+      <span class="analytics-page-meta">last 30 days</span>
     </div>
+    {{if .HasRecentClicks}}{{.ChartSVG}}{{else}}<div class="chart-empty">no clicks in the last 30 days</div>{{end}}
+  </section>
 
-    <div class="analytics-detail-subpanel">
-      <div class="analytics-page-panel-heading">
-        <h3>traffic sources</h3>
-        <span class="analytics-page-meta">{{.TrafficSourcesLabel}}</span>
-      </div>
-      {{if .Referrers}}
-      {{$max := (index .Referrers 0).Clicks}}
-      <div class="analytics-detail-referrers">
-        {{range .Referrers}}
-        {{if .Details}}
-        <details class="referrer-group">
-          <summary class="ref-row">
-            <span class="ref-source" title="{{.Source}}">{{referrerLabel .Source}}</span>
-            <span class="ref-bar-wrap"><span class="ref-bar" style="width:{{percent .Clicks $max}}%"></span></span>
-            <span class="ref-count">{{.Clicks}}</span>
-            <span class="ref-percent">{{percentOfLabel .Clicks $.ReferrerTotal}}</span>
-            <span class="ref-expand" aria-hidden="true">+</span>
-          </summary>
-          <div class="referrer-details">
-            <div class="ref-details-label">raw referrers</div>
-            {{range .Details}}<div class="ref-detail-row"><span title="{{.Source}}">{{.Source}}</span><span>{{.Clicks}}</span></div>{{end}}
-          </div>
-        </details>
-        {{else}}
-        <div class="referrer-group"><div class="ref-row">
+  <section class="analytics-page-panel analytics-detail-panel" aria-labelledby="analytics-link-sources-heading">
+    <div class="analytics-page-panel-heading">
+      <h2 id="analytics-link-sources-heading">traffic sources for this link</h2>
+      <span class="analytics-page-meta">{{.TrafficSourcesLabel}}</span>
+    </div>
+    {{if .Referrers}}
+    {{$max := (index .Referrers 0).Clicks}}
+    <div class="analytics-detail-referrers">
+      {{range .Referrers}}
+      {{if .Details}}
+      <details class="referrer-group">
+        <summary class="ref-row">
           <span class="ref-source" title="{{.Source}}">{{referrerLabel .Source}}</span>
           <span class="ref-bar-wrap"><span class="ref-bar" style="width:{{percent .Clicks $max}}%"></span></span>
           <span class="ref-count">{{.Clicks}}</span>
           <span class="ref-percent">{{percentOfLabel .Clicks $.ReferrerTotal}}</span>
-        </div></div>
-        {{end}}
-        {{end}}
-      </div>
-      {{else}}<div class="chart-empty">{{.TrafficSourcesEmpty}}</div>{{end}}
+          <span class="ref-expand" aria-hidden="true">+</span>
+        </summary>
+        <div class="referrer-details">
+          <div class="ref-details-label">raw referrers</div>
+          {{range .Details}}<div class="ref-detail-row"><span title="{{.Source}}">{{.Source}}</span><span>{{.Clicks}}</span></div>{{end}}
+        </div>
+      </details>
+      {{else}}
+      <div class="referrer-group"><div class="ref-row">
+        <span class="ref-source" title="{{.Source}}">{{referrerLabel .Source}}</span>
+        <span class="ref-bar-wrap"><span class="ref-bar" style="width:{{percent .Clicks $max}}%"></span></span>
+        <span class="ref-count">{{.Clicks}}</span>
+        <span class="ref-percent">{{percentOfLabel .Clicks $.ReferrerTotal}}</span>
+      </div></div>
+      {{end}}
+      {{end}}
     </div>
-  </div>
+    {{else}}<div class="chart-empty">{{.TrafficSourcesEmpty}}</div>{{end}}
+  </section>
 </section>
 {{end}}
