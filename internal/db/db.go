@@ -61,6 +61,31 @@ var migrations = []string{
 	 ALTER TABLE links ADD COLUMN campaign TEXT NOT NULL DEFAULT '';
 	 CREATE INDEX IF NOT EXISTS idx_links_provider ON links(provider);
 	 CREATE INDEX IF NOT EXISTS idx_links_channel ON links(channel)`,
+
+	// v6: offers are public cards; links remain the redirectable channel variants.
+	`CREATE TABLE IF NOT EXISTS offers (
+		id           INTEGER PRIMARY KEY AUTOINCREMENT,
+		title        TEXT NOT NULL,
+		provider     TEXT NOT NULL DEFAULT '',
+		description  TEXT NOT NULL DEFAULT '',
+		category     TEXT NOT NULL DEFAULT '',
+		image_url    TEXT NOT NULL DEFAULT '',
+		button_label TEXT NOT NULL DEFAULT 'Lihat promo',
+		fallback_url TEXT NOT NULL DEFAULT '',
+		starts_on    TEXT NOT NULL DEFAULT '',
+		ends_on      TEXT NOT NULL DEFAULT '',
+		active       INTEGER NOT NULL DEFAULT 1,
+		featured     INTEGER NOT NULL DEFAULT 0,
+		priority     INTEGER NOT NULL DEFAULT 0,
+		created_at   INTEGER NOT NULL,
+		updated_at   INTEGER NOT NULL
+	);
+	ALTER TABLE links ADD COLUMN offer_id INTEGER REFERENCES offers(id) ON DELETE SET NULL;
+	ALTER TABLE links ADD COLUMN offer_homepage INTEGER NOT NULL DEFAULT 0;
+	CREATE INDEX IF NOT EXISTS idx_links_offer_id ON links(offer_id);
+	CREATE INDEX IF NOT EXISTS idx_offers_active_priority ON offers(active, featured, priority);
+	CREATE UNIQUE INDEX IF NOT EXISTS idx_links_offer_homepage
+		ON links(offer_id) WHERE offer_id IS NOT NULL AND offer_homepage = 1`,
 }
 
 func migrate(conn *sql.DB) error {

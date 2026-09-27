@@ -23,6 +23,21 @@ type loginData struct {
 	Production bool
 }
 
+type offersDashboardData struct {
+	Offers      []db.Offer
+	Offer       *db.Offer
+	Links       []db.Link
+	ActiveCount int
+	TotalClicks int64
+	IsForm      bool
+	IsNew       bool
+	Error       string
+	Today       string
+	AdminPath   string
+	PublicURL   string
+	Production  bool
+}
+
 type dashboardData struct {
 	Links            []db.Link
 	Categories       []string
@@ -1079,7 +1094,7 @@ func (s *Server) handleCreateLinkUI(w http.ResponseWriter, r *http.Request) {
 		formErr("slug and url are required", nil)
 		return
 	}
-	if reservedSlugs[slug] || slug == s.cfg.AdminPath {
+	if isReservedSlug(slug, s.cfg.AdminPath) {
 		formErr("slug is reserved", &db.Link{Slug: slug, URL: url, Description: desc, Category: cat, Provider: options.Provider, Channel: options.Channel, Campaign: options.Campaign, Featured: options.Featured, Priority: options.Priority})
 		return
 	}
@@ -1140,6 +1155,21 @@ func (s *Server) handleUpdateLinkUI(w http.ResponseWriter, r *http.Request) {
 	if optionsErr != nil {
 		formErr(optionsErr.Error())
 		return
+	}
+	for _, current := range links {
+		if current.ID == id {
+			if isReservedSlug(slug, s.cfg.AdminPath) && slug != current.Slug {
+				formErr("slug is reserved")
+				return
+			}
+			if current.OfferID > 0 {
+				if err := validateOfferSlug(slug, s.cfg.AdminPath); err != nil {
+					formErr(err.Error())
+					return
+				}
+			}
+			break
+		}
 	}
 
 	if err := s.db.UpdateLinkWithOptions(id, slug, url, desc, cat, options); err != nil {
@@ -1309,4 +1339,325 @@ func (s *Server) handleOverviewAnalyticsUI(w http.ResponseWriter, r *http.Reques
 		AnalyticsURL:        "/" + s.cfg.AdminPath + "/analytics",
 		DateSelected:        dateLabel != "",
 	})
+}
+
+func offerStatus(offer db.Offer, today string) string {
+	if !offer.Active {
+		return "paused"
+	}
+	if offer.StartsOn != "" && offer.StartsOn > today {
+		return "upcoming"
+	}
+	if offer.EndsOn != "" && offer.EndsOn < today {
+		return "expired"
+	}
+	if offer.HomeSlug == "" || !offer.HomeActive {
+		return "needs homepage link"
+	}
+	return "active"
+}
+
+func validateOfferSlug(slug, adminPath string) error {
+	if slug == "" {
+		return fmt.Errorf("homepage slug is required")
+	}
+	if len(slug) > 120 {
+		return fmt.Errorf("slug must be 120 characters or fewer")
+	}
+	if strings.TrimSpace(slug) != slug || slug == "." || slug == ".." {
+		return fmt.Errorf("slug may not have surrounding spaces or be a dot path")
+	}
+	for _, char := range slug {
+		if (char >= 'a' && char <= 'z') || (char >= 'A' && char <= 'Z') || (char >= '0' && char <= '9') || strings.ContainsRune("-_.", char) {
+			continue
+		}
+		return fmt.Errorf("slug may contain only letters, numbers, hyphens, underscores, and dots")
+	}
+	if isReservedSlug(slug, adminPath) {
+		return fmt.Errorf("slug is reserved")
+	}
+	return nil
+}
+
+func validOfferDestination(raw string) bool {
+	parsed, err := url.Parse(strings.TrimSpace(raw))
+	return err == nil && (parsed.Scheme == "https" || parsed.Scheme == "http") && parsed.Host != ""
+}
+
+func validOfferImage(raw string) bool {
+	if raw == "" {
+		return true
+	}
+	if strings.HasPrefix(raw, "/") && !strings.HasPrefix(raw, "//") {
+		return true
+	}
+	parsed, err := url.Parse(strings.TrimSpace(raw))
+	return err == nil && parsed.Scheme == "https" && parsed.Host != ""
+}
+
+func parseOfferInput(r *http.Request) (db.OfferInput, error) {
+	input := db.OfferInput{
+		Title:       strings.TrimSpace(r.FormValue("title")),
+		Provider:    strings.TrimSpace(r.FormValue("provider")),
+		Description: strings.TrimSpace(r.FormValue("description")),
+		Category:    strings.TrimSpace(r.FormValue("category")),
+		ImageURL:    strings.TrimSpace(r.FormValue("image_url")),
+		ButtonLabel: strings.TrimSpace(r.FormValue("button_label")),
+		FallbackURL: strings.TrimSpace(r.FormValue("fallback_url")),
+		StartsOn:    strings.TrimSpace(r.FormValue("starts_on")),
+		EndsOn:      strings.TrimSpace(r.FormValue("ends_on")),
+		Active:      r.FormValue("active") == "1" || r.FormValue("active") == "on",
+		Featured:    r.FormValue("featured") == "1" || r.FormValue("featured") == "on",
+	}
+	priorityValue := strings.TrimSpace(r.FormValue("priority"))
+	if priorityValue != "" {
+		priority, err := strconv.Atoi(priorityValue)
+		if err != nil || priority < 0 {
+			return input, fmt.Errorf("priority must be a non-negative number")
+		}
+		input.Priority = priority
+	}
+	if input.Title == "" {
+		return input, fmt.Errorf("title is required")
+	}
+	for _, field := range []struct {
+		name  string
+		value string
+		limit int
+	}{
+		{name: "title", value: input.Title, limit: 160},
+		{name: "provider", value: input.Provider, limit: 120},
+		{name: "description", value: input.Description, limit: 500},
+		{name: "category", value: input.Category, limit: 80},
+		{name: "image URL", value: input.ImageURL, limit: 2048},
+		{name: "button label", value: input.ButtonLabel, limit: 48},
+		{name: "fallback URL", value: input.FallbackURL, limit: 2048},
+	} {
+		if len(field.value) > field.limit {
+			return input, fmt.Errorf("%s must be %d characters or fewer", field.name, field.limit)
+		}
+	}
+	if !validOfferImage(input.ImageURL) {
+		return input, fmt.Errorf("image URL must be an HTTPS URL or a site path")
+	}
+	if input.FallbackURL != "" && !validOfferDestination(input.FallbackURL) {
+		return input, fmt.Errorf("fallback URL must start with http:// or https://")
+	}
+	for _, field := range []struct {
+		name  string
+		value string
+	}{
+		{name: "start date", value: input.StartsOn},
+		{name: "end date", value: input.EndsOn},
+	} {
+		if field.value != "" {
+			parsed, err := time.Parse(dashboardDateLayout, field.value)
+			if err != nil || parsed.Format(dashboardDateLayout) != field.value {
+				return input, fmt.Errorf("%s must be a valid date", field.name)
+			}
+		}
+	}
+	if input.StartsOn != "" && input.EndsOn != "" && input.StartsOn > input.EndsOn {
+		return input, fmt.Errorf("end date must be on or after start date")
+	}
+	return input, nil
+}
+
+func offerFromInput(input db.OfferInput, id int64, homeSlug, homeURL string, homeActive bool) *db.Offer {
+	return &db.Offer{
+		ID: id, Title: input.Title, Provider: input.Provider, Description: input.Description, Category: input.Category,
+		ImageURL: input.ImageURL, ButtonLabel: input.ButtonLabel, FallbackURL: input.FallbackURL,
+		StartsOn: input.StartsOn, EndsOn: input.EndsOn, Active: input.Active, Featured: input.Featured,
+		Priority: input.Priority, HomeSlug: homeSlug, HomeURL: homeURL, HomeActive: homeActive,
+	}
+}
+
+func (s *Server) renderOffersDashboard(w http.ResponseWriter, r *http.Request, data offersDashboardData) {
+	data.AdminPath = s.cfg.AdminPath
+	data.PublicURL = publicBaseURL(s.cfg.PublicURL, r)
+	data.Production = s.cfg.Production
+	data.Today = time.Now().In(s.cfg.ReportLocation()).Format(dashboardDateLayout)
+	s.renderTemplate(w, "offers-dashboard", data)
+}
+
+func (s *Server) handleOffersDashboard(w http.ResponseWriter, r *http.Request) {
+	offers, err := s.db.ListOffers()
+	if err != nil {
+		http.Error(w, "db error", http.StatusInternalServerError)
+		return
+	}
+	today := time.Now().In(s.cfg.ReportLocation()).Format(dashboardDateLayout)
+	activeCount := 0
+	var totalClicks int64
+	for _, offer := range offers {
+		if offerStatus(offer, today) == "active" {
+			activeCount++
+		}
+		totalClicks += offer.Clicks
+	}
+	s.renderOffersDashboard(w, r, offersDashboardData{Offers: offers, ActiveCount: activeCount, TotalClicks: totalClicks})
+}
+
+func (s *Server) handleNewOffer(w http.ResponseWriter, r *http.Request) {
+	today := time.Now().In(s.cfg.ReportLocation()).Format(dashboardDateLayout)
+	offer := &db.Offer{Active: true, ButtonLabel: "Lihat promo", StartsOn: today}
+	s.renderOffersDashboard(w, r, offersDashboardData{Offer: offer, IsForm: true, IsNew: true})
+}
+
+func (s *Server) handleOfferDetail(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
+	if err != nil || id <= 0 {
+		http.Error(w, "invalid offer id", http.StatusBadRequest)
+		return
+	}
+	offer, err := s.db.GetOfferByID(id)
+	if err != nil {
+		http.Error(w, "db error", http.StatusInternalServerError)
+		return
+	}
+	if offer == nil {
+		http.NotFound(w, r)
+		return
+	}
+	links, err := s.db.ListOfferLinks(id)
+	if err != nil {
+		http.Error(w, "db error", http.StatusInternalServerError)
+		return
+	}
+	s.renderOffersDashboard(w, r, offersDashboardData{Offer: offer, Links: links, IsForm: true, Error: r.URL.Query().Get("error")})
+}
+
+func (s *Server) handleCreateOffer(w http.ResponseWriter, r *http.Request) {
+	if err := r.ParseForm(); err != nil {
+		http.Error(w, "bad request", http.StatusBadRequest)
+		return
+	}
+	input, inputErr := parseOfferInput(r)
+	slug := strings.TrimSpace(r.FormValue("home_slug"))
+	urlValue := strings.TrimSpace(r.FormValue("home_url"))
+	offer := offerFromInput(input, 0, slug, urlValue, true)
+	if inputErr == nil {
+		inputErr = validateOfferSlug(slug, s.cfg.AdminPath)
+	}
+	if inputErr == nil && !validOfferDestination(urlValue) {
+		inputErr = fmt.Errorf("affiliate URL must start with http:// or https://")
+	}
+	if inputErr != nil {
+		s.renderOffersDashboard(w, r, offersDashboardData{Offer: offer, IsForm: true, IsNew: true, Error: inputErr.Error()})
+		return
+	}
+	created, err := s.db.CreateOfferWithHomepageLink(input, slug, urlValue)
+	if err != nil {
+		msg := "failed to create offer"
+		if strings.Contains(err.Error(), "UNIQUE") {
+			msg = "slug already exists"
+		}
+		s.renderOffersDashboard(w, r, offersDashboardData{Offer: offer, IsForm: true, IsNew: true, Error: msg})
+		return
+	}
+	http.Redirect(w, r, "/"+s.cfg.AdminPath+"/offers/"+strconv.FormatInt(created.ID, 10), http.StatusSeeOther)
+}
+
+func (s *Server) handleUpdateOffer(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
+	if err != nil || id <= 0 {
+		http.Error(w, "invalid offer id", http.StatusBadRequest)
+		return
+	}
+	current, err := s.db.GetOfferByID(id)
+	if err != nil {
+		http.Error(w, "db error", http.StatusInternalServerError)
+		return
+	}
+	if current == nil {
+		http.NotFound(w, r)
+		return
+	}
+	if err := r.ParseForm(); err != nil {
+		http.Error(w, "bad request", http.StatusBadRequest)
+		return
+	}
+	input, inputErr := parseOfferInput(r)
+	offer := offerFromInput(input, id, current.HomeSlug, current.HomeURL, current.HomeActive)
+	if inputErr != nil {
+		links, _ := s.db.ListOfferLinks(id)
+		s.renderOffersDashboard(w, r, offersDashboardData{Offer: offer, Links: links, IsForm: true, Error: inputErr.Error()})
+		return
+	}
+	if err := s.db.UpdateOffer(id, input); err != nil {
+		http.Error(w, "failed to update offer", http.StatusInternalServerError)
+		return
+	}
+	http.Redirect(w, r, "/"+s.cfg.AdminPath+"/offers/"+strconv.FormatInt(id, 10), http.StatusSeeOther)
+}
+
+func (s *Server) handleCreateOfferLink(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
+	if err != nil || id <= 0 {
+		http.Error(w, "invalid offer id", http.StatusBadRequest)
+		return
+	}
+	if err := r.ParseForm(); err != nil {
+		http.Error(w, "bad request", http.StatusBadRequest)
+		return
+	}
+	slug := strings.TrimSpace(r.FormValue("slug"))
+	urlValue := strings.TrimSpace(r.FormValue("url"))
+	channel := strings.TrimSpace(r.FormValue("channel"))
+	if err := validateOfferSlug(slug, s.cfg.AdminPath); err != nil {
+		http.Redirect(w, r, "/"+s.cfg.AdminPath+"/offers/"+strconv.FormatInt(id, 10)+"?error="+url.QueryEscape(err.Error()), http.StatusSeeOther)
+		return
+	}
+	if channel == "" || len(channel) > 120 {
+		http.Redirect(w, r, "/"+s.cfg.AdminPath+"/offers/"+strconv.FormatInt(id, 10)+"?error=channel+is+required+and+must+be+120+characters+or+fewer", http.StatusSeeOther)
+		return
+	}
+	offer, err := s.db.GetOfferByID(id)
+	if err != nil || offer == nil {
+		http.NotFound(w, r)
+		return
+	}
+	if urlValue == "" {
+		urlValue = offer.HomeURL
+	}
+	if !validOfferDestination(urlValue) {
+		http.Redirect(w, r, "/"+s.cfg.AdminPath+"/offers/"+strconv.FormatInt(id, 10)+"?error=affiliate+URL+must+start+with+http%3A%2F%2F+or+https%3A%2F%2F", http.StatusSeeOther)
+		return
+	}
+	if _, err := s.db.CreateOfferLink(id, slug, urlValue, channel); err != nil {
+		message := "failed to add link"
+		if strings.Contains(err.Error(), "UNIQUE") {
+			message = "slug already exists"
+		}
+		http.Redirect(w, r, "/"+s.cfg.AdminPath+"/offers/"+strconv.FormatInt(id, 10)+"?error="+url.QueryEscape(message), http.StatusSeeOther)
+		return
+	}
+	http.Redirect(w, r, "/"+s.cfg.AdminPath+"/offers/"+strconv.FormatInt(id, 10), http.StatusSeeOther)
+}
+
+func (s *Server) handleSetOfferHomepageLink(w http.ResponseWriter, r *http.Request) {
+	offerID, offerErr := strconv.ParseInt(r.PathValue("id"), 10, 64)
+	linkID, linkErr := strconv.ParseInt(r.PathValue("linkID"), 10, 64)
+	if offerErr != nil || linkErr != nil || offerID <= 0 || linkID <= 0 {
+		http.Error(w, "invalid id", http.StatusBadRequest)
+		return
+	}
+	if err := s.db.SetOfferHomepageLink(offerID, linkID); err != nil {
+		http.Error(w, "link does not belong to this offer", http.StatusBadRequest)
+		return
+	}
+	http.Redirect(w, r, "/"+s.cfg.AdminPath+"/offers/"+strconv.FormatInt(offerID, 10), http.StatusSeeOther)
+}
+
+func (s *Server) handleToggleOffer(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
+	if err != nil || id <= 0 {
+		http.Error(w, "invalid offer id", http.StatusBadRequest)
+		return
+	}
+	if err := s.db.ToggleOffer(id); err != nil {
+		http.Error(w, "db error", http.StatusInternalServerError)
+		return
+	}
+	http.Redirect(w, r, "/"+s.cfg.AdminPath+"/offers", http.StatusSeeOther)
 }

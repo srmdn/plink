@@ -24,8 +24,18 @@ func writeError(w http.ResponseWriter, status int, msg string) {
 }
 
 var reservedSlugs = map[string]bool{
-	"admin": true,
-	"api":   true,
+	"admin":       true,
+	"api":         true,
+	"offers":      true,
+	"links":       true,
+	"js":          true,
+	"favicon.svg": true,
+	"favicon.ico": true,
+}
+
+func isReservedSlug(slug, adminPath string) bool {
+	adminPath = strings.Trim(adminPath, "/")
+	return reservedSlugs[strings.ToLower(slug)] || (adminPath != "" && strings.EqualFold(slug, adminPath))
 }
 
 func (s *Server) handleFavicon(w http.ResponseWriter, r *http.Request) {
@@ -74,7 +84,7 @@ func (s *Server) handleCreateLink(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusBadRequest, "slug and url are required")
 		return
 	}
-	if reservedSlugs[body.Slug] {
+	if isReservedSlug(body.Slug, s.cfg.AdminPath) {
 		writeError(w, http.StatusBadRequest, "slug is reserved")
 		return
 	}
@@ -135,21 +145,32 @@ func (s *Server) handleUpdateLink(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusBadRequest, "priority must be a non-negative number")
 		return
 	}
+	current, err := s.db.GetLinkByID(id)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "db error")
+		return
+	}
+	if current == nil {
+		writeError(w, http.StatusNotFound, "link not found")
+		return
+	}
+	if isReservedSlug(body.Slug, s.cfg.AdminPath) && body.Slug != current.Slug {
+		writeError(w, http.StatusBadRequest, "slug is reserved")
+		return
+	}
+	if current.OfferID > 0 {
+		body.Slug = strings.TrimSpace(body.Slug)
+		if err := validateOfferSlug(body.Slug, s.cfg.AdminPath); err != nil {
+			writeError(w, http.StatusBadRequest, err.Error())
+			return
+		}
+	}
 
 	var updateErr error
 	if body.Featured == nil && body.Priority == nil && body.Provider == nil && body.Channel == nil && body.Campaign == nil {
 		// Preserve the legacy API contract: omitted curation fields do not reset metadata.
 		updateErr = s.db.UpdateLink(id, body.Slug, body.URL, body.Description, body.Category)
 	} else {
-		current, err := s.db.GetLinkByID(id)
-		if err != nil {
-			writeError(w, http.StatusInternalServerError, "db error")
-			return
-		}
-		if current == nil {
-			writeError(w, http.StatusNotFound, "link not found")
-			return
-		}
 		options := db.LinkOptions{Featured: current.Featured, Priority: current.Priority}
 		options.Provider = current.Provider
 		options.Channel = current.Channel

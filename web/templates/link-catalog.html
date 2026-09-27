@@ -1,0 +1,58 @@
+{{define "link-catalog"}}
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Links · {{.SiteName}}</title>
+  <link rel="icon" href="/favicon.svg?v=3" />
+  {{template "storefront-styles" .}}
+  <style>
+    .catalog-heading { margin: 20px 0 16px; }
+    .catalog-heading h1 { margin: 3px 0 0; font-size: clamp(28px, 5vw, 42px); line-height: 1.05; letter-spacing: -.055em; }
+    .catalog-heading p { margin: 7px 0 0; color: var(--muted); font-size: 12px; }
+    .catalog-pagination { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 6px; margin: 28px 0 6px; }
+    .catalog-page { display: grid; min-width: 36px; height: 36px; place-items: center; padding: 0 10px; color: #425047; background: #fff; border: 1px solid var(--line); border-radius: 10px; font-size: 11px; font-weight: 700; }
+    .catalog-page.active { color: #fff; background: var(--green); border-color: var(--green); }
+  </style>
+</head>
+<body>
+  <header class="store-header">
+    <a class="store-brand" href="/" aria-label="{{.SiteName}} home">
+      <span class="store-mark" aria-hidden="true">↗</span>
+      <span class="store-brand-copy"><strong>{{.SiteName}}</strong><span>{{.SiteDesc}}</span></span>
+    </a>
+    <a class="store-admin-link" href="/offers">Offers</a>
+  </header>
+  <main class="store-main" id="resources">
+    <div class="catalog-heading"><span class="store-eyebrow">Resource dan tautan</span><h1>Semua links</h1><p>{{.Total}} hasil · Tautan lama tetap bisa dibuka langsung.</p></div>
+    <form class="store-search" method="get" action="/links" role="search">
+      <input type="search" name="q" value="{{.Query}}" placeholder="Cari slug, kategori, atau deskripsi…" aria-label="Cari tautan" />
+      {{if .Category}}<input type="hidden" name="category" value="{{.Category}}" />{{end}}
+      <button type="submit">Cari</button>
+    </form>
+    {{if .Categories}}
+    <nav class="store-categories" aria-label="Kategori tautan">
+      <a class="store-chip {{if eq .Category ""}}active{{end}}" href="/links">Semua</a>
+      {{range .Categories}}<a class="store-chip {{if eq . $.Category}}active{{end}}" href="/links?category={{. | urlquery}}">{{.}}</a>{{end}}
+    </nav>
+    {{end}}
+    {{if .Links}}
+    <div class="resource-grid">
+      {{range .Links}}<a class="resource-card" href="/{{.Slug}}"><strong>{{.Slug}}</strong><span>{{if .Category}}{{.Category}} · {{end}}{{.Description}}</span></a>{{end}}
+    </div>
+    {{else}}
+    <div class="store-empty">Belum ada tautan yang cocok dengan pencarian ini.</div>
+    {{end}}
+    {{if gt (len .Pages) 1}}
+    <nav class="catalog-pagination" aria-label="Halaman katalog">
+      {{if .PreviousURL}}<a class="catalog-page" href="{{.PreviousURL}}" aria-label="Halaman sebelumnya">←</a>{{end}}
+      {{range .Pages}}<a class="catalog-page {{if .Current}}active{{end}}" href="{{.URL}}" {{if .Current}}aria-current="page"{{end}}>{{.Number}}</a>{{end}}
+      {{if .NextURL}}<a class="catalog-page" href="{{.NextURL}}" aria-label="Halaman berikutnya">→</a>{{end}}
+    </nav>
+    {{end}}
+  </main>
+  <footer class="store-footer">Dikelola dengan <a href="https://github.com/srmdn/plink" target="_blank" rel="noopener">Plink</a>.</footer>
+</body>
+</html>
+{{end}}

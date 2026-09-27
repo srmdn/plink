@@ -16,12 +16,16 @@ yourdomain.com/tokopedia-promo  →  https://tokopedia.com/...
   referrer breakdowns
 - Strategy analytics — compare clicks by provider, channel, campaign, or slug
   with period filters, share charts, and provider ranking
-- Promotion metadata — annotate each link with its provider, channel, and
-  campaign without changing the public slug
+- Offers — manage one public product or promotion card with multiple
+  channel-specific tracking slugs
+- Offer lifecycle — set start and end dates, hide expired cards, and optionally
+  send old slugs to a fallback destination
 - Categories — organize links with filterable labels
-- Public resource search — find links by slug, description, or category
-- Curated homepage — highlight recommended links before the full catalog
-- Homepage curation — mark featured links and control priority from the dashboard
+- Public catalogs — search and paginate offer cards and standalone resource links
+- Responsive homepage — show up to six offer cards and a manually controlled
+  slider with up to three featured offers
+- Channel attribution — each offer slug tracks its own clicks while the public
+  card redirects straight to its affiliate destination
 - Dashboard metrics — see link counts and total clicks at a glance
 - Link management — search, filter, copy, export, edit, pause, and review analytics
 - Source overview — see referrers across all links as well as per-link breakdowns
@@ -71,9 +75,11 @@ last-click display. It does not change the Unix timestamps stored in SQLite.
 
 ## Public homepage
 
-Plink includes a conversion-focused public homepage with recommended links,
-category browsing, and search. Visitors can expand the full resource catalog
-when they need more than the curated view.
+Plink includes a responsive storefront homepage with a curated offer slider and
+a short product grid. Visitors can open the paginated Offers catalog or search
+the separate catalog of standalone resource links. Clicking an offer card
+records a click on its homepage slug and redirects directly to the saved
+destination.
 
 The footer links to Plink's GitHub repository so you can share or self-host
 the project without exposing deployment-specific configuration.
@@ -82,8 +88,9 @@ the project without exposing deployment-specific configuration.
 
 The admin dashboard keeps daily link management compact. It includes summary
 metrics, live search, category, status, and date filtering, JSON and CSV export,
-link controls, featured-link ordering, source overview analytics, and per-link
-analytics.
+link controls, source overview analytics, and per-link analytics. The Offers
+workspace manages public cards, groups channel slugs under each offer, tracks
+click totals per offer and slug, and controls homepage placement and expiry.
 
 ## Analytics dashboard
 

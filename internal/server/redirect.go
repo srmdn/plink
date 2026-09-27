@@ -3,6 +3,7 @@ package server
 import (
 	"net/http"
 	"net/url"
+	"time"
 )
 
 func isAllowedURL(rawURL string) bool {
@@ -32,12 +33,17 @@ func (s *Server) handleRedirect(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if !isAllowedURL(link.URL) {
+	destination := link.URL
+	today := time.Now().In(s.cfg.ReportLocation()).Format(dashboardDateLayout)
+	if link.OfferID > 0 && link.OfferEndsOn != "" && link.OfferEndsOn < today && isAllowedURL(link.FallbackURL) {
+		destination = link.FallbackURL
+	}
+	if !isAllowedURL(destination) {
 		http.NotFound(w, r)
 		return
 	}
 
 	go s.db.RecordClick(link.ID, sanitizeReferrer(r.Referer()), r.UserAgent())
 
-	http.Redirect(w, r, link.URL, http.StatusFound)
+	http.Redirect(w, r, destination, http.StatusFound)
 }

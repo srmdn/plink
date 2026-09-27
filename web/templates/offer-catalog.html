@@ -1,0 +1,63 @@
+{{define "offer-catalog"}}
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Offers · {{.SiteName}}</title>
+  <link rel="icon" href="/favicon.svg?v=3" />
+  {{template "storefront-styles" .}}
+  <style>
+    .catalog-heading { margin: 20px 0 16px; }
+    .catalog-heading h1 { margin: 3px 0 0; font-size: clamp(28px, 5vw, 42px); line-height: 1.05; letter-spacing: -.055em; }
+    .catalog-heading p { margin: 7px 0 0; color: var(--muted); font-size: 12px; }
+    .catalog-filters { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(150px, .8fr) minmax(150px, .8fr) auto; gap: 8px; margin: 18px 0; }
+    .catalog-filters input, .catalog-filters select { width: 100%; min-width: 0; min-height: 44px; padding: 0 12px; color: var(--ink); background: #fff; border: 1px solid var(--line); border-radius: 12px; font: inherit; font-size: 12px; }
+    .catalog-filters button { min-height: 44px; padding: 0 16px; color: #fff; background: var(--ink); border: 0; border-radius: 12px; font-weight: 750; cursor: pointer; }
+    .catalog-pagination { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 6px; margin: 28px 0 6px; }
+    .catalog-page { display: grid; min-width: 36px; height: 36px; place-items: center; padding: 0 10px; color: #425047; background: #fff; border: 1px solid var(--line); border-radius: 10px; font-size: 11px; font-weight: 700; }
+    .catalog-page.active { color: #fff; background: var(--green); border-color: var(--green); }
+    .catalog-page.disabled { opacity: .45; }
+    @media(max-width:700px) { .catalog-filters { grid-template-columns: repeat(2, minmax(0, 1fr)); } .catalog-filters input { grid-column: 1 / -1; } .catalog-filters button { grid-column: 1 / -1; } }
+  </style>
+</head>
+<body>
+  <header class="store-header">
+    <a class="store-brand" href="/" aria-label="{{.SiteName}} home">
+      <span class="store-mark" aria-hidden="true">↗</span>
+      <span class="store-brand-copy"><strong>{{.SiteName}}</strong><span>{{.SiteDesc}}</span></span>
+    </a>
+    <a class="store-admin-link" href="/">Home</a>
+  </header>
+  <main class="store-main">
+    <div class="catalog-heading"><span class="store-eyebrow">Promo dan produk pilihan</span><h1>Semua offers</h1><p>{{.Total}} hasil · Klik kartu untuk langsung ke penawaran.</p></div>
+    <form class="catalog-filters" method="get" action="/offers" role="search">
+      <input type="search" name="q" value="{{.Query}}" placeholder="Cari nama produk, promo, atau provider…" aria-label="Cari offer" />
+      <select name="category" aria-label="Filter kategori">
+        <option value="">Semua kategori</option>
+        {{range .Categories}}<option value="{{.}}" {{if eq . $.Category}}selected{{end}}>{{.}}</option>{{end}}
+      </select>
+      <select name="provider" aria-label="Filter provider">
+        <option value="">Semua provider</option>
+        {{range .Providers}}<option value="{{.}}" {{if eq . $.Provider}}selected{{end}}>{{.}}</option>{{end}}
+      </select>
+      <button type="submit">Cari promo</button>
+    </form>
+    {{if .Offers}}
+    <div class="offer-grid">{{range .Offers}}{{template "offer-card" .}}{{end}}</div>
+    {{else}}
+    <div class="store-empty">Belum ada promo yang cocok dengan filter ini.</div>
+    {{end}}
+    {{if gt (len .Pages) 1}}
+    <nav class="catalog-pagination" aria-label="Halaman katalog">
+      {{if .PreviousURL}}<a class="catalog-page" href="{{.PreviousURL}}" aria-label="Halaman sebelumnya">←</a>{{end}}
+      {{range .Pages}}<a class="catalog-page {{if .Current}}active{{end}}" href="{{.URL}}" {{if .Current}}aria-current="page"{{end}}>{{.Number}}</a>{{end}}
+      {{if .NextURL}}<a class="catalog-page" href="{{.NextURL}}" aria-label="Halaman berikutnya">→</a>{{end}}
+    </nav>
+    {{end}}
+    <p class="affiliate-note">Sebagian tautan mungkin merupakan tautan referral. Jika lo membeli lewat tautan tersebut, pemilik halaman bisa menerima komisi tanpa biaya tambahan buat lo.</p>
+  </main>
+  <footer class="store-footer">Dikelola dengan <a href="https://github.com/srmdn/plink" target="_blank" rel="noopener">Plink</a>.</footer>
+</body>
+</html>
+{{end}}

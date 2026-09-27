@@ -27,7 +27,7 @@ func securityHeaders(next http.Handler) http.Handler {
 		w.Header().Set("Permissions-Policy", "geolocation=(), microphone=(), camera=()")
 		w.Header().Set("Strict-Transport-Security", "max-age=31536000; includeSubDomains")
 		w.Header().Set("Content-Security-Policy",
-			"default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; object-src 'none'; base-uri 'self'; frame-ancestors 'none'")
+			"default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' https: data:; object-src 'none'; base-uri 'self'; frame-ancestors 'none'")
 		next.ServeHTTP(w, r)
 	})
 }
@@ -49,8 +49,12 @@ func New(cfg *config.Config, database *db.DB, webFS embed.FS) http.Handler {
 			},
 			"percentOfLabel": percentOfLabel,
 			"referrerLabel":  referrerLabel,
-			"js":             template.JSEscaper,
-			"urlquery":       template.URLQueryEscaper,
+			"offerStatus":    offerStatus,
+			"add": func(left, right int) int {
+				return left + right
+			},
+			"js":       template.JSEscaper,
+			"urlquery": template.URLQueryEscaper,
 		}).ParseFS(webFS,
 			"web/templates/*.html",
 			"web/templates/partials/*.html",
@@ -83,6 +87,14 @@ func New(cfg *config.Config, database *db.DB, webFS embed.FS) http.Handler {
 
 	// Admin UI
 	mux.HandleFunc("GET "+ap, s.requireAuth(s.handleDashboard))
+	mux.HandleFunc("GET "+ap+"/offers", s.requireAuth(s.handleOffersDashboard))
+	mux.HandleFunc("GET "+ap+"/offers/new", s.requireAuth(s.handleNewOffer))
+	mux.HandleFunc("GET "+ap+"/offers/{id}", s.requireAuth(s.handleOfferDetail))
+	mux.HandleFunc("POST "+ap+"/offers", s.requireAuth(s.requireCSRF(s.handleCreateOffer)))
+	mux.HandleFunc("POST "+ap+"/offers/{id}", s.requireAuth(s.requireCSRF(s.handleUpdateOffer)))
+	mux.HandleFunc("POST "+ap+"/offers/{id}/links", s.requireAuth(s.requireCSRF(s.handleCreateOfferLink)))
+	mux.HandleFunc("POST "+ap+"/offers/{id}/links/{linkID}/homepage", s.requireAuth(s.requireCSRF(s.handleSetOfferHomepageLink)))
+	mux.HandleFunc("POST "+ap+"/offers/{id}/toggle", s.requireAuth(s.requireCSRF(s.handleToggleOffer)))
 	mux.HandleFunc("GET "+ap+"/analytics/dashboard", s.requireAuth(s.handleAnalyticsDashboard))
 	mux.HandleFunc("GET "+ap+"/links", s.requireAuth(s.handleLinksSection))
 	mux.HandleFunc("GET "+ap+"/links/new", s.requireAuth(s.handleNewLinkForm))
@@ -105,6 +117,8 @@ func New(cfg *config.Config, database *db.DB, webFS embed.FS) http.Handler {
 	mux.HandleFunc("GET /api/export", s.requireAuth(s.handleExport))
 
 	// Public homepage
+	mux.HandleFunc("GET /offers", s.handleOfferCatalog)
+	mux.HandleFunc("GET /links", s.handleLinkCatalog)
 	mux.HandleFunc("GET /{$}", s.handleHome)
 
 	// Catch-all: slug redirect (must be last)
