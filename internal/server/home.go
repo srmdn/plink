@@ -118,13 +118,22 @@ func (s *Server) handleHome(w http.ResponseWriter, r *http.Request) {
 	today := time.Now().In(s.cfg.ReportLocation()).Format(dashboardDateLayout)
 	activeOffers := publicOffers(offers, today)
 	featuredOffers := make([]db.Offer, 0, 3)
+	featuredOfferIDs := make(map[int64]bool, 3)
 	for _, offer := range activeOffers {
 		if offer.Featured && len(featuredOffers) < 3 {
 			featuredOffers = append(featuredOffers, offer)
+			featuredOfferIDs[offer.ID] = true
 		}
 	}
-	if len(activeOffers) > 6 {
-		activeOffers = activeOffers[:6]
+	pageOffers := make([]db.Offer, 0, 6)
+	for _, offer := range activeOffers {
+		if featuredOfferIDs[offer.ID] {
+			continue
+		}
+		pageOffers = append(pageOffers, offer)
+		if len(pageOffers) == 6 {
+			break
+		}
 	}
 
 	// Extract unique categories
@@ -150,7 +159,7 @@ func (s *Server) handleHome(w http.ResponseWriter, r *http.Request) {
 
 	s.renderTemplate(w, "home", homeData{
 		Links:           links,
-		Offers:          activeOffers,
+		Offers:          pageOffers,
 		FeaturedOffers:  featuredOffers,
 		OfferCategories: categoriesForOffers(publicOffers(offers, today)),
 		Categories:      categories,
