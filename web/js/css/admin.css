@@ -596,7 +596,7 @@
 .admin-page .guide-page p,.admin-page .guide-module span,.admin-page .guide-steps,.admin-page .guide-table {
   color:var(--muted)
 }
-.admin-page .guide-page a:not(.btn):not(.guide-module):not(.guide-toc a),.admin-page .guide-module small,.admin-page .guide-steps li::marker {
+.admin-page .guide-page a:not(.btn):not(.guide-module):not(.guide-toc a):not(.guide-toc-menu a),.admin-page .guide-module small,.admin-page .guide-steps li::marker {
   color:var(--accent)
 }
 .admin-page .guide-module-grid,.admin-page .guide-definition-grid {
