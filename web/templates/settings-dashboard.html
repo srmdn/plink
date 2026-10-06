@@ -1,0 +1,76 @@
+{{define "settings-dashboard"}}
+<!doctype html>
+<html lang="id">
+{{template "head" .}}
+<body class="admin-page">
+<div id="app" class="admin-app">
+  {{template "admin-header" .}}
+
+  <div class="admin-layout">
+{{template "admin-nav" (dict "AdminPath" .AdminPath "Active" "settings")}}
+
+    <main class="admin-main">
+      <div class="admin-page-heading">
+        <div><div class="admin-eyebrow">Tampilan publik</div><h1>Pengaturan</h1><p>Atur identitas, pilihan utama, dan warna halaman.</p></div>
+        <a href="/" class="btn btn-ghost btn-sm admin-home-link">Lihat halaman publik</a>
+      </div>
+
+      {{if .Error}}<div class="offer-error" role="alert">{{uiText .Error}}</div>{{end}}
+      {{if .Saved}}<div class="settings-saved" role="status">Pengaturan disimpan.</div>{{end}}
+
+      <form method="POST" action="/{{.AdminPath}}/settings">
+        <section class="analytics-page-panel settings-panel"><div class="offer-form-heading"><h2>Logo &amp; favicon</h2><span>Logo dipakai pada header publik dan admin.</span></div><div class="field"><label for="settings-logo">URL logo</label><input id="settings-logo" type="text" name="logo_url" maxlength="2048" value="{{.Settings.LogoURL}}" placeholder="https://domain-lo.com/logo.png" /><p class="field-help">Gunakan gambar persegi PNG, WebP, atau SVG. Kosongkan untuk memakai logo bawaan.</p></div><div class="field"><label for="settings-favicon">URL favicon</label><input id="settings-favicon" type="text" name="favicon_url" maxlength="2048" value="{{.Settings.FaviconURL}}" placeholder="https://domain-lo.com/favicon.png" /><p class="field-help">Opsional. Jika kosong, favicon memakai logo lo; tanpa logo khusus, favicon mengikuti warna aksen publik. URL HTTPS atau path lokal didukung.</p></div><div class="brand-preview">{{template "brand-logo" .}}<span>Logo yang sedang digunakan</span></div></section>
+        <section class="analytics-page-panel settings-panel">
+          <div class="offer-form-heading"><h2>Identitas halaman</h2><span>Ditampilkan pada halaman publik.</span></div>
+          <div class="form-pair">
+            <div class="field"><label for="settings-site-name">Nama halaman</label><input id="settings-site-name" name="site_name" type="text" maxlength="80" required value="{{.Settings.SiteName}}" /></div>
+            <div class="field"><label for="settings-site-desc">Deskripsi singkat</label><input id="settings-site-desc" name="site_desc" type="text" maxlength="200" value="{{.Settings.SiteDesc}}" /></div>
+          </div>
+        </section>
+
+        <section class="analytics-page-panel settings-panel"><div class="offer-form-heading"><h2>Konten beranda &amp; jasa</h2><span>Sesuaikan teks publik tanpa mengubah kode.</span></div>
+<div class="field"><label for="hero-eyebrow">Label beranda</label><input id="hero-eyebrow" type="text" name="hero_eyebrow" maxlength="80" value="{{.Settings.HeroEyebrow}}" /></div>
+<div class="field"><label for="hero-title">Judul beranda</label><textarea id="hero-title" required name="hero_title" maxlength="160" rows="2">{{.Settings.HeroTitle}}</textarea><p class="field-help">Enter membuat baris baru.</p></div>
+<div class="field"><label for="hero-description">Deskripsi beranda</label><textarea id="hero-description" name="hero_description" maxlength="300" rows="3">{{.Settings.HeroDescription}}</textarea></div>
+<div class="field"><label for="service-title">Judul bagian jasa</label><input id="service-title" required type="text" name="service_title" maxlength="80" value="{{.Settings.ServiceTitle}}" /></div>
+<div class="field"><label for="service-description">Deskripsi jasa</label><textarea id="service-description" name="service_description" maxlength="300" rows="3">{{.Settings.ServiceDescription}}</textarea></div></section>
+
+        <section class="analytics-page-panel settings-panel"><div class="offer-form-heading"><h2>SEO &amp; berbagi</h2><span>Atur bagaimana halaman muncul di pencarian dan saat dibagikan.</span></div>
+          <div class="field"><label for="settings-public-origin">Alamat publik</label><input id="settings-public-origin" type="url" name="public_origin" maxlength="2048" value="{{.Settings.PublicOrigin}}" placeholder="https://go.srmdn.com" /><p class="field-help">Dipakai pada tautan salin, canonical, sitemap, dan domain gambar OG. Isi domain tanpa path. Kosongkan untuk mengikuti PUBLIC_URL atau alamat akses. Ini tidak mengubah DNS maupun alamat server.</p><p class="field-help">Alamat yang sedang dipakai: <strong>{{.EffectivePublicURL}}</strong></p></div>
+          <div class="field"><label for="settings-seo-title">Judul SEO</label><input id="settings-seo-title" type="text" name="seo_title" maxlength="100" value="{{.Settings.SEOTitle}}" placeholder="Mengikuti nama halaman" /><p class="field-help">Kosongkan untuk memakai nama halaman. Katalog dan Jasa punya judul sesuai halamannya.</p></div>
+          <div class="field"><label for="settings-seo-description">Deskripsi SEO</label><textarea id="settings-seo-description" name="seo_description" maxlength="200" rows="3" placeholder="Mengikuti deskripsi singkat">{{.Settings.SEODescription}}</textarea></div>
+          <div class="field"><label for="settings-share-image">URL gambar share</label><input id="settings-share-image" name="share_image_url" type="text" maxlength="2048" value="{{.Settings.ShareImageURL}}" placeholder="Kosongkan untuk gambar otomatis" /><p class="field-help">Gunakan PNG atau JPG horizontal 1200 × 630 melalui URL HTTPS atau path lokal. Jika kosong, gambar otomatis mengikuti judul, deskripsi, dan warna publik. Logo PNG/JPG/WebP publik ikut ditampilkan; SVG atau logo yang tidak dapat dibaca memakai mark bawaan.</p></div>
+          <figure class="share-preview"><img src="{{.SEO.Image}}" alt="Preview gambar share yang tersimpan" loading="lazy" /><figcaption><small>{{.Settings.SiteName}}</small><strong>{{.SEO.Title}}</strong><span>{{.SEO.Description}}</span></figcaption></figure>
+          <p class="field-help">Preview memakai pengaturan tersimpan. Platform sosial bisa menyimpan preview lama sementara waktu. Link pendek aktif tetap langsung menuju website tujuan.</p>
+        </section>
+
+        <section class="analytics-page-panel settings-panel">
+          <div class="offer-form-heading"><h2>Pilihan utama</h2><span>Isi dan urutan kartu diatur lewat Katalog.</span></div>
+          <div class="offer-form-options">
+            <label class="check-row"><input type="checkbox" name="hero_enabled" value="1" {{if .Settings.HeroEnabled}}checked{{end}} /><span>Tampilkan pilihan utama di beranda</span></label>
+          </div>
+          <div class="field settings-limit-field"><label for="settings-featured-limit">Jumlah pilihan utama</label><select id="settings-featured-limit" name="featured_limit">
+            <option value="1" {{if eq .Settings.FeaturedLimit 1}}selected{{end}}>1 kartu</option>
+            <option value="2" {{if eq .Settings.FeaturedLimit 2}}selected{{end}}>2 kartu</option>
+            <option value="3" {{if eq .Settings.FeaturedLimit 3}}selected{{end}}>3 kartu</option>
+          </select><div class="field-help">Item unggulan yang tersedia dan berprioritas tinggi muncul lebih dulu. Geser kartu secara manual.</div></div>
+        </section>
+
+        <section class="analytics-page-panel settings-panel">
+          <div class="offer-form-heading"><h2>Keterangan referral</h2><span>Kosongkan untuk menyembunyikan keterangan.</span></div>
+          <div class="field"><label for="settings-affiliate-disclosure">Teks keterangan</label><textarea id="settings-affiliate-disclosure" name="affiliate_disclosure" maxlength="500" rows="3">{{.Settings.AffiliateDisclosure}}</textarea></div>
+        </section>
+
+        <section class="analytics-page-panel settings-panel"><div class="offer-form-heading"><h2>Warna tampilan</h2><span>Palet awal dari Geopolitics. Publik dan admin bisa berbeda.</span></div>
+<div class="form-pair"><div class="field"><label for="public-accent">Aksen publik</label><input id="public-accent" type="color" name="public_accent" value="{{.Settings.PublicAccent}}" /></div><div class="field"><label for="public-background">Latar publik</label><input id="public-background" type="color" name="public_background" value="{{.Settings.PublicBackground}}" /></div></div>
+<div class="form-pair"><div class="field"><label for="admin-accent">Aksen admin</label><input id="admin-accent" type="color" name="admin_accent" value="{{.Settings.AdminAccent}}" /></div><div class="field"><label for="admin-background">Latar admin</label><input id="admin-background" type="color" name="admin_background" value="{{.Settings.AdminBackground}}" /></div></div><p class="field-help">Pilih latar terang dan aksen yang kontras agar teks mudah dibaca.</p></section>
+<section class="analytics-page-panel settings-panel"><h2>Butuh bantuan?</h2><p class="field-help">Alur tautan, katalog, status program, dan statistik dijelaskan di panduan.</p><a class="btn btn-ghost" href="/{{.AdminPath}}/guide">Buka panduan →</a></section>
+
+        <div class="modal-footer settings-actions"><a href="/{{.AdminPath}}" class="btn btn-ghost">Batal</a><button type="submit" class="btn btn-primary">Simpan pengaturan</button></div>
+      </form>
+    </main>
+  </div>
+</div>
+</body>
+</html>
+{{end}}

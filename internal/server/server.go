@@ -5,12 +5,16 @@ import (
 	"html/template"
 	"io/fs"
 	"net/http"
+	"strings"
+	"sync"
 
 	"github.com/srmdn/plink/internal/config"
 	"github.com/srmdn/plink/internal/db"
 )
 
 type Server struct {
+	ogCacheMu    sync.Mutex
+	ogCache      map[string][]byte
 	cfg          *config.Config
 	db           *db.DB
 	sessions     *sessionStore
@@ -35,6 +39,16 @@ func securityHeaders(next http.Handler) http.Handler {
 func New(cfg *config.Config, database *db.DB, webFS embed.FS) http.Handler {
 	tmpl := template.Must(
 		template.New("").Funcs(template.FuncMap{
+			"dict": func(values ...any) map[string]any {
+				result := map[string]any{}
+				for i := 0; i+1 < len(values); i += 2 {
+					result[values[i].(string)] = values[i+1]
+				}
+				return result
+			},
+			"itemTypeLabel": func(value string) string {
+				return map[string]string{"product": "Produk", "referral": "Referral", "service": "Jasa", "resource": "Resource"}[value]
+			},
 			"percent": func(val, max int64) int64 {
 				if max == 0 {
 					return 0
@@ -48,8 +62,11 @@ func New(cfg *config.Config, database *db.DB, webFS embed.FS) http.Handler {
 				return val * 100 / total
 			},
 			"percentOfLabel": percentOfLabel,
-			"referrerLabel":  referrerLabel,
+			"referrerLabel":  func(value string) string { return uiText(referrerLabel(value)) },
+			"uiText":         uiText,
+			"branding":       func() brandAssets { settings, _ := database.GetSiteSettings(); return brandingAssets(settings) },
 			"offerStatus":    offerStatus,
+			"isGuide":        func(data any) bool { _, ok := data.(guideData); return ok },
 			"add": func(left, right int) int {
 				return left + right
 			},
@@ -77,6 +94,7 @@ func New(cfg *config.Config, database *db.DB, webFS embed.FS) http.Handler {
 	// Static assets
 	jsFS, _ := fs.Sub(webFS, "web")
 	mux.Handle("GET /js/", http.FileServer(http.FS(jsFS)))
+	mux.HandleFunc("GET /js/theme.css", s.handleTheme)
 	mux.HandleFunc("GET /favicon.svg", s.handleFavicon)
 	mux.HandleFunc("GET /favicon.ico", s.handleFavicon)
 
@@ -88,11 +106,15 @@ func New(cfg *config.Config, database *db.DB, webFS embed.FS) http.Handler {
 	// Admin UI
 	mux.HandleFunc("GET "+ap, s.requireAuth(s.handleDashboard))
 	mux.HandleFunc("GET "+ap+"/offers", s.requireAuth(s.handleOffersDashboard))
+	mux.HandleFunc("GET "+ap+"/settings", s.requireAuth(s.handleSettingsPage))
+	mux.HandleFunc("GET "+ap+"/guide", s.requireAuth(s.handleGuide))
+	mux.HandleFunc("POST "+ap+"/settings", s.requireAuth(s.requireCSRF(s.handleSaveSettings)))
 	mux.HandleFunc("GET "+ap+"/offers/new", s.requireAuth(s.handleNewOffer))
 	mux.HandleFunc("GET "+ap+"/offers/{id}", s.requireAuth(s.handleOfferDetail))
 	mux.HandleFunc("POST "+ap+"/offers", s.requireAuth(s.requireCSRF(s.handleCreateOffer)))
 	mux.HandleFunc("POST "+ap+"/offers/{id}", s.requireAuth(s.requireCSRF(s.handleUpdateOffer)))
 	mux.HandleFunc("POST "+ap+"/offers/{id}/links", s.requireAuth(s.requireCSRF(s.handleCreateOfferLink)))
+	mux.HandleFunc("POST "+ap+"/offers/{id}/links/attach", s.requireAuth(s.requireCSRF(s.handleAttachExistingOfferLink)))
 	mux.HandleFunc("POST "+ap+"/offers/{id}/links/{linkID}/homepage", s.requireAuth(s.requireCSRF(s.handleSetOfferHomepageLink)))
 	mux.HandleFunc("POST "+ap+"/offers/{id}/toggle", s.requireAuth(s.requireCSRF(s.handleToggleOffer)))
 	mux.HandleFunc("GET "+ap+"/analytics/dashboard", s.requireAuth(s.handleAnalyticsDashboard))
@@ -116,6 +138,11 @@ func New(cfg *config.Config, database *db.DB, webFS embed.FS) http.Handler {
 	mux.HandleFunc("PATCH /api/links/{id}/toggle", s.requireAuth(s.requireCSRF(s.handleToggleLink)))
 	mux.HandleFunc("GET /api/export", s.requireAuth(s.handleExport))
 
+	// Public metadata and share image
+	mux.HandleFunc("GET /robots.txt", s.handleRobots)
+	mux.HandleFunc("GET /sitemap.xml", s.handleSitemap)
+	mux.HandleFunc("GET /og-image.png", s.handleOGImage)
+
 	// Public homepage
 	mux.HandleFunc("GET /offers", s.handleOfferCatalog)
 	mux.HandleFunc("GET /links", s.handleLinkCatalog)
@@ -124,5 +151,10 @@ func New(cfg *config.Config, database *db.DB, webFS embed.FS) http.Handler {
 	// Catch-all: slug redirect (must be last)
 	mux.HandleFunc("GET /{slug}", s.handleRedirect)
 
-	return securityHeaders(mux)
+	return securityHeaders(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path == ap || strings.HasPrefix(r.URL.Path, ap+"/") || strings.HasPrefix(r.URL.Path, "/api/") {
+			w.Header().Set("X-Robots-Tag", "noindex, nofollow")
+		}
+		mux.ServeHTTP(w, r)
+	}))
 }

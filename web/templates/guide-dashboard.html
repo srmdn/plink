@@ -1,0 +1,180 @@
+{{define "guide-styles"}}
+<style>
+  .guide-page { max-width: 1240px; }
+  .guide-page .admin-page-heading p { max-width: 760px; line-height: 1.7; }
+  .guide-toc { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 24px; }
+  .guide-toc a { padding: 8px 12px; border: 1px solid #2b3b32; border-radius: 9px; color: #c6d7cc; background: #16221b; font-size: 12px; }
+  .guide-toc a:hover, .guide-toc a:focus-visible { border-color: #87bb97; color: #c5edcf; }
+  .guide-section { margin-bottom: 20px; padding: clamp(18px, 3vw, 28px); scroll-margin-top: 160px; }
+  .guide-heading { display: flex; align-items: start; gap: 14px; margin-bottom: 22px; }
+  .guide-step { flex: 0 0 auto; display: grid; place-items: center; width: 36px; height: 36px; border: 1px solid #37553e; border-radius: 10px; color: #b6e5c0; background: #203327; font-size: 12px; font-weight: 700; }
+  .guide-heading h2 { color: #e1ede5; font-size: 20px; line-height: 1.4; margin-bottom: 7px; }
+  .guide-page p { color: #a6b9ad; line-height: 1.75; font-size: 14px; }
+  .guide-page a:not(.btn):not(.guide-module):not(.guide-toc a) { color: #b8e3c3; text-decoration: underline; text-underline-offset: 3px; }
+  .guide-module-grid, .guide-definition-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+  .guide-module { display: flex; flex-direction: column; gap: 9px; padding: 18px; border: 1px solid #2b3b32; border-radius: 12px; background: #142019; }
+  .guide-module strong { color: #e1ede5; font-size: 16px; }
+  .guide-module span { color: #a6b9ad; font-size: 13px; line-height: 1.7; }
+  .guide-module small { margin-top: auto; padding-top: 5px; color: #b8e3c3; font-size: 12px; }
+  .guide-page a.guide-module, .guide-toc a { text-decoration: none; }
+  .guide-module:hover { border-color: #668e70; }
+  .guide-example { margin-top: 18px; padding: 18px; border-left: 3px solid #a2d8ad; border-radius: 0 9px 9px 0; background: #18271e; }
+  .guide-example strong { display: block; color: #d5e9dc; font-size: 14px; margin-bottom: 8px; }
+  .guide-page code { padding: 2px 5px; border-radius: 4px; background: #223529; color: #c6e9cf; font-size: .9em; overflow-wrap: anywhere; }
+  .guide-steps { padding-left: 24px; color: #c3d3c9; font-size: 14px; line-height: 1.8; }
+  .guide-steps li { padding-left: 5px; margin: 0 0 13px; }
+  .guide-steps li::marker { color: #b4d8bf; font-weight: 700; }
+  .guide-note { margin-top: 16px; padding-top: 16px; border-top: 1px solid #283a2e; }
+  .guide-definition-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); margin-top: 20px; }
+  .guide-definition-grid > div { padding: 14px; background: #142019; border: 1px solid #2b3b32; border-radius: 9px; }
+  .guide-definition-grid strong { display: block; color: #d6e6dc; font-size: 13px; margin-bottom: 5px; }
+  .guide-definition-grid p { font-size: 13px; }
+  .guide-table-wrap { overflow-x: auto; margin-top: 20px; border: 1px solid #2b3b32; border-radius: 10px; }
+  .guide-table { width: 100%; border-collapse: collapse; font-size: 13px; line-height: 1.7; color: #bccfc2; }
+  .guide-table caption { padding: 14px; text-align: left; background: #18271e; color: #d6e6dc; font-weight: 600; }
+  .guide-table th, .guide-table td { padding: 12px 14px; text-align: left; vertical-align: top; border-top: 1px solid #2b3b32; }
+  .guide-table th { color: #d6e6dc; font-weight: 600; }
+  .guide-table th:first-child { width: 30%; }
+  .guide-faq details { border-top: 1px solid #2b3b32; padding: 16px 0; }
+  .guide-faq summary { cursor: pointer; color: #d8e8dd; font-size: 14px; line-height: 1.6; }
+  .guide-faq details p { margin: 12px 0 0; }
+  .guide-end { padding-bottom: 12px; }
+  .guide-page b { color: #d3e4d9; font-weight: 600; }
+  @media (max-width: 620px) { .guide-module-grid, .guide-definition-grid { grid-template-columns: minmax(0, 1fr); } .guide-heading h2 { font-size: 18px; } .guide-heading { gap: 10px; } .guide-table th, .guide-table td { padding: 10px; } .guide-table th:first-child { width: 36%; } }
+</style>
+{{end}}
+{{define "guide-dashboard"}}
+<!doctype html>
+<html lang="id">
+{{template "head" .}}
+<body class="admin-page">
+<div id="app" class="admin-app">
+  {{template "admin-header" .}}
+
+  <div class="admin-layout">
+{{template "admin-nav" (dict "AdminPath" .AdminPath "Active" "settings")}}
+
+    <main class="admin-main guide-page">
+      <div class="admin-page-heading">
+        <div><div class="admin-eyebrow">Panduan penggunaan</div><h1>Mulai dari kebutuhan lo</h1><p>Tautan menyimpan tautan. Katalog mengelola programnya. Statistik membaca hasilnya. Pengaturan mengatur tampilan situs.</p></div>
+        <a href="/" class="btn btn-ghost btn-sm admin-home-link">lihat situs publik ↗</a>
+      </div>
+
+      <nav class="guide-toc" aria-label="Bagian panduan">
+        <a href="#hubungan-modul">Hubungan modul</a><a href="#link-biasa">Link biasa</a><a href="#program">Program &amp; channel</a><a href="#link-lama">Link yang sudah tersebar</a><a href="#program-berakhir">Program berakhir</a><a href="#statistik">Statistik</a><a href="#homepage">Homepage</a><a href="#tanya-jawab">Tanya jawab</a>
+      </nav>
+
+      <section class="analytics-page-panel guide-section" id="hubungan-modul" aria-labelledby="modul-title">
+        <div class="guide-heading"><span class="guide-step">01</span><div><h2 id="modul-title">Pilih tempat mengelolanya</h2><p>Link biasa bisa berdiri sendiri. Pakai item ketika beberapa link mengikuti program atau promo yang sama.</p></div></div>
+        <div class="guide-module-grid">
+          <a class="guide-module" href="/{{.AdminPath}}"><strong>Tautan</strong><span>Slug, tujuan redirect, kategori, provider, channel, dan campaign. Cocok untuk tautan biasa maupun mengedit tujuan link milik item.</span><small>Buka Tautan ↗</small></a>
+          <a class="guide-module" href="/{{.AdminPath}}/offers"><strong>Katalog</strong><span>Satu kartu produk atau program, beberapa slug, tanggal berlaku, dan status program yang dibagikan ke semua slug terkait.</span><small>Buka Katalog ↗</small></a>
+          <a class="guide-module" href="/{{.AdminPath}}/analytics/dashboard"><strong>Statistik</strong><span>Bandingkan klik redirect menurut slug, provider, channel, atau campaign. Buka satu link untuk melihat detailnya.</span><small>Buka Statistik ↗</small></a>
+          <a class="guide-module" href="/{{.AdminPath}}/settings"><strong>Pengaturan</strong><span>Nama/deskripsi halaman, keterangan referral, pilihan utama, dan warna publik/admin. Konten kartu dan urutannya tetap di Katalog.</span><small>Buka Pengaturan ↗</small></a>
+        </div>
+        <div class="guide-example"><strong>Contoh: satu program OpenCode Go</strong><p>item <b>OpenCode Go</b> punya slug <code>/opencode-go</code> untuk kartu homepage, <code>/opencode-go-threads</code> untuk Threads, dan <code>/opencode-go-instagram</code> untuk Instagram. Tiap slug punya statistik sendiri. Status program cukup diubah sekali di item.</p></div>
+      </section>
+
+      <section class="analytics-page-panel guide-section" id="link-biasa" aria-labelledby="link-title">
+        <div class="guide-heading"><span class="guide-step">02</span><div><h2 id="link-title">Bikin link biasa</h2><p>Untuk resource, artikel, atau tautan yang belum perlu dikelola sebagai satu program.</p></div></div>
+        <ol class="guide-steps">
+          <li>Buka <a href="/{{.AdminPath}}">Tautan</a>, lalu pilih <b>Tambah tautan</b>.</li>
+          <li>Isi <b>slug</b> dan <b>URL tujuan</b>. Contoh slug <code>belajar-go</code> menghasilkan alamat pendek dengan akhiran <code>/belajar-go</code>.</li>
+          <li>Tambahkan deskripsi dan kategori. Isi <b>Penyedia</b>, <b>Channel</b>, dan <b>Kampanye</b> jika ingin membandingkan sumber promosi.</li>
+          <li>Simpan, lalu salin dan coba link pendeknya. Link aktif yang belum terhubung ke item masuk ke katalog tautan publik.</li>
+        </ol>
+        <p class="guide-note">Kalau tujuan berubah, edit URL-nya di Tautan. Pertahankan slug yang sudah dibagikan supaya alamat lama tetap bisa dipakai.</p>
+      </section>
+
+      <section class="analytics-page-panel guide-section" id="program" aria-labelledby="program-title">
+        <div class="guide-heading"><span class="guide-step">03</span><div><h2 id="program-title">Satu program, banyak channel</h2><p>Untuk referral, promo, atau produk yang punya satu kartu publik dan beberapa link distribusi.</p></div></div>
+        <ol class="guide-steps">
+          <li>Buka <a href="/{{.AdminPath}}/offers/new">Katalog → Tambah item</a>. Pilih jenis Produk, Referral, Jasa, atau Resource. Isi nama, penyedia, deskripsi, kategori, dan gambar bila ada.</li>
+          <li>Isi <b>Slug kartu</b> dan tujuan referral. Slug ini dipakai saat pengunjung mengeklik kartu di homepage atau katalog Katalog.</li>
+          <li>Pilih <b>program status: Aktif</b>. Atur <b>Tanggal mulai</b> dan <b>Tanggal akhir</b> bila ada jadwal. Centang <b>Tampilkan kartu selama program tersedia</b> untuk menampilkan kartu.</li>
+          <li>Simpan item, lalu gunakan <b>Tambah tautan channel</b>. Buat slug berbeda untuk tiap channel; misalnya <code>opencode-go-threads</code> dengan channel <code>threads</code>.</li>
+          <li>Isi campaign bila perlu, misalnya <code>review-oktober</code>. Tujuan channel bisa sama dengan homepage atau memakai URL khusus channel tersebut.</li>
+          <li>Bagikan slug sesuai channel. Gunakan filter channel/campaign di editor item untuk menemukan dan membandingkan linknya.</li>
+        </ol>
+        <div class="guide-definition-grid">
+          <div><strong>Penyedia</strong><p>Siapa penyedia atau tokonya, misalnya OpenCode.</p></div>
+          <div><strong>Channel</strong><p>Di mana link disebar, misalnya Threads, blog, atau newsletter.</p></div>
+          <div><strong>Campaign</strong><p>Promosi atau penempatan tertentu, misalnya review Oktober.</p></div>
+        </div>
+        <p class="guide-note">Tombol <b>Gunakan untuk kartu</b> memilih slug yang dipakai kartu publik. Semua slug lainnya tetap tersedia dan dihitung masing-masing.</p>
+      </section>
+
+      <section class="analytics-page-panel guide-section" id="link-lama" aria-labelledby="lama-title">
+        <div class="guide-heading"><span class="guide-step">04</span><div><h2 id="lama-title">Link sudah tersebar? Pakai slug yang sama</h2><p>Pindahkan pengelolaannya ke item tanpa membuat ulang link atau menghapus statistik lama.</p></div></div>
+        <ol class="guide-steps">
+          <li>Jika program belum punya item, buka <a href="/{{.AdminPath}}/offers/new">Tambah item</a> dan centang <b>Gunakan tautan yang sudah ada</b>.</li>
+          <li>Isi <b>Slug kartu</b> dengan slug lama, misalnya <code>opencode-go</code>. Tujuan URL dan histori kliknya tetap dipakai.</li>
+          <li>Untuk memasang slug lain ke item yang sudah ada, buka editornya dan isi <b>Hubungkan tautan yang sudah ada</b>, lalu pilih <b>Hubungkan tautan</b>.</li>
+          <li>Cek daftar Tracking links. Slug yang dipasang sekarang mengikuti status program item tersebut, termasuk pemberitahuan jika program sudah berakhir.</li>
+        </ol>
+        <p class="guide-note">Hanya link aktif yang belum dimiliki item lain yang bisa dipasang. Channel dan campaign lama tetap terjaga. Setelah terhubung, link keluar dari katalog resource terpisah dan dikelola melalui kartu item.</p>
+      </section>
+
+      <section class="analytics-page-panel guide-section" id="program-berakhir" aria-labelledby="berakhir-title">
+        <div class="guide-heading"><span class="guide-step">05</span><div><h2 id="berakhir-title">Referral atau promo sudah berakhir</h2><p>Alamat pendek tetap berguna untuk menjelaskan perubahan kepada orang yang datang dari posting lama.</p></div></div>
+        <ol class="guide-steps">
+          <li>Buka item program tersebut. Pilih <b>program status: Ended</b>; gunakan <b>Dijeda / diperiksa</b> kalau kepastiannya masih diperiksa.</li>
+          <li>Isi <b>Pesan untuk pengunjung</b> dengan manfaat yang sudah tidak berlaku, misalnya kredit referral $5. Tambahkan <b>URL sumber resmi</b> dan tanggal bila diketahui.</li>
+          <li>Pilih <b>Show a notice</b>. Isi <b>Website penyedia / URL pengganti</b> bila ingin menyediakan tombol ke website penyedia yang masih relevan.</li>
+          <li>Simpan, lalu coba slug homepage dan satu slug channel. Kartu hilang dari katalog aktif; semua slug aktif terkait menampilkan pemberitahuan yang sama.</li>
+          <li>Perbarui posting lama yang masih bisa diedit. Gunakan jumlah tampilan pemberitahuan untuk melihat channel mana yang masih mendatangkan pengunjung.</li>
+        </ol>
+        <div class="guide-table-wrap" tabindex="0" role="region" aria-label="Tabel perilaku status program">
+          <table class="guide-table"><caption>Apa yang terjadi saat orang membuka slug?</caption><thead><tr><th scope="col">Status program</th><th scope="col">Perilaku link aktif</th></tr></thead><tbody>
+            <tr><th scope="row">Aktif</th><td>Redirect ke tujuan masing-masing slug, selama jadwalnya berlaku.</td></tr>
+            <tr><th scope="row">Dijeda / diperiksa</th><td>Pemberitahuan sementara; kartu disembunyikan.</td></tr>
+            <tr><th scope="row">Upcoming</th><td>Pemberitahuan belum mulai, sampai tanggal starts on.</td></tr>
+            <tr><th scope="row">Expired</th><td>Pemberitahuan atau fallback yang dipilih, setelah tanggal ends on lewat.</td></tr>
+            <tr><th scope="row">Berakhir</th><td>Pemberitahuan atau fallback yang dipilih, langsung setelah disimpan.</td></tr>
+          </tbody></table>
+        </div>
+        <p class="guide-note"><b>Ends on</b> mencakup seluruh tanggal tersebut menurut zona waktu laporan. <b>Status effective date</b> dan <b>Terakhir diperiksa</b> adalah catatan; keduanya tidak menjadwalkan perubahan otomatis. Pemeriksaan program masih dilakukan manual.</p>
+        <p class="guide-note">Pilih redirect otomatis hanya kalau fallback memang memenuhi tujuan pengunjung. Program yang dijeda atau belum mulai selalu menampilkan pemberitahuan. item lama yang sudah memiliki fallback mempertahankan perilaku redirect saat diperbarui ke versi ini; cek pilihannya saat mengedit.</p>
+      </section>
+
+      <section class="analytics-page-panel guide-section" id="statistik" aria-labelledby="statistik-title">
+        <div class="guide-heading"><span class="guide-step">06</span><div><h2 id="statistik-title">Baca hasil promosi</h2><p>Gunakan label yang konsisten agar perbandingannya jelas.</p></div></div>
+        <ol class="guide-steps">
+          <li>Buka <a href="/{{.AdminPath}}/analytics/dashboard">Statistik</a> dan pilih rentang waktu. Gunakan kategori untuk mempersempit data.</li>
+          <li>Pilih breakdown <b>Penyedia</b>, <b>Channel</b>, <b>Kampanye</b>, atau <b>slug</b> untuk menjawab pertanyaan yang berbeda.</li>
+          <li>Buka detail satu link untuk melihat klik harian dan referrer. <b>Langsung / tidak diketahui</b> berarti permintaan tidak membawa informasi referrer.</li>
+          <li>Untuk program yang tidak aktif, cek <b>tampilan pemberitahuan</b> di Katalog. Angka ini terpisah dari klik redirect di Statistik.</li>
+        </ol>
+        <p class="guide-note">Klik redirect bukan jumlah orang unik, pendaftaran, pembelian, atau kredit referral. Membuka tombol website pada pemberitahuan tidak menambah klik redirect. Periode <b>Semua</b> tidak memiliki perbandingan Trend.</p>
+        <p class="guide-note">Menu <b>export</b> di Tautan menyediakan katalog JSON/CSV dan laporan klik harian. Gunakan laporan harian untuk memeriksa distribusi klik pada tanggal tertentu.</p>
+      </section>
+
+      <section class="analytics-page-panel guide-section" id="homepage" aria-labelledby="homepage-title">
+        <div class="guide-heading"><span class="guide-step">07</span><div><h2 id="homepage-title">Atur situs dan homepage</h2><p>Pengaturan mengatur tampilan global; Katalog mengatur isi setiap kartu.</p></div></div>
+        <ol class="guide-steps">
+          <li>Buka <a href="/{{.AdminPath}}/settings">Pengaturan</a> untuk mengganti nama/deskripsi situs dan disclosure di homepage.</li>
+          <li>Isi <b>URL logo</b> dan <b>URL favicon</b> dengan URL HTTPS atau path aset lokal. Logo muncul di publik dan admin. Favicon kosong mengikuti logo; tanpa logo khusus, ikon bawaan mengikuti aksen publik.</li>
+          <li>Aktifkan <b>Tampilkan pilihan utama di beranda</b> dan pilih batas satu sampai tiga kartu.</li>
+          <li>Di masing-masing item, centang <b>Masukkan ke pilihan utama</b>. Isi <b>Prioritas tampilan</b>; nilai lebih tinggi tampil lebih dahulu.</li>
+          <li>Pilih warna aksen dan latar publik/admin secara terpisah di Pengaturan. Gunakan latar terang dengan aksen yang kontras.</li><li>Cek <a href="/">homepage publik</a>. item harus aktif, sedang dalam jadwal, memiliki homepage link aktif, dan diizinkan tampil agar kartunya muncul.</li>
+        </ol>
+        <p class="guide-note">Deretan pilihan utama digeser manual oleh pengunjung. Kartu yang masuk deretan pilihan utama tidak diulang di grid homepage. Homepage menampilkan paling banyak enam kartu di grid dan enam resource; daftar lengkap tersedia di <a href="/offers">katalog Katalog</a> dan <a href="/links">katalog tautan</a>.</p>
+      </section>
+
+      <section class="analytics-page-panel guide-section guide-faq" id="tanya-jawab" aria-labelledby="faq-title">
+        <div class="guide-heading"><span class="guide-step">08</span><div><h2 id="faq-title">Hal yang sering ketukar</h2><p>Tiga kontrol ini punya pengaruh berbeda.</p></div></div>
+        <details open><summary>Sembunyikan kartu, Dijeda, dan nonaktifkan tautan bedanya apa?</summary><p><b>Sembunyikan kartu</b> di Katalog hanya menyembunyikan kartu; slug tetap mengikuti status program. <b>Dijeda</b> pada program menampilkan pemberitahuan di semua slug aktifnya. <b>Nonaktifkan tautan</b> di Tautan menonaktifkan satu slug sehingga pengunjung mendapat 404.</p></details>
+        <details><summary>Kenapa item gue tidak muncul di homepage?</summary><p>Cek status Aktif, tanggal mulai/akhir, pilihan Tampilkan kartu, dan apakah homepage link aktif. Kalau semuanya benar, kartu bisa berada di deretan pilihan utama atau di luar enam kartu grid teratas. Buka katalog Katalog untuk melihat daftar lengkap.</p></details>
+        <details><summary>Kalau mau mengganti tujuan satu channel, edit di mana?</summary><p>Edit URL slug tersebut di <a href="/{{.AdminPath}}">Tautan</a>. Mengubah satu URL tidak mengubah tujuan slug lain. Kalau slug itu dipakai sebagai homepage link, tujuan kartu publik ikut berubah.</p></details>
+        <details><summary>Kalau punya ratusan slug, perlu membuat ratusan pemberitahuan?</summary><p>Cukup isi pemberitahuan pada item induk. Semua slug aktif yang terhubung memakainya. Program berbeda punya data item masing-masing, dengan template halaman yang sama.</p></details>
+        <details><summary>Programnya aktif lagi, harus bikin link baru?</summary><p>Ubah status program ke Aktif dan periksa jadwalnya, lalu coba slug lama. Jika ends on sudah lewat, perbarui tanggalnya. Aktifkan lagi link yang sebelumnya dinonaktifkan. Histori klik tetap tersimpan.</p></details>
+        <details><summary>Boleh hapus link yang sudah tidak dipakai?</summary><p>Untuk link yang sudah tersebar, pertahankan slug dan gunakan status program atau nonaktifkan tautan sesuai kebutuhan. Menghapus Link juga menghapus histori kliknya. Mengganti slug membuat alamat lama tidak lagi ditemukan.</p></details>
+      </section>
+      <p class="guide-end">Mulai dari <a href="/{{.AdminPath}}">Tautan</a> untuk tautan sederhana, atau <a href="/{{.AdminPath}}/offers">Katalog</a> untuk program yang perlu dikelola bersama.</p>
+    </main>
+
+  </div>
+</div>
+</body>
+</html>
+{{end}}

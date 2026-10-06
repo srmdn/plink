@@ -5,7 +5,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Links · {{.SiteName}}</title>
-  <link rel="icon" href="/favicon.svg?v=3" />
+  {{template "favicon-link" .}}
   {{template "storefront-styles" .}}
   <style>
     .catalog-heading { margin: 20px 0 16px; }
@@ -22,7 +22,7 @@
       <span class="store-mark" aria-hidden="true">↗</span>
       <span class="store-brand-copy"><strong>{{.SiteName}}</strong><span>{{.SiteDesc}}</span></span>
     </a>
-    <a class="store-admin-link" href="/offers">Offers</a>
+    <a class="store-admin-link" href="/offers">Katalog</a>
   </header>
   <main class="store-main" id="resources">
     <div class="catalog-heading"><span class="store-eyebrow">Resource dan tautan</span><h1>Semua links</h1><p>{{.Total}} hasil · Tautan lama tetap bisa dibuka langsung.</p></div>

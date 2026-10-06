@@ -1,74 +1,38 @@
 {{define "dashboard-summary"}}
 <section id="dashboard-summary" class="dashboard-stats" hx-swap-oob="outerHTML">
-  <div class="stat-card"><div class="stat-value">{{.Total}}</div><div class="stat-label">total links</div></div>
-  <div class="stat-card"><div class="stat-value">{{.Count}}</div><div class="stat-label">{{.CountLabel}}</div></div>
-  <div class="stat-card"><div class="stat-value">{{.TotalClicks}}</div><div class="stat-label">{{.ClicksLabel}}</div></div>
+  <div class="stat-card"><div class="stat-value">{{.Total}}</div><div class="stat-label">Total tautan</div></div>
+  <div class="stat-card"><div class="stat-value">{{.Count}}</div><div class="stat-label">{{uiText .CountLabel}}</div></div>
+  <div class="stat-card"><div class="stat-value">{{.TotalClicks}}</div><div class="stat-label">{{uiText .ClicksLabel}}</div></div>
 </section>
 {{end}}
 
 {{define "dashboard-daily-export"}}
-<a id="daily-report-export" href="/api/export?format=daily-csv&amp;date={{.DailyExportDate}}">{{.DailyExportLabel}}</a>
+<a id="daily-report-export" href="/api/export?format=daily-csv&amp;date={{.DailyExportDate}}">{{uiText .DailyExportLabel}}</a>
 {{end}}
 
 {{define "dashboard-daily-export-oob"}}
-<a id="daily-report-export" hx-swap-oob="outerHTML" href="/api/export?format=daily-csv&amp;date={{.DailyExportDate}}">{{.DailyExportLabel}}</a>
+<a id="daily-report-export" hx-swap-oob="outerHTML" href="/api/export?format=daily-csv&amp;date={{.DailyExportDate}}">{{uiText .DailyExportLabel}}</a>
 {{end}}
 
 {{define "dashboard"}}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 {{template "head" .}}
 <body class="admin-page" data-public-url="{{.PublicURL}}">
 <div id="app" class="admin-app">
-  <header class="admin-topbar">
-    <div class="admin-topbar-leading">
-      <button type="button" class="sidebar-toggle" onclick="toggleAdminSidebar()" aria-label="Collapse sidebar" aria-controls="admin-sidebar-nav" aria-expanded="true" title="Collapse sidebar">
-        <svg viewBox="0 0 20 20" aria-hidden="true"><rect x="2.5" y="3" width="15" height="14" rx="2"/><path d="M7.5 3.5v13"/><path class="sidebar-toggle-chevron" d="m12.5 7-3 3 3 3"/></svg>
-      </button>
-      <a class="admin-brand" href="/{{.AdminPath}}" aria-label="Plink admin home">
-        <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M12.1 19.9 9.8 22.2a5 5 0 0 1-7.1-7.1l6.1-6.1a5 5 0 0 1 7.1 0M19.9 12.1l2.3-2.3a5 5 0 0 1 7.1 7.1l-6.1 6.1a5 5 0 0 1-7.1 0M11.1 20.9l9.8-9.8"/></svg>
-        <span>plink</span><span class="admin-brand-context">admin</span>
-      </a>
-    </div>
-    <div class="admin-topbar-actions">
-      <span class="admin-topbar-label"><span class="admin-status-dot" aria-hidden="true"></span>self-hosted</span>
-      <form method="POST" action="/{{.AdminPath}}/logout">
-        <button type="submit" class="btn btn-ghost btn-sm">log out</button>
-      </form>
-    </div>
-  </header>
+  {{template "admin-header" .}}
 
   <div class="admin-layout">
-    <aside class="admin-sidebar">
-      <div class="admin-sidebar-label">Workspace</div>
-      <nav class="admin-sidebar-nav" id="admin-sidebar-nav" aria-label="Admin sections">
-        <a href="/{{.AdminPath}}/analytics/dashboard" class="admin-sidebar-link" aria-label="Analytics" title="Analytics">
-          <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 10h3v7H3zM8.5 5h3v12h-3zM14 2h3v15h-3z"/></svg>
-          <span>Analytics</span>
-        </a>
-        <a href="/{{.AdminPath}}" class="admin-sidebar-link active" aria-current="page" aria-label="Links" title="Links">
-          <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M7.8 12.2 6.4 13.6a3.5 3.5 0 0 1-5-5l3-3a3.5 3.5 0 0 1 5 0M12.2 7.8l1.4-1.4a3.5 3.5 0 0 1 5 5l-3 3a3.5 3.5 0 0 1-5 0M6.8 13.2l6.4-6.4"/></svg>
-          <span>Links</span>
-        </a>
-        <a href="/{{.AdminPath}}/offers" class="admin-sidebar-link" aria-label="Offers" title="Offers">
-          <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M2.5 9.5 9.6 2.4h6.1l2 2v6.1l-7.1 7.1-8.1-8.1Z"/><circle cx="14" cy="6" r="1"/></svg>
-          <span>Offers</span>
-        </a>
-      </nav>
-      <div class="admin-sidebar-foot">
-        <span class="admin-sidebar-accent" aria-hidden="true"></span>
-        <span>Short links.<br />Big results.</span>
-      </div>
-    </aside>
+{{template "admin-nav" (dict "AdminPath" .AdminPath "Active" "links")}}
 
-  <main class="admin-main">
+  <main class="admin-main workspace-page links-page">
     <div class="admin-page-heading">
       <div>
-        <div class="admin-eyebrow">Link workspace</div>
-        <h1>Links</h1>
-        <p>Manage, filter, and share your short links.</p>
+        <div class="admin-eyebrow">Kelola tautan</div>
+        <h1>Tautan</h1>
+        <p>Kelola, cari, dan bagikan tautan pendek.</p>
       </div>
-      <a href="/" class="btn btn-ghost btn-sm admin-home-link">view public site</a>
+      <a href="/" class="btn btn-ghost btn-sm admin-home-link">Lihat halaman publik</a>
     </div>
     {{template "dashboard-summary" .}}
     <div class="toolbar">
@@ -78,7 +42,7 @@
           id="search"
           name="q"
           value="{{.Query}}"
-          placeholder="search links..."
+          placeholder="Cari tautan…"
           autocomplete="off"
           spellcheck="false"
           hx-get="/{{.AdminPath}}/links"
@@ -89,10 +53,10 @@
         />
       </div>
       <div class="export-wrap">
-        <button class="btn btn-ghost btn-sm" onclick="toggleExportMenu(event)">export ↓</button>
+        <button class="btn btn-ghost btn-sm" onclick="toggleExportMenu(event)">Ekspor ↓</button>
         <div class="export-menu hidden" id="export-menu">
-          <a href="/api/export?format=json">link catalog · JSON</a>
-          <a href="/api/export?format=csv">link catalog · CSV</a>
+          <a href="/api/export?format=json">Katalog tautan · JSON</a>
+          <a href="/api/export?format=csv">Katalog tautan · CSV</a>
           {{template "dashboard-daily-export" .}}
         </div>
       </div>
@@ -102,7 +66,7 @@
         hx-target="#modal-body"
         hx-swap="innerHTML"
         hx-include="#search, select[name='category'], select[name='status'], #date-filter"
-      >+ add link</button>
+      >+ Tambah tautan</button>
     </div>
 
     <!-- Link modal -->

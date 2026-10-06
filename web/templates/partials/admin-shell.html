@@ -1,0 +1,11 @@
+{{define "admin-header"}}
+<header class="admin-topbar"><a class="admin-brand" href="/{{.AdminPath}}">{{template "brand-logo" .}}<span>plink <small>admin</small></span></a><div class="admin-topbar-actions"><a class="btn btn-ghost btn-sm" href="/{{.AdminPath}}/guide">Panduan</a><form method="POST" action="/{{.AdminPath}}/logout"><button type="submit" class="btn btn-ghost btn-sm">Keluar</button></form></div></header>
+{{end}}
+{{define "admin-nav"}}
+<nav class="admin-bottom-nav" aria-label="Navigasi admin">
+<a href="/{{.AdminPath}}" {{if eq .Active "links"}}aria-current="page"{{end}}>{{template "nav-icon" "link"}}Tautan</a>
+<a href="/{{.AdminPath}}/offers" {{if eq .Active "offers"}}aria-current="page"{{end}}>{{template "nav-icon" "grid"}}Katalog</a>
+<a href="/{{.AdminPath}}/analytics/dashboard" {{if eq .Active "analytics"}}aria-current="page"{{end}}>{{template "nav-icon" "chart"}}Statistik</a>
+<a href="/{{.AdminPath}}/settings" {{if eq .Active "settings"}}aria-current="page"{{end}}>{{template "nav-icon" "settings"}}Pengaturan</a>
+</nav>
+{{end}}

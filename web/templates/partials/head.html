@@ -3,7 +3,8 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>plink</title>
-<link rel="icon" type="image/svg+xml" href="/favicon.svg?v=3" />
+<meta name="robots" content="noindex, nofollow" />
+{{template "favicon-link" .}}
 <script src="/js/htmx.min.js"></script>
 <script>
 try {
@@ -452,15 +453,6 @@ try {
 
   /* ── Admin workspace refresh ── */
   body.admin-page {
-    --bg: #0a100e;
-    --surface: #101816;
-    --surface2: #17211e;
-    --border: #27342f;
-    --text: #edf4f0;
-    --muted: #85938d;
-    --accent: #35d987;
-    --danger: #fb7185;
-    --radius: 12px;
     background: var(--bg);
     color: var(--text);
     font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
@@ -584,11 +576,11 @@ try {
   .toolbar .btn-primary { color: #07130d; background: var(--accent); border-color: var(--accent); font-weight: 650; }
   .toolbar .btn-primary:hover { filter: brightness(1.07); }
   .toolbar .btn-ghost { color: #afbbb5; border-color: var(--border); }
-  .links-controls { padding: 12px 14px; margin-bottom: 6px; background: #0e1614; border: 1px solid var(--border); border-radius: 11px 11px 0 0; }
+  .links-controls { padding: 12px 14px; margin-bottom: 6px; background: var(--surface2); border: 1px solid var(--border); border-radius: 11px 11px 0 0; }
   .cat-filter, .date-filter { min-height: 38px; color: #b8c4bd; background: #111a17; border-color: var(--border); border-radius: 8px; font: inherit; font-size: 12px; }
   .status-summary { font-size: 11px; }
   .clear-filters { font-size: 11px; }
-  .table-wrap { padding: 0 14px 10px; background: #0e1614; border: 1px solid var(--border); border-top: 0; border-radius: 0 0 11px 11px; }
+  .table-wrap { padding: 0 14px 10px; background: var(--surface2); border: 1px solid var(--border); border-top: 0; border-radius: 0 0 11px 11px; }
   .link-table { border-spacing: 0; }
   .link-table th { padding: 10px 10px 9px; color: #7f8d86; font-size: 9px; }
   .link-table td { padding: 14px 10px; background: transparent; border-color: #202b27; }
@@ -627,6 +619,8 @@ try {
     .dashboard-stats .stat-card:last-child { grid-column: 1 / -1; }
   }
   @media (max-width: 520px) {
+    .admin-sidebar-nav { gap: 4px; }
+    .admin-sidebar-link, html.admin-sidebar-collapsed .admin-sidebar-link { flex-direction: column; gap: 5px; min-width: 0; padding: 8px 2px; font-size: 10px; }
     .admin-topbar { padding: 0 14px; }
     .admin-brand { gap: 8px; font-size: 16px; }
     .admin-brand > svg { width: 27px; height: 27px; }
@@ -737,6 +731,12 @@ try {
   .offer-home-destination { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px; padding: 12px 14px; margin: 2px 0 18px; color: var(--muted); background: #111a17; border: 1px solid var(--border); border-radius: 9px; font-size: 11px; }
   .offer-home-destination strong { color: var(--accent); }
   .offer-error { padding: 12px 14px; margin-bottom: 16px; color: #ffc0c0; background: rgba(239,68,68,.08); border: 1px solid rgba(239,68,68,.24); border-radius: 9px; font-size: 12px; }
+  .settings-panel { margin-bottom: 14px; }
+  .settings-panel textarea { box-sizing: border-box; width: 100%; color: var(--text); background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius); font: inherit; font-size: 13px; padding: 9px 11px; resize: vertical; }
+  .settings-panel select, .offer-link-filters select { box-sizing: border-box; width: 100%; min-height: 38px; color: var(--text); background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius); font: inherit; font-size: 12px; padding: 8px 10px; }
+  .settings-limit-field { max-width: 280px; margin-top: 14px; }
+  .settings-actions { margin-top: 0; }
+  .settings-saved { padding: 11px 13px; margin-bottom: 15px; color: #b4f3c7; background: rgba(34,197,94,.08); border: 1px solid rgba(34,197,94,.22); border-radius: 9px; font-size: 12px; }
   .offer-admin-table-wrap { border-top: 1px solid var(--border); border-radius: 11px; padding-top: 4px; }
   .offer-admin-table th { white-space: nowrap; }
   .offer-admin-title { display: flex; align-items: center; gap: 11px; min-width: 180px; }
@@ -750,6 +750,17 @@ try {
   .offer-empty-state strong { color: var(--text); }
   .offer-empty-state span { color: var(--muted); font-size: 12px; }
   .offer-links-list { display: grid; gap: 8px; }
+  .offer-link-filters { display: grid; grid-template-columns: minmax(180px, 1.4fr) minmax(130px, 1fr) minmax(130px, 1fr) auto auto; align-items: end; gap: 9px; margin: 0 0 14px; }
+  .offer-link-filters .field { min-width: 0; margin: 0; }
+  .offer-link-filters input { box-sizing: border-box; width: 100%; min-height: 38px; color: var(--text); background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius); font: inherit; font-size: 12px; padding: 8px 10px; }
+  .offer-link-groups { display: grid; gap: 8px; }
+  .offer-link-group { overflow: hidden; background: #111a17; border: 1px solid #24312c; border-radius: 9px; }
+  .offer-link-group > summary { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 12px 14px; color: var(--text); cursor: pointer; list-style: none; }
+  .offer-link-group > summary::-webkit-details-marker { display: none; }
+  .offer-link-group > summary::after { content: "＋"; color: var(--muted); }
+  .offer-link-group[open] > summary::after { content: "−"; }
+  .offer-link-group > summary span { color: var(--muted); font-size: 10px; }
+  .offer-link-group[open] > .offer-links-list { padding: 0 9px 9px; }
   .offer-link-row { display: grid; grid-template-columns: minmax(125px, .8fr) minmax(120px, 1.4fr) auto auto auto; align-items: center; gap: 12px; padding: 12px; background: #111a17; border: 1px solid #24312c; border-radius: 9px; }
   .offer-link-name { display: grid; gap: 3px; min-width: 0; }
   .offer-link-name strong { color: var(--text); overflow-wrap: anywhere; }
@@ -757,13 +768,14 @@ try {
   .offer-link-target { min-width: 0; overflow: hidden; color: #9bb7a7; text-overflow: ellipsis; white-space: nowrap; font-size: 10px; }
   .offer-link-form { margin-top: 22px; padding-top: 18px; border-top: 1px solid var(--border); }
   .offer-link-form h3 { margin-bottom: 14px; font-size: 13px; }
-  .offer-link-fields { display: grid; grid-template-columns: minmax(120px, 1fr) minmax(120px, 1fr) minmax(180px, 1.4fr) auto; align-items: end; gap: 10px; }
+  .offer-link-fields { display: grid; grid-template-columns: minmax(110px, .9fr) minmax(110px, .9fr) minmax(150px, 1.1fr) minmax(180px, 1.4fr) auto; align-items: end; gap: 10px; }
   .offer-link-fields .field { margin: 0; }
   .offer-link-fields input { min-width: 0; }
   .offer-admin-table td:nth-child(2) { white-space: nowrap; }
   .offer-admin-table td:nth-child(5) { white-space: nowrap; }
   .admin-sidebar-link:nth-child(3) svg path { fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linejoin: round; }
   .admin-sidebar-link:nth-child(3) svg circle { fill: none; stroke: currentColor; stroke-width: 1.5; }
+  .admin-sidebar-link:nth-child(4) svg path, .admin-sidebar-link:nth-child(4) svg circle { fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linejoin: round; }
 
   @media (max-width: 900px) {
     .offer-link-row { grid-template-columns: minmax(0, 1fr) auto; }
@@ -773,6 +785,8 @@ try {
     .offer-link-row > form { grid-column: 1; }
     .offer-link-row > .btn { grid-column: 2; grid-row: 3; }
     .offer-link-fields { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .offer-link-filters { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .offer-link-filters .field:first-child { grid-column: 1 / -1; }
   }
   @media (max-width: 820px) {
     .admin-page .offer-admin-table tr { grid-template-columns: minmax(0, 1fr) auto; }
@@ -787,6 +801,9 @@ try {
     .offer-form-heading { align-items: flex-start; flex-direction: column; gap: 3px; }
     .offer-form-options { gap: 12px; }
     .offer-link-fields { grid-template-columns: minmax(0, 1fr); }
+    .offer-link-filters { grid-template-columns: minmax(0, 1fr); }
+    .offer-link-filters .field:first-child { grid-column: auto; }
+    .offer-link-filters .btn { width: 100%; }
     .offer-link-fields > button { width: 100%; min-height: 40px; }
     .offer-admin-actions { gap: 8px; }
   }
@@ -870,7 +887,7 @@ function initAnalyticsDonutTooltips() {
         var label = document.createElement('strong');
         label.textContent = segment.dataset.label || '';
         var detail = document.createElement('span');
-        detail.textContent = (segment.dataset.clicks || '0') + ' clicks · ' + (segment.dataset.percent || '0') + '%';
+        detail.textContent = (segment.dataset.clicks || '0') + ' klik · ' + (segment.dataset.percent || '0') + '%';
         tooltip.appendChild(label);
         tooltip.appendChild(detail);
         tooltip.classList.add('is-visible');
@@ -932,24 +949,41 @@ function feedbackButton(btn, text) {
     btn.classList.remove('copied');
   }, 1500);
 }
+function adminFeedback(message, isError) {
+  var status = document.querySelector('.admin-feedback');
+  if (!status) { status = document.createElement('div'); status.className = 'admin-feedback ui-toast'; status.setAttribute('role', 'status'); status.setAttribute('aria-live', 'polite'); document.body.appendChild(status); }
+  clearTimeout(status._timer); status.textContent = message;
+  status.classList.toggle('is-error', !!isError); status.classList.add('is-visible');
+  status._timer = setTimeout(function() { status.classList.remove('is-visible'); }, 3000);
+}
+document.addEventListener('htmx:responseError', function() { adminFeedback('Perubahan belum tersimpan. Coba lagi.', true); });
+document.addEventListener('htmx:sendError', function() { adminFeedback('Koneksi terputus. Coba lagi.', true); });
+document.addEventListener('closeModal', function() { adminFeedback('Tautan disimpan.'); });
+document.addEventListener('submit', function(event) {
+  var form = event.target;
+  if (!form.matches('form[method="POST"]') || form.hasAttribute('hx-post')) return;
+  var button = event.submitter;
+  if (!button || !button.textContent.includes('Simpan')) return;
+  button.textContent = 'Menyimpan…'; button.setAttribute('aria-busy', 'true');
+});
 function copyLink(btn) {
   var slug = btn.dataset.slug;
   if (!slug) return;
-  feedbackButton(btn, 'copying…');
+  feedbackButton(btn, 'Menyalin…');
   copyText(linkURL(slug)).then(function() {
-    feedbackButton(btn, 'copied!');
+    feedbackButton(btn, 'Disalin!'); adminFeedback('Tautan disalin.');
   }).catch(function() {
-    feedbackButton(btn, 'copy failed');
+    feedbackButton(btn, 'Gagal menyalin'); adminFeedback('Tautan gagal disalin. Coba lagi.', true);
   });
 }
 function copyURL(btn) {
   var url = btn.dataset.url;
   if (!url) return;
-  feedbackButton(btn, 'copying…');
+  feedbackButton(btn, 'Menyalin…');
   copyText(url).then(function() {
-    feedbackButton(btn, 'copied!');
+    feedbackButton(btn, 'Disalin!'); adminFeedback('Tautan disalin.');
   }).catch(function() {
-    feedbackButton(btn, 'copy failed');
+    feedbackButton(btn, 'Gagal menyalin'); adminFeedback('Tautan gagal disalin. Coba lagi.', true);
   });
 }
 function shareURL(btn) {
@@ -962,7 +996,7 @@ function shareURL(btn) {
     }).catch(function(error) {
       if (error && error.name === 'AbortError') return;
       copyText(url).then(function() {
-        feedbackButton(btn, 'copied!');
+        feedbackButton(btn, 'Disalin!'); adminFeedback('Tautan disalin.');
       }).catch(function() {
         feedbackButton(btn, 'share failed');
       });
@@ -970,7 +1004,7 @@ function shareURL(btn) {
     return;
   }
   copyText(url).then(function() {
-    feedbackButton(btn, 'copied!');
+    feedbackButton(btn, 'Disalin!'); adminFeedback('Tautan disalin.');
   }).catch(function() {
     feedbackButton(btn, 'share failed');
   });
@@ -999,11 +1033,12 @@ document.addEventListener('htmx:configRequest', function(e) {
   var token = getCsrfToken();
   if (token) e.detail.headers['X-CSRF-Token'] = token;
 });
-// CSRF: inject hidden input into traditional forms (e.g. logout)
+// CSRF: protect traditional mutation forms without adding tokens to search URLs.
 document.addEventListener('DOMContentLoaded', function() {
   var token = getCsrfToken();
   if (!token) return;
   document.querySelectorAll('form').forEach(function(f) {
+    if (f.method.toLowerCase() === 'get') return;
     var input = document.createElement('input');
     input.type = 'hidden';
     input.name = 'csrf_token';
@@ -1012,5 +1047,8 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 });
 </script>
+{{if isGuide .}}{{template "guide-styles" .}}{{end}}
+<link rel="stylesheet" href="/js/css/admin.css" />
+<link rel="stylesheet" href="/js/theme.css?scope=admin" />
 </head>
 {{end}}

@@ -17,8 +17,8 @@ func TestCurationMigrationAndPublicOrdering(t *testing.T) {
 	if err := database.QueryRow(`SELECT MAX(version) FROM _migrations`).Scan(&version); err != nil {
 		t.Fatal(err)
 	}
-	if version != 6 {
-		t.Fatalf("migration version = %d, want 6", version)
+	if version != len(migrations) {
+		t.Fatalf("migration version = %d, want %d", version, len(migrations))
 	}
 
 	if _, err := database.CreateLinkWithOptions("lower", "https://example.com/lower", "", "Tools", LinkOptions{Featured: true, Priority: 10}); err != nil {

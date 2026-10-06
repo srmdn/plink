@@ -38,12 +38,17 @@ func Load() *Config {
 		log.Fatalf("APP_TIMEZONE must be a valid IANA timezone, such as Asia/Jakarta: %v", err)
 	}
 
+	publicURL, err := NormalizePublicURL(getEnv("PUBLIC_URL", ""), getEnv("APP_ENV", "development") == "production")
+	if err != nil {
+		log.Fatalf("PUBLIC_URL tidak valid: %v", err)
+	}
+
 	return &Config{
 		Addr:           getEnv("ADDR", ":8080"),
 		DBPath:         getEnv("DB_PATH", "plink.db"),
 		AdminPassword:  password,
 		AdminPath:      getEnv("ADMIN_PATH", "admin"),
-		PublicURL:      getEnv("PUBLIC_URL", ""),
+		PublicURL:      publicURL,
 		Timezone:       timezone,
 		SecureCookies:  getEnv("APP_ENV", "development") == "production",
 		Production:     getEnv("APP_ENV", "development") == "production",

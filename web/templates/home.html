@@ -1,243 +1,45 @@
 {{define "storefront-styles"}}
-<style>
-  :root { color-scheme: light; --ink: #15201a; --muted: #657169; --paper: #f6f7f2; --line: #dfe5dd; --green: #176b43; --lime: #d4f36a; }
-  * { box-sizing: border-box; }
-  body { margin: 0; background: var(--paper); color: var(--ink); font: 15px/1.5 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
-  a { color: inherit; text-decoration: none; }
-  button, input { font: inherit; }
-  .store-header, .store-main, .store-footer { width: min(1180px, 100%); margin-inline: auto; padding-inline: 28px; }
-  .store-header { display: flex; align-items: center; justify-content: space-between; gap: 18px; padding-block: 20px; }
-  .store-brand { display: flex; align-items: center; gap: 11px; min-width: 0; }
-  .store-mark { display: grid; width: 40px; height: 40px; flex: 0 0 40px; place-items: center; color: #fff; background: var(--ink); border-radius: 13px; font-size: 17px; font-weight: 800; }
-  .store-brand-copy { display: grid; line-height: 1.25; }
-  .store-brand-copy strong { font-size: 15px; }
-  .store-brand-copy span, .store-admin-link { color: var(--muted); font-size: 11px; }
-  .store-admin-link { padding: 8px 12px; border: 1px solid var(--line); border-radius: 99px; }
-  .store-main { padding-bottom: 42px; }
-  .store-search { display: flex; gap: 8px; margin: 8px 0 20px; }
-  .store-search input { min-width: 0; min-height: 48px; flex: 1; padding: 0 17px; color: var(--ink); background: #fff; border: 1px solid var(--line); border-radius: 15px; outline: none; box-shadow: 0 4px 18px rgba(21,32,26,.035); }
-  .store-search input:focus { border-color: #8aa994; box-shadow: 0 0 0 3px rgba(23,107,67,.1); }
-  .store-search button { min-height: 48px; padding: 0 19px; color: #fff; background: var(--ink); border: 0; border-radius: 15px; font-weight: 700; cursor: pointer; }
-  .store-categories { display: flex; gap: 8px; overflow-x: auto; padding: 1px 0 18px; scrollbar-width: none; }
-  .store-categories::-webkit-scrollbar { display: none; }
-  .store-chip { flex: 0 0 auto; padding: 8px 13px; color: #435047; background: #fff; border: 1px solid var(--line); border-radius: 99px; font-size: 12px; font-weight: 600; }
-  .store-chip.active { color: #fff; background: var(--green); border-color: var(--green); }
-  .store-hero { position: relative; overflow: hidden; margin: 6px 0 32px; color: #fff; background: #14211a; border-radius: 24px; box-shadow: 0 16px 38px rgba(21,32,26,.11); }
-  .hero-slide { min-height: 294px; display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(250px, .85fr); color: inherit; }
-  .hero-slide[hidden] { display: none; }
-  .hero-copy { align-self: center; padding: 32px clamp(25px, 5vw, 58px); }
-  .hero-kicker { display: inline-flex; align-items: center; gap: 7px; color: var(--lime); font-size: 10px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
-  .hero-kicker::before { width: 7px; height: 7px; content: ""; background: var(--lime); border-radius: 50%; }
-  .hero-copy h1 { max-width: 600px; margin: 15px 0 10px; font-size: clamp(29px, 4.5vw, 48px); line-height: 1.02; letter-spacing: -.055em; }
-  .hero-copy p { max-width: 520px; margin: 0; color: #c6d2ca; font-size: 14px; }
-  .hero-cta { display: inline-flex; align-items: center; gap: 8px; margin-top: 23px; padding: 11px 15px; color: var(--ink); background: var(--lime); border-radius: 99px; font-size: 12px; font-weight: 800; }
-  .hero-art { position: relative; min-height: 294px; display: grid; place-items: center; overflow: hidden; background: radial-gradient(circle at 52% 48%, rgba(212,243,106,.17), transparent 58%), linear-gradient(135deg, #1c3025, #111a15); }
-  .hero-art::after { position: absolute; inset: 0; content: ""; background: linear-gradient(90deg, #14211a 0%, transparent 40%); pointer-events: none; }
-  .hero-art img { width: 100%; height: 100%; max-height: 294px; position: absolute; inset: 0; object-fit: cover; opacity: .88; }
-  .hero-art-mark { display: grid; width: 112px; height: 112px; place-items: center; color: var(--lime); border: 1px solid rgba(212,243,106,.38); border-radius: 32px; transform: rotate(-8deg); font-size: 48px; font-weight: 850; }
-  .hero-controls { position: absolute; z-index: 2; right: 18px; bottom: 16px; display: flex; align-items: center; gap: 8px; }
-  .hero-arrow { display: grid; width: 34px; height: 34px; place-items: center; color: #fff; background: rgba(255,255,255,.11); border: 1px solid rgba(255,255,255,.22); border-radius: 50%; cursor: pointer; }
-  .hero-arrow:hover { background: rgba(255,255,255,.2); }
-  .hero-dots { display: flex; align-items: center; gap: 6px; }
-  .hero-dot { width: 7px; height: 7px; padding: 0; background: rgba(255,255,255,.42); border: 0; border-radius: 99px; cursor: pointer; }
-  .hero-dot[aria-current="true"] { width: 20px; background: var(--lime); }
-  .store-section { margin-top: 30px; }
-  .store-section-head { display: flex; align-items: end; justify-content: space-between; gap: 18px; margin: 0 0 15px; }
-  .store-eyebrow { color: var(--green); font-size: 10px; font-weight: 850; letter-spacing: .12em; text-transform: uppercase; }
-  .store-section-head h2 { margin: 3px 0 0; font-size: clamp(23px, 3vw, 30px); line-height: 1.15; letter-spacing: -.045em; }
-  .store-section-head p { margin: 0; color: var(--muted); font-size: 12px; }
-  .store-all-link { flex: 0 0 auto; color: var(--green); font-size: 12px; font-weight: 800; }
-  .offer-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
-  .offer-card { display: flex; min-width: 0; flex-direction: column; overflow: hidden; background: #fff; border: 1px solid #e5e9e2; border-radius: 18px; box-shadow: 0 6px 22px rgba(21,32,26,.035); transition: transform .18s, box-shadow .18s, border-color .18s; }
-  .offer-card:hover { transform: translateY(-3px); border-color: #c7d8ca; box-shadow: 0 13px 28px rgba(21,32,26,.09); }
-  .offer-image { position: relative; display: grid; width: 100%; aspect-ratio: 1.15 / 1; overflow: hidden; place-items: center; background: #edf2ec; }
-  .offer-image img { width: 100%; height: 100%; object-fit: cover; transition: transform .3s; }
-  .offer-card:hover .offer-image img { transform: scale(1.035); }
-  .offer-image-placeholder { display: grid; width: 66px; height: 66px; place-items: center; color: var(--green); background: #dcebdd; border-radius: 21px; font-size: 28px; font-weight: 850; }
-  .offer-badge { position: absolute; top: 10px; left: 10px; max-width: calc(100% - 20px); overflow: hidden; padding: 5px 8px; color: #183623; background: rgba(255,255,255,.92); border-radius: 99px; font-size: 9px; font-weight: 800; text-overflow: ellipsis; white-space: nowrap; }
-  .offer-card-copy { display: flex; min-width: 0; flex: 1; flex-direction: column; padding: 13px 14px 14px; }
-  .offer-provider { overflow: hidden; color: var(--green); font-size: 9px; font-weight: 850; letter-spacing: .09em; text-overflow: ellipsis; text-transform: uppercase; white-space: nowrap; }
-  .offer-card-title { display: -webkit-box; min-height: 2.6em; overflow: hidden; margin: 6px 0 4px; font-size: 14px; line-height: 1.3; letter-spacing: -.02em; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
-  .offer-card-description { display: -webkit-box; min-height: 2.7em; overflow: hidden; margin: 0; color: var(--muted); font-size: 11px; line-height: 1.4; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
-  .offer-card-cta { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 12px; padding-top: 10px; color: var(--green); border-top: 1px solid #edf0eb; font-size: 10px; font-weight: 850; }
-  .offer-card-cta span:first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .offer-card-cta span:last-child { font-size: 15px; }
-  .resource-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
-  .resource-card { min-width: 0; padding: 14px; background: #fff; border: 1px solid var(--line); border-radius: 14px; }
-  .resource-card strong { display: block; overflow: hidden; font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }
-  .resource-card span { color: var(--muted); font-size: 10px; }
-  .store-empty { padding: 30px 18px; color: var(--muted); background: #fff; border: 1px dashed #cbd5cc; border-radius: 16px; text-align: center; font-size: 13px; }
-  .affiliate-note { margin: 28px 0 0; padding: 12px 14px; color: #626f66; background: #eef2eb; border-radius: 12px; font-size: 10px; }
-  .store-footer { padding-block: 18px 28px; color: var(--muted); border-top: 1px solid var(--line); font-size: 11px; }
-  .store-footer a { color: var(--green); font-weight: 750; }
-  @media (max-width: 900px) { .offer-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 11px; } .hero-slide { grid-template-columns: minmax(0, 1fr) minmax(220px, .8fr); } }
-  @media (max-width: 700px) {
-    .store-header, .store-main, .store-footer { padding-inline: 17px; }
-    .store-header { padding-block: 14px; }
-    .store-search { margin-top: 6px; }
-    .hero-slide { min-height: 0; grid-template-columns: minmax(0, 1fr); }
-    .hero-copy { padding: 24px 22px 20px; }
-    .hero-copy h1 { max-width: 520px; font-size: clamp(28px, 8vw, 38px); }
-    .hero-copy p { font-size: 12px; }
-    .hero-cta { margin-top: 16px; }
-    .hero-art { min-height: 150px; max-height: 175px; }
-    .hero-art img { max-height: 175px; }
-    .hero-art-mark { width: 70px; height: 70px; border-radius: 22px; font-size: 30px; }
-    .hero-art::after { background: linear-gradient(180deg, #14211a 0%, transparent 48%); }
-    .hero-controls { right: 13px; bottom: 12px; }
-    .store-section-head { align-items: flex-end; }
-    .store-section-head p { display: none; }
-    .offer-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
-    .offer-card { border-radius: 15px; }
-    .offer-card-copy { padding: 10px 10px 11px; }
-    .offer-card-title { font-size: 12px; }
-    .offer-card-description { font-size: 10px; }
-    .offer-card-cta { margin-top: 9px; font-size: 9px; }
-    .resource-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  }
-  @media (max-width: 360px) {
-    .store-header, .store-main, .store-footer { padding-inline: 13px; }
-    .store-search button { padding-inline: 13px; }
-    .offer-grid { grid-template-columns: minmax(0, 1fr); }
-  }
-</style>
+<link rel="stylesheet" href="/js/css/storefront.css" />
+<link rel="stylesheet" href="/js/theme.css" />
 {{end}}
-
+{{define "public-header"}}
+<header class="store-header"><a class="store-brand" href="/">{{template "brand-logo" .}}<span><strong>{{.SiteName}}</strong><small>{{.SiteDesc}}</small></span></a></header>
+{{end}}
+{{define "public-nav"}}
+<nav class="bottom-nav" aria-label="Navigasi utama">
+<a href="/" {{if eq . "home"}}aria-current="page"{{end}}>{{template "nav-icon" "home"}}Beranda</a>
+<a href="/offers?view=categories" {{if eq . "categories"}}aria-current="page"{{end}}>{{template "nav-icon" "grid"}}Kategori</a>
+<a href="/offers?view=services" {{if eq . "services"}}aria-current="page"{{end}}>{{template "nav-icon" "service"}}Jasa</a>
+<a href="/offers?view=favorites" {{if eq . "favorites"}}aria-current="page"{{end}}>{{template "nav-icon" "heart"}}Favorit <small data-favorite-count></small></a>
+</nav>
+{{end}}
+{{define "public-footer"}}
+<footer class="store-footer">Dikurasi dengan <a href="https://github.com/srmdn/plink" rel="noopener">Plink</a>.</footer>
+<div class="favorite-status ui-toast" role="status" aria-live="polite"></div>
+<script src="/js/storefront.js" defer></script>
+{{end}}
 {{define "offer-card"}}
-<a class="offer-card" href="/{{.HomeSlug}}" aria-label="{{.Title}} — {{.ButtonLabel}}">
-  <span class="offer-image">
-    {{if .ImageURL}}<img src="{{.ImageURL}}" alt="" loading="lazy" />{{else}}<span class="offer-image-placeholder" aria-hidden="true">↗</span>{{end}}
-    {{if .Category}}<span class="offer-badge">{{.Category}}</span>{{end}}
-  </span>
-  <span class="offer-card-copy">
-    {{if .Provider}}<span class="offer-provider">{{.Provider}}</span>{{end}}
-    <strong class="offer-card-title">{{.Title}}</strong>
-    {{if .Description}}<span class="offer-card-description">{{.Description}}</span>{{else}}<span class="offer-card-description">Lihat penawaran langsung dari {{if .Provider}}{{.Provider}}{{else}}provider{{end}}.</span>{{end}}
-    <span class="offer-card-cta"><span>{{.ButtonLabel}}</span><span aria-hidden="true">↗</span></span>
-  </span>
-</a>
+<article class="offer-card offer-card--{{.ItemType}}{{if not .ImageURL}} offer-card--no-image{{end}}" data-favorite-card="{{.HomeSlug}}">
+<button class="favorite-button" type="button" data-favorite="{{.HomeSlug}}" aria-label="Simpan {{.Title}} ke favorit" aria-pressed="false">{{template "nav-icon" "heart"}}</button>
+<a href="/{{.HomeSlug}}" aria-label="{{.Title}} — {{.ButtonLabel}}">
+<div class="offer-image">{{if .ImageURL}}<img src="{{.ImageURL}}" alt="" loading="lazy" />{{else}}<span class="offer-image-placeholder" aria-hidden="true">{{if eq .ItemType "service"}}{{template "nav-icon" "service"}}{{else if eq .ItemType "resource"}}{{template "nav-icon" "link"}}{{else}}{{template "nav-icon" "grid"}}{{end}}</span>{{end}}<span class="offer-badge">{{itemTypeLabel .ItemType}}</span></div>
+<div class="offer-card-copy"><span class="offer-provider">{{if .Provider}}{{.Provider}}{{else}}{{.Category}}{{end}}</span><h3>{{.Title}}</h3>{{if .Description}}<p>{{.Description}}</p>{{end}}<span class="offer-card-cta">{{.ButtonLabel}} <span aria-hidden="true">↗</span></span></div>
+</a></article>
 {{end}}
-
+{{define "resource-card"}}
+<article class="resource-card" data-favorite-card="{{.Slug}}"><a href="/{{.Slug}}"><span class="resource-icon" aria-hidden="true">{{template "nav-icon" "link"}}</span><span class="resource-copy"><strong>{{if .Description}}{{.Description}}{{else}}{{.Slug}}{{end}}</strong><small>{{.Category}}</small></span></a><button type="button" class="favorite-button" data-favorite="{{.Slug}}" aria-label="Simpan {{.Slug}} ke favorit" aria-pressed="false">{{template "nav-icon" "heart"}}</button></article>
+{{end}}
 {{define "home"}}
-<!doctype html>
-<html lang="id">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>{{.SiteName}}</title>
-  <link rel="icon" href="/favicon.svg?v=3" />
-  {{template "storefront-styles" .}}
-</head>
-<body>
-  <header class="store-header">
-    <a class="store-brand" href="/" aria-label="{{.SiteName}} home">
-      <span class="store-mark" aria-hidden="true">↗</span>
-      <span class="store-brand-copy"><strong>{{.SiteName}}</strong><span>{{.SiteDesc}}</span></span>
-    </a>
-    {{if .IsLoggedIn}}<a class="store-admin-link" href="/{{.AdminPath}}">Dashboard</a>{{end}}
-  </header>
-
-  <main class="store-main">
-    <form class="store-search" method="get" action="/offers" role="search">
-      <input type="search" name="q" placeholder="Cari produk, promo, atau provider…" aria-label="Cari produk, promo, atau provider" />
-      <button type="submit">Cari</button>
-    </form>
-
-    {{if .FeaturedOffers}}
-    <section class="store-hero" data-carousel aria-label="Promo pilihan">
-      {{range $i, $offer := .FeaturedOffers}}
-      <a class="hero-slide" href="/{{$offer.HomeSlug}}" data-carousel-slide {{if ne $i 0}}hidden{{end}} aria-hidden="{{if eq $i 0}}false{{else}}true{{end}}">
-        <div class="hero-copy">
-          <span class="hero-kicker">{{if $offer.Provider}}{{$offer.Provider}}{{else}}Pilihan minggu ini{{end}}</span>
-          <h1>{{$offer.Title}}</h1>
-          {{if $offer.Description}}<p>{{$offer.Description}}</p>{{else}}<p>Temukan detail promo dan penawaran langsung dari provider.</p>{{end}}
-          <span class="hero-cta">{{$offer.ButtonLabel}} <span aria-hidden="true">↗</span></span>
-        </div>
-        <span class="hero-art" aria-hidden="true">
-          {{if $offer.ImageURL}}<img src="{{$offer.ImageURL}}" alt="" fetchpriority="high" />{{else}}<span class="hero-art-mark">↗</span>{{end}}
-        </span>
-      </a>
-      {{end}}
-      {{if gt (len .FeaturedOffers) 1}}
-      <div class="hero-controls" aria-label="Slide controls">
-        <button class="hero-arrow" type="button" data-carousel-prev aria-label="Promo sebelumnya">‹</button>
-        <div class="hero-dots" role="group" aria-label="Pilih promo">
-          {{range $i, $offer := .FeaturedOffers}}<button class="hero-dot" type="button" data-carousel-dot="{{$i}}" aria-label="Promo {{add $i 1}}" aria-current="{{if eq $i 0}}true{{else}}false{{end}}"></button>{{end}}
-        </div>
-        <button class="hero-arrow" type="button" data-carousel-next aria-label="Promo berikutnya">›</button>
-      </div>
-      {{end}}
-    </section>
-    {{else}}
-    <section class="store-hero">
-      <div class="hero-slide">
-        <div class="hero-copy"><span class="hero-kicker">Pilihan yang dikurasi</span><h1>Temukan promo dan produk pilihan.</h1><p>Cari penawaran yang cocok, lalu buka langsung ke provider atau toko.</p></div>
-        <div class="hero-art" aria-hidden="true"><span class="hero-art-mark">↗</span></div>
-      </div>
-    </section>
-    {{end}}
-
-    {{if .OfferCategories}}
-    <nav class="store-categories" aria-label="Kategori promo">
-      <a class="store-chip active" href="/offers">Semua</a>
-      {{range .OfferCategories}}<a class="store-chip" href="/offers?category={{. | urlquery}}">{{.}}</a>{{end}}
-    </nav>
-    {{end}}
-
-    {{if .Offers}}
-    <section class="store-section" aria-labelledby="offers-heading">
-      <div class="store-section-head"><div><span class="store-eyebrow">Dikurasi buat lo</span><h2 id="offers-heading">Pilihan lainnya</h2></div><a class="store-all-link" href="/offers">Lihat semua →</a></div>
-      <div class="offer-grid">
-        {{range .Offers}}{{template "offer-card" .}}{{end}}
-      </div>
-    </section>
-    {{end}}
-
-    {{if .Links}}
-    <section class="store-section" aria-labelledby="resources-heading">
-      <div class="store-section-head"><div><span class="store-eyebrow">Tautan lainnya</span><h2 id="resources-heading">Resource</h2></div><a class="store-all-link" href="/links">Lihat semua →</a></div>
-      <nav class="store-categories" aria-label="Kategori resource">
-        {{range .Categories}}<a class="store-chip" href="/links?category={{. | urlquery}}">{{.}}</a>{{end}}
-      </nav>
-      <div class="resource-grid">
-        {{range .Links}}<a class="resource-card" href="/{{.Slug}}"><strong>{{.Slug}}</strong><span>{{if .Category}}{{.Category}} · {{end}}{{.Description}}</span></a>{{end}}
-      </div>
-    </section>
-    {{end}}
-
-    <p class="affiliate-note">Sebagian tautan mungkin merupakan tautan referral. Jika lo membeli lewat tautan tersebut, pemilik halaman bisa menerima komisi tanpa biaya tambahan buat lo.</p>
-  </main>
-  <footer class="store-footer">Dikelola dengan <a href="https://github.com/srmdn/plink" target="_blank" rel="noopener">Plink</a> · Tautan singkat, pilihan yang dikurasi.</footer>
-
-  <script>
-    (function() {
-      var carousel = document.querySelector('[data-carousel]');
-      if (!carousel) return;
-      var slides = Array.from(carousel.querySelectorAll('[data-carousel-slide]'));
-      var dots = Array.from(carousel.querySelectorAll('[data-carousel-dot]'));
-      if (slides.length < 2) return;
-      var index = 0;
-      function show(next) {
-        index = (next + slides.length) % slides.length;
-        slides.forEach(function(slide, i) {
-          slide.hidden = i !== index;
-          slide.setAttribute('aria-hidden', i === index ? 'false' : 'true');
-        });
-        dots.forEach(function(dot, i) { dot.setAttribute('aria-current', i === index ? 'true' : 'false'); });
-      }
-      carousel.querySelector('[data-carousel-prev]').addEventListener('click', function() { show(index - 1); });
-      carousel.querySelector('[data-carousel-next]').addEventListener('click', function() { show(index + 1); });
-      dots.forEach(function(dot, i) { dot.addEventListener('click', function() { show(i); }); });
-      var touchStart = null;
-      carousel.addEventListener('touchstart', function(event) { touchStart = event.changedTouches[0].clientX; }, {passive: true});
-      carousel.addEventListener('touchend', function(event) {
-        if (touchStart === null) return;
-        var delta = event.changedTouches[0].clientX - touchStart;
-        if (Math.abs(delta) > 45) show(index + (delta < 0 ? 1 : -1));
-        touchStart = null;
-      }, {passive: true});
-    })();
-  </script>
-</body>
-</html>
+<!doctype html><html lang="id"><head><meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />{{template "public-seo" .SEO}}{{template "favicon-link" .}}{{template "storefront-styles" .}}</head>
+<body>{{template "public-header" .}}
+<main class="store-main">
+<section class="profile-intro">{{if .Settings.HeroEyebrow}}<span class="store-eyebrow">{{.Settings.HeroEyebrow}}</span>{{end}}<h1 class="hero-title">{{.Settings.HeroTitle}}</h1>{{if .Settings.HeroDescription}}<p>{{.Settings.HeroDescription}}</p>{{end}}{{if .IsLoggedIn}}<a class="store-admin-link" href="/{{.AdminPath}}">Kelola halaman ↗</a>{{end}}</section>
+<form class="store-search" method="get" action="/offers" role="search"><input type="search" name="q" placeholder="Cari produk, jasa, atau resource…" aria-label="Cari di seluruh katalog" /><button type="submit">Cari</button></form>
+{{if .OfferCategories}}<nav class="store-categories" aria-label="Kategori"><a class="store-chip active" href="/offers">Semua</a>{{range .OfferCategories}}<a class="store-chip" href="/offers?category={{. | urlquery}}">{{.}}</a>{{end}}</nav>{{end}}
+{{if and .HeroEnabled .FeaturedOffers}}<section class="store-section"><div class="store-section-head"><div><span class="store-eyebrow">Layak dilirik</span><h2>Pilihan utama</h2></div></div><div class="featured-track">{{range .FeaturedOffers}}{{template "offer-card" .}}{{end}}</div></section>{{end}}
+{{if .Offers}}<section class="store-section"><div class="store-section-head"><h2>Produk &amp; referral</h2><a href="/offers">Lihat semua →</a></div><div class="offer-grid">{{range .Offers}}{{template "offer-card" .}}{{end}}</div></section>{{end}}
+<section class="store-section service-section"><div class="store-section-head"><div><span class="store-eyebrow">Dikerjakan langsung</span><h2>{{.Settings.ServiceTitle}}</h2></div><a href="/offers?view=services">Lihat jasa →</a></div><p class="section-note">{{.Settings.ServiceDescription}}</p>{{if .Services}}<div class="offer-grid">{{range .Services}}{{template "offer-card" .}}{{end}}</div>{{end}}{{if .ServiceLinks}}<div class="resource-grid">{{range .ServiceLinks}}{{template "resource-card" .}}{{end}}</div>{{end}}{{if and (not .Services) (not .ServiceLinks)}}<p class="store-empty">Belum ada jasa yang ditampilkan.</p>{{end}}</section>
+{{if or .Links .ResourceOffers}}<section class="store-section"><div class="store-section-head"><h2>Resource</h2><a href="/links">Lihat semua →</a></div>{{if .ResourceOffers}}<div class="offer-grid">{{range .ResourceOffers}}{{template "offer-card" .}}{{end}}</div>{{end}}<div class="resource-grid">{{range .Links}}{{template "resource-card" .}}{{end}}</div></section>{{end}}
+{{if .AffiliateDisclosure}}<p class="affiliate-note">{{.AffiliateDisclosure}}</p>{{end}}
+</main>{{template "public-footer" .}}{{template "public-nav" "home"}}</body></html>
 {{end}}

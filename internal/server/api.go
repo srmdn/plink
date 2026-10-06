@@ -24,25 +24,21 @@ func writeError(w http.ResponseWriter, status int, msg string) {
 }
 
 var reservedSlugs = map[string]bool{
-	"admin":       true,
-	"api":         true,
-	"offers":      true,
-	"links":       true,
-	"js":          true,
-	"favicon.svg": true,
-	"favicon.ico": true,
+	"admin":        true,
+	"api":          true,
+	"offers":       true,
+	"links":        true,
+	"js":           true,
+	"favicon.svg":  true,
+	"favicon.ico":  true,
+	"robots.txt":   true,
+	"sitemap.xml":  true,
+	"og-image.png": true,
 }
 
 func isReservedSlug(slug, adminPath string) bool {
 	adminPath = strings.Trim(adminPath, "/")
 	return reservedSlugs[strings.ToLower(slug)] || (adminPath != "" && strings.EqualFold(slug, adminPath))
-}
-
-func (s *Server) handleFavicon(w http.ResponseWriter, r *http.Request) {
-	data, _ := s.webFS.ReadFile("web/favicon.svg")
-	w.Header().Set("Content-Type", "image/svg+xml")
-	w.Header().Set("Cache-Control", "public, max-age=86400")
-	w.Write(data)
 }
 
 func (s *Server) handleListLinks(w http.ResponseWriter, r *http.Request) {
@@ -318,7 +314,7 @@ func (s *Server) handleDailyExport(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=\"plink-daily-clicks-%s.csv\"", date))
 	cw := csv.NewWriter(w)
 	_ = cw.Write([]string{"date", "slug", "short_url", "destination", "category", "provider", "channel", "campaign", "clicks"})
-	shortBase := publicBaseURL(s.cfg.PublicURL, r)
+	shortBase := s.publicURL(r)
 	for _, row := range rows {
 		_ = cw.Write([]string{
 			date,

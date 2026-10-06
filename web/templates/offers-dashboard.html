@@ -1,110 +1,133 @@
 {{define "offers-dashboard"}}
 <!doctype html>
-<html lang="en">
+<html lang="id">
 {{template "head" .}}
 <body class="admin-page">
 <div id="app" class="admin-app">
-  <header class="admin-topbar">
-    <div class="admin-topbar-leading">
-      <button type="button" class="sidebar-toggle" onclick="toggleAdminSidebar()" aria-label="Collapse sidebar" aria-controls="admin-sidebar-nav" aria-expanded="true" title="Collapse sidebar">
-        <svg viewBox="0 0 20 20" aria-hidden="true"><rect x="2.5" y="3" width="15" height="14" rx="2"/><path d="M7.5 3.5v13"/><path class="sidebar-toggle-chevron" d="m12.5 7-3 3 3 3"/></svg>
-      </button>
-      <a class="admin-brand" href="/{{.AdminPath}}" aria-label="Plink admin home">
-        <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M12.1 19.9 9.8 22.2a5 5 0 0 1-7.1-7.1l6.1-6.1a5 5 0 0 1 7.1 0M19.9 12.1l2.3-2.3a5 5 0 0 1 7.1 7.1l-6.1 6.1a5 5 0 0 1-7.1 0M11.1 20.9l9.8-9.8"/></svg>
-        <span>plink</span><span class="admin-brand-context">admin</span>
-      </a>
-    </div>
-    <div class="admin-topbar-actions">
-      <span class="admin-topbar-label"><span class="admin-status-dot" aria-hidden="true"></span>self-hosted</span>
-      <form method="POST" action="/{{.AdminPath}}/logout"><button type="submit" class="btn btn-ghost btn-sm">log out</button></form>
-    </div>
-  </header>
+  {{template "admin-header" .}}
 
   <div class="admin-layout">
-    <aside class="admin-sidebar">
-      <div class="admin-sidebar-label">Workspace</div>
-      <nav class="admin-sidebar-nav" id="admin-sidebar-nav" aria-label="Admin sections">
-        <a href="/{{.AdminPath}}/analytics/dashboard" class="admin-sidebar-link" aria-label="Analytics" title="Analytics"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 10h3v7H3zM8.5 5h3v12h-3zM14 2h3v15h-3z"/></svg><span>Analytics</span></a>
-        <a href="/{{.AdminPath}}" class="admin-sidebar-link" aria-label="Links" title="Links"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M7.8 12.2 6.4 13.6a3.5 3.5 0 0 1-5-5l3-3a3.5 3.5 0 0 1 5 0M12.2 7.8l1.4-1.4a3.5 3.5 0 0 1 5 5l-3 3a3.5 3.5 0 0 1-5 0M6.8 13.2l6.4-6.4"/></svg><span>Links</span></a>
-        <a href="/{{.AdminPath}}/offers" class="admin-sidebar-link active" aria-current="page" aria-label="Offers" title="Offers"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M2.5 9.5 9.6 2.4h6.1l2 2v6.1l-7.1 7.1-8.1-8.1Z"/><circle cx="14" cy="6" r="1"/></svg><span>Offers</span></a>
-      </nav>
-      <div class="admin-sidebar-foot"><span class="admin-sidebar-accent" aria-hidden="true"></span><span>Short links.<br />Big results.</span></div>
-    </aside>
+{{template "admin-nav" (dict "AdminPath" .AdminPath "Active" "offers")}}
 
-    <main class="admin-main">
+    <main class="admin-main{{if not .IsForm}} workspace-page catalog-page{{end}}">
       {{if .IsForm}}
       <div class="admin-page-heading">
-        <div><div class="admin-eyebrow">Offer workspace</div><h1>{{if .IsNew}}New offer{{else}}{{.Offer.Title}}{{end}}</h1><p>{{if .IsNew}}Create one public card and its homepage tracking link.{{else}}One card, grouped tracking links, and combined click totals.{{end}}</p></div>
-        <a href="/{{.AdminPath}}/offers" class="btn btn-ghost btn-sm admin-home-link">back to offers</a>
+        <div><div class="admin-eyebrow">Kelola katalog</div><h1>{{if .IsNew}}Item baru{{else}}{{.Offer.Title}}{{end}}</h1><p>{{if .IsNew}}Buat kartu publik dan pilih tautan tujuannya.{{else}}Atur kartu publik, tautan pelacakan, dan status program.{{end}}</p></div>
+        <a href="/{{.AdminPath}}/offers" class="btn btn-ghost btn-sm admin-home-link">Kembali ke katalog</a>
       </div>
-      {{if .Error}}<div class="offer-error" role="alert">{{.Error}}</div>{{end}}
+      {{if .Saved}}<div class="settings-saved" role="status">Item disimpan.</div>{{end}}
+      {{if .Error}}<div class="offer-error" role="alert">{{uiText .Error}}</div>{{end}}
 
       <section class="analytics-page-panel offer-editor-panel">
         <form method="POST" action="{{if .IsNew}}/{{.AdminPath}}/offers{{else}}/{{.AdminPath}}/offers/{{.Offer.ID}}{{end}}">
-          <div class="offer-form-heading"><h2>Card details</h2><span>Shown once on the public homepage</span></div>
+          <div class="form-section"><div class="offer-form-heading"><h2>Informasi item</h2><span>Satu kartu pada halaman publik</span></div>
+          <div class="field"><label for="offer-item-type">Jenis item</label><select id="offer-item-type" name="item_type"><option value="referral" {{if eq .Offer.ItemType "referral"}}selected{{end}}>Referral</option><option value="product" {{if eq .Offer.ItemType "product"}}selected{{end}}>Produk</option><option value="service" {{if eq .Offer.ItemType "service"}}selected{{end}}>Jasa</option><option value="resource" {{if eq .Offer.ItemType "resource"}}selected{{end}}>Resource</option></select><p class="field-help">Jasa muncul di tab Jasa. Jenis item terpisah dari kategori dan status program.</p></div>
           <div class="form-pair">
-            <div class="field"><label for="offer-title">product or promotion name</label><input type="text" id="offer-title" name="title" maxlength="160" required value="{{if .Offer}}{{.Offer.Title}}{{end}}" placeholder="Black Friday VPS or Shopee product" /></div>
-            <div class="field"><label for="offer-provider">provider or store</label><input type="text" id="offer-provider" name="provider" maxlength="120" value="{{if .Offer}}{{.Offer.Provider}}{{end}}" placeholder="GreenCloud, Shopee, or store name" /></div>
+            <div class="field"><label for="offer-title">Nama item</label><input type="text" id="offer-title" name="title" maxlength="160" required value="{{if .Offer}}{{.Offer.Title}}{{end}}" placeholder="Nama produk, promo, atau jasa" /></div>
+            <div class="field"><label for="offer-provider">Penyedia atau toko</label><input type="text" id="offer-provider" name="provider" maxlength="120" value="{{if .Offer}}{{.Offer.Provider}}{{end}}" placeholder="GreenCloud, Shopee, atau Jasa Said" /></div>
           </div>
-          <div class="field"><label for="offer-description">short card copy</label><textarea id="offer-description" name="description" maxlength="500" rows="3" placeholder="A short detail that helps someone decide">{{if .Offer}}{{.Offer.Description}}{{end}}</textarea></div>
+          <div class="field"><label for="offer-description">Deskripsi singkat</label><textarea id="offer-description" name="description" maxlength="500" rows="3" placeholder="Jelaskan manfaat atau detail yang perlu diketahui">{{if .Offer}}{{.Offer.Description}}{{end}}</textarea></div>
           <div class="form-pair">
-            <div class="field"><label for="offer-category">category</label><input type="text" id="offer-category" name="category" maxlength="80" value="{{if .Offer}}{{.Offer.Category}}{{end}}" placeholder="VPS, Fashion, Accessories" /></div>
-            <div class="field"><label for="offer-image">image URL</label><input type="url" id="offer-image" name="image_url" value="{{if .Offer}}{{.Offer.ImageURL}}{{end}}" placeholder="https://cdn.example.com/product.webp" /><div class="field-help">Use an HTTPS image URL or a path served by Plink.</div></div>
+            <div class="field"><label for="offer-category">Kategori</label><input type="text" id="offer-category" name="category" maxlength="80" value="{{if .Offer}}{{.Offer.Category}}{{end}}" placeholder="VPS, Fashion, Accessories" /></div>
+            <div class="field"><label for="offer-image">URL gambar</label><input type="url" id="offer-image" name="image_url" value="{{if .Offer}}{{.Offer.ImageURL}}{{end}}" placeholder="https://cdn.example.com/product.webp" /><div class="field-help">Gunakan URL gambar HTTPS atau path gambar di Plink.</div></div>
           </div>
           <div class="form-pair">
-            <div class="field"><label for="offer-button">button label</label><input type="text" id="offer-button" name="button_label" maxlength="48" value="{{if .Offer}}{{.Offer.ButtonLabel}}{{else}}Lihat promo{{end}}" placeholder="Lihat di Shopee" /></div>
-            <div class="field"><label for="offer-priority">display priority</label><input type="number" id="offer-priority" name="priority" min="0" step="1" value="{{if .Offer}}{{.Offer.Priority}}{{else}}0{{end}}" /><div class="field-help">Higher values appear first among offers with the same placement.</div></div>
+            <div class="field"><label for="offer-button">Teks tombol</label><input type="text" id="offer-button" name="button_label" maxlength="48" value="{{if .Offer}}{{.Offer.ButtonLabel}}{{else}}Lihat promo{{end}}" placeholder="Lihat di Shopee" /></div>
+            <div class="field"><label for="offer-priority">Prioritas tampilan</label><input type="number" id="offer-priority" name="priority" min="0" step="1" value="{{if .Offer}}{{.Offer.Priority}}{{else}}0{{end}}" /><div class="field-help">Angka lebih besar tampil lebih dulu dalam kelompok yang sama.</div></div>
           </div>
 
+          </div>
+          <div class="form-section">
           {{if .IsNew}}
-          <div class="offer-form-heading offer-form-subheading"><h2>Homepage redirect</h2><span>This slug powers the public card and click tracking.</span></div>
+          <div class="offer-form-heading offer-form-subheading"><h2>Tautan kartu</h2><span>Kartu publik menggunakan slug ini untuk mencatat klik.</span></div>
+          <label class="check-row"><input type="checkbox" id="reuse-home-slug" name="reuse_home_slug" value="1" {{if .ReuseHomeSlug}}checked{{end}} /><span>Gunakan tautan yang sudah ada</span></label>
+          <p class="field-help">Slug harus aktif dan belum terhubung ke item lain. Tujuan dan riwayat kliknya tetap tersimpan.</p>
           <div class="form-pair">
-            <div class="field"><label for="home-slug">homepage slug</label><input type="text" id="home-slug" name="home_slug" required value="{{if .Offer}}{{.Offer.HomeSlug}}{{end}}" placeholder="greencloud-black-friday" /></div>
-            <div class="field"><label for="home-url">affiliate destination URL</label><input type="url" id="home-url" name="home_url" required value="{{if .Offer}}{{.Offer.HomeURL}}{{end}}" placeholder="https://provider.example/deal?ref=..." /></div>
+            <div class="field"><label for="home-slug">Slug kartu</label><input type="text" id="home-slug" name="home_slug" required value="{{if .Offer}}{{.Offer.HomeSlug}}{{end}}" placeholder="greencloud-black-friday" /></div>
+            <div class="field"><label for="home-url">URL tujuan</label><input type="url" id="home-url" name="home_url" value="{{if .Offer}}{{.Offer.HomeURL}}{{end}}" placeholder="https://provider.example/deal?ref=..." /></div>
           </div>
           {{else}}
-          <div class="offer-home-destination"><span>Homepage slug</span><strong>/{{.Offer.HomeSlug}}</strong><span>Change its destination from Links. The card click is tracked through this slug.</span></div>
+          <div class="offer-form-heading"><h2>Tautan kartu</h2><span>Tujuan dan pelacakan kartu publik.</span></div>
+          <div class="offer-home-destination"><span>Slug kartu</span><strong>/{{.Offer.HomeSlug}}</strong><span>Ubah tujuan melalui Tautan. Klik kartu dicatat lewat slug ini.</span></div>
           {{end}}
 
-          <div class="offer-form-heading offer-form-subheading"><h2>Availability</h2><span>Expired offers leave the public catalog; their slugs stay live.</span></div>
+          </div>
+          <div class="form-section"><div class="offer-form-heading offer-form-subheading"><h2>Status program</h2><span>Berlaku untuk semua slug aktif pada item ini.</span></div>
           <div class="form-pair">
-            <div class="field"><label for="offer-start">starts on</label><input type="date" id="offer-start" name="starts_on" value="{{if .Offer}}{{.Offer.StartsOn}}{{end}}" /></div>
-            <div class="field"><label for="offer-end">ends on</label><input type="date" id="offer-end" name="ends_on" value="{{if .Offer}}{{.Offer.EndsOn}}{{end}}" /></div>
+            <div class="field"><label for="offer-program-status">Status program</label><select id="offer-program-status" name="program_status"><option value="active" {{if eq .Offer.ProgramStatus "active"}}selected{{end}}>Aktif</option><option value="paused" {{if eq .Offer.ProgramStatus "paused"}}selected{{end}}>Dijeda / diperiksa</option><option value="ended" {{if eq .Offer.ProgramStatus "ended"}}selected{{end}}>Berakhir</option></select><div class="field-help">Program dijeda atau berakhir menampilkan pemberitahuan di semua slug aktif. Berlaku setelah disimpan.</div></div>
+            <div class="field"><label for="offer-status-date">Tanggal perubahan status <span class="field-help">(catatan opsional)</span></label><input type="date" id="offer-status-date" name="status_changed_on" value="{{.Offer.StatusChangedOn}}" /><div class="field-help">Catat kapan status mulai berlaku. Tanggal ini tidak menjadwalkan perubahan.</div></div>
           </div>
-          <div class="field"><label for="offer-fallback">after-expiry destination <span class="field-help">(optional)</span></label><input type="url" id="offer-fallback" name="fallback_url" value="{{if .Offer}}{{.Offer.FallbackURL}}{{end}}" placeholder="https://provider.example/current-deals" /><div class="field-help">When set, clicks on this offer's slugs go here after the end date. Otherwise they continue to their saved destination.</div></div>
+          <div class="form-pair">
+            <div class="field"><label for="offer-start">Tanggal mulai</label><input type="date" id="offer-start" name="starts_on" value="{{if .Offer}}{{.Offer.StartsOn}}{{end}}" /></div>
+            <div class="field"><label for="offer-end">Tanggal akhir</label><input type="date" id="offer-end" name="ends_on" value="{{if .Offer}}{{.Offer.EndsOn}}{{end}}" /></div>
+          </div>
+          <div class="field"><label for="offer-notice">Pesan untuk pengunjung <span class="field-help">(opsional)</span></label><textarea id="offer-notice" name="notice_message" maxlength="1000" rows="3" placeholder="Jelaskan promo atau manfaat referral yang sudah tidak tersedia.">{{.Offer.NoticeMessage}}</textarea><div class="field-help">Kosongkan untuk memakai pesan bawaan sesuai status. Semua tautan channel memakai pesan yang sama.</div></div>
+          <div class="form-pair">
+            <div class="field"><label for="offer-source">URL sumber resmi <span class="field-help">(opsional)</span></label><input type="url" id="offer-source" name="notice_source_url" maxlength="2048" value="{{.Offer.NoticeSourceURL}}" placeholder="https://provider.example/announcement" /></div>
+            <div class="field"><label for="offer-verified">Terakhir diperiksa <span class="field-help">(opsional)</span></label><input type="date" id="offer-verified" name="verified_on" value="{{.Offer.VerifiedOn}}" /></div>
+          </div>
+          <div class="form-pair">
+            <div class="field"><label for="offer-ended-behavior">Saat program berakhir atau kedaluwarsa</label><select id="offer-ended-behavior" name="ended_behavior"><option value="notice" {{if ne .Offer.EndedBehavior "redirect"}}selected{{end}}>Tampilkan pemberitahuan (disarankan)</option><option value="redirect" {{if eq .Offer.EndedBehavior "redirect"}}selected{{end}}>Alihkan ke tujuan di bawah</option></select><div class="field-help">Program dijeda atau belum dimulai selalu menampilkan pemberitahuan.</div></div>
+            <div class="field"><label for="offer-fallback">Website penyedia / URL pengganti <span class="field-help">(opsional untuk pemberitahuan)</span></label><input type="url" id="offer-fallback" name="fallback_url" maxlength="2048" value="{{if .Offer}}{{.Offer.FallbackURL}}{{end}}" placeholder="https://provider.example" /><div class="field-help">Menjadi tombol opsional pada pemberitahuan. Gunakan URL yang masih berlaku. Wajib untuk pengalihan otomatis.</div></div>
+          </div>
+          </div>
+          <div class="form-section"><div class="offer-form-heading"><h2>Penempatan kartu</h2><span>Pilih bagaimana item muncul di katalog.</span></div>
           <div class="offer-form-options">
-            <label class="check-row"><input type="checkbox" name="active" value="1" {{if .Offer.Active}}checked{{end}} /><span>show while available</span></label>
-            <label class="check-row"><input type="checkbox" name="featured" value="1" {{if .Offer.Featured}}checked{{end}} /><span>include in hero slider</span></label>
+            <label class="check-row"><input type="checkbox" name="active" value="1" {{if .Offer.Active}}checked{{end}} /><span>Tampilkan kartu selama program tersedia</span></label>
+            <label class="check-row"><input type="checkbox" name="featured" value="1" {{if .Offer.Featured}}checked{{end}} /><span>Masukkan ke pilihan utama</span></label>
           </div>
-          <div class="field-help">Hiding or expiring a card does not disable its slugs. They continue to redirect, using the fallback URL after the end date when one is set.</div>
-          <div class="modal-footer"><a href="/{{.AdminPath}}/offers" class="btn btn-ghost">cancel</a><button type="submit" class="btn btn-primary">save offer</button></div>
+          <div class="field-help">Visibilitas katalog mengatur kartu publik. Status program berlaku pada semua slug aktif. Tautan yang dinonaktifkan tetap menghasilkan 404. Tanggal akhir berlaku sampai akhir hari menurut zona waktu laporan.</div>
+          </div>
+          <div class="modal-footer"><a href="/{{.AdminPath}}/offers" class="btn btn-ghost">Batal</a><button type="submit" class="btn btn-primary">Simpan item</button></div>
         </form>
       </section>
 
       {{if not .IsNew}}
       <section class="analytics-page-panel offer-links-panel">
-        <div class="analytics-page-panel-heading"><div><h2>Tracking links</h2><p class="offer-panel-note">{{.Offer.LinkCount}} slugs · {{.Offer.Clicks}} total clicks</p></div><span class="analytics-page-meta">Each slug tracks its own channel</span></div>
+        <div class="analytics-page-panel-heading"><div><h2>Tautan pelacakan</h2><p class="offer-panel-note">{{.Offer.LinkCount}} slugs · {{.Offer.Clicks}} klik pengalihan · {{.Offer.NoticeViews}} tampilan pemberitahuan</p></div><span class="analytics-page-meta">Setiap slug mencatat channel sendiri</span></div>
         {{if .Links}}
-        <div class="offer-links-list">
-          {{range .Links}}
-          <div class="offer-link-row">
-            <div class="offer-link-name"><strong>/{{.Slug}}</strong><span>{{if .OfferHome}}homepage card{{else}}{{.Channel}}{{end}}{{if not .Active}} · paused{{end}}</span></div>
-            <a class="offer-link-target" href="{{.URL}}" target="_blank" rel="noopener" title="{{.URL}}">{{.URL}}</a>
-            <span class="offer-link-clicks">{{.Clicks}} clicks</span>
-            {{if and (not .OfferHome) .Active}}<form method="POST" action="/{{$.AdminPath}}/offers/{{$.Offer.ID}}/links/{{.ID}}/homepage"><button type="submit" class="btn btn-ghost btn-sm">use for card</button></form>{{end}}
-            <a class="btn btn-ghost btn-sm" href="/{{$.AdminPath}}?q={{.Slug | urlquery}}">manage in Links</a>
-          </div>
+        <form class="offer-link-filters" method="GET" action="/{{.AdminPath}}/offers/{{.Offer.ID}}">
+          <div class="field"><label for="offer-link-search">Cari tautan</label><input id="offer-link-search" type="search" name="q" value="{{.LinkQuery}}" placeholder="Slug, tujuan, kampanye" /></div>
+          <div class="field"><label for="offer-link-channel">Channel</label><select id="offer-link-channel" name="channel"><option value="">Semua channel</option>{{range .LinkChannels}}<option value="{{.Value}}" {{if eq .Value $.LinkChannel}}selected{{end}}>{{.Label}}</option>{{end}}</select></div>
+          <div class="field"><label for="offer-link-campaign">Kampanye</label><select id="offer-link-campaign" name="campaign"><option value="">Semua kampanye</option>{{range .LinkCampaigns}}<option value="{{.Value}}" {{if eq .Value $.LinkCampaign}}selected{{end}}>{{.Label}}</option>{{end}}</select></div>
+          <button class="btn btn-ghost btn-sm" type="submit">Terapkan</button>
+          {{if or .LinkQuery .LinkChannel .LinkCampaign}}<a class="btn btn-ghost btn-sm" href="/{{.AdminPath}}/offers/{{.Offer.ID}}">Hapus filter</a>{{end}}
+        </form>
+        {{if .LinkGroups}}
+        <div class="offer-link-groups">
+          {{range .LinkGroups}}
+          <details class="offer-link-group" {{if .Open}}open{{end}}>
+            <summary><strong>{{.Label}}</strong><span>{{len .Links}} tautan · {{.Clicks}} klik</span></summary>
+            <div class="offer-links-list">
+              {{range .Links}}
+              <div class="offer-link-row">
+                <div class="offer-link-name"><strong>/{{.Slug}}</strong><span>{{if .OfferHome}}Kartu publik{{else}}{{.Channel}}{{end}}{{if .Campaign}} · kampanye: {{.Campaign}}{{end}}{{if not .Active}} · paused{{end}}</span></div>
+                <a class="offer-link-target" href="{{.URL}}" target="_blank" rel="noopener" title="{{.URL}}">{{.URL}}</a>
+                <span class="offer-link-clicks">{{.Clicks}} klik{{if .NoticeViews}}<br />{{.NoticeViews}} tampilan pemberitahuan{{end}}</span>
+                {{if and (not .OfferHome) .Active}}<form method="POST" action="/{{$.AdminPath}}/offers/{{$.Offer.ID}}/links/{{.ID}}/homepage"><button type="submit" class="btn btn-ghost btn-sm">Gunakan untuk kartu</button></form>{{end}}
+                <a class="btn btn-ghost btn-sm" href="/{{$.AdminPath}}?q={{.Slug | urlquery}}">Kelola di Tautan</a>
+              </div>
+              {{end}}
+            </div>
+          </details>
           {{end}}
         </div>
-        {{else}}<div class="analytics-page-empty">No tracking links are attached to this offer.</div>{{end}}
+        {{else}}<div class="analytics-page-empty">Tidak ada tautan yang cocok.</div>{{end}}
+        {{else}}<div class="analytics-page-empty">Belum ada tautan pelacakan untuk item ini.</div>{{end}}
+
+        <form class="offer-link-form" method="POST" action="/{{.AdminPath}}/offers/{{.Offer.ID}}/links/attach">
+          <h3>Hubungkan tautan yang sudah ada</h3>
+          <div class="form-pair"><div class="field"><label for="existing-slug">Slug yang sudah ada</label><input id="existing-slug" name="slug" type="text" required maxlength="120" placeholder="opencode-go-threads" /><div class="field-help">Tujuan, channel, kampanye, dan riwayat klik tetap tersimpan. Status program item langsung berlaku.</div></div><div class="field"><button type="submit" class="btn btn-ghost">Hubungkan tautan</button></div></div>
+        </form>
 
         <form class="offer-link-form" method="POST" action="/{{.AdminPath}}/offers/{{.Offer.ID}}/links">
-          <h3>Add a channel link</h3>
+          <h3>Tambah tautan channel</h3>
           <div class="offer-link-fields">
             <div class="field"><label for="variant-slug">slug</label><input id="variant-slug" name="slug" type="text" required placeholder="greencloud-bf-threads" /></div>
-            <div class="field"><label for="variant-channel">channel</label><input id="variant-channel" name="channel" type="text" required placeholder="threads, blog, newsletter" /></div>
-            <div class="field"><label for="variant-url">destination override <span class="field-help">(optional)</span></label><input id="variant-url" name="url" type="url" value="{{.Offer.HomeURL}}" placeholder="Defaults to the homepage destination" /></div>
-            <button type="submit" class="btn btn-primary">add link</button>
+            <div class="field"><label for="variant-channel">Channel</label><input id="variant-channel" name="channel" type="text" list="offer-channel-options" maxlength="120" required placeholder="threads" /><datalist id="offer-channel-options"><option value="instagram"><option value="tiktok"><option value="threads"><option value="youtube"><option value="blog"><option value="newsletter"></datalist></div>
+            <div class="field"><label for="variant-campaign">Kampanye <span class="field-help">(opsional)</span></label><input id="variant-campaign" name="campaign" type="text" maxlength="120" placeholder="black-friday-2026" /></div>
+            <div class="field"><label for="variant-url">Tujuan khusus <span class="field-help">(opsional)</span></label><input id="variant-url" name="url" type="url" value="{{.Offer.HomeURL}}" placeholder="Bawaan: tujuan tautan kartu" /></div>
+            <button type="submit" class="btn btn-primary">Tambah tautan</button>
           </div>
         </form>
       </section>
@@ -112,38 +135,51 @@
 
       {{else}}
       <div class="admin-page-heading">
-        <div><div class="admin-eyebrow">Promotion catalog</div><h1>Offers</h1><p>One public card can group homepage, social, and campaign slugs.</p></div>
-        <a href="/{{.AdminPath}}/offers/new" class="btn btn-primary">+ add offer</a>
+        <div><div class="admin-eyebrow">Katalog pilihan</div><h1>Katalog</h1><p>Kelompokkan slug kartu, media sosial, dan kampanye dalam satu item.</p></div>
+        <a href="/{{.AdminPath}}/offers/new" class="btn btn-primary">+ Tambah item</a>
       </div>
       <section class="dashboard-stats">
-        <div class="stat-card"><div class="stat-value">{{len .Offers}}</div><div class="stat-label">total offers</div></div>
-        <div class="stat-card"><div class="stat-value">{{.ActiveCount}}</div><div class="stat-label">active now</div></div>
-        <div class="stat-card"><div class="stat-value">{{.TotalClicks}}</div><div class="stat-label">clicks · all offers</div></div>
+        <div class="stat-card"><div class="stat-value">{{len .Offers}}</div><div class="stat-label">Total item</div></div>
+        <div class="stat-card"><div class="stat-value">{{.ActiveCount}}</div><div class="stat-label">Tersedia sekarang</div></div>
+        <div class="stat-card"><div class="stat-value">{{.TotalClicks}}</div><div class="stat-label">Klik seluruh item</div></div>
       </section>
+      <form class="catalog-admin-filters" method="get" action="/{{.AdminPath}}/offers"><input type="search" name="q" value="{{.CatalogQuery}}" placeholder="Cari item atau slug…" aria-label="Cari item" /><select name="item_type" aria-label="Jenis item"><option value="">Semua jenis</option><option value="product" {{if eq .ItemType "product"}}selected{{end}}>Produk</option><option value="referral" {{if eq .ItemType "referral"}}selected{{end}}>Referral</option><option value="service" {{if eq .ItemType "service"}}selected{{end}}>Jasa</option><option value="resource" {{if eq .ItemType "resource"}}selected{{end}}>Resource</option></select><button type="submit" class="btn btn-ghost">Cari</button></form>
       {{if .Offers}}
       <div class="table-wrap offer-admin-table-wrap">
         <table class="link-table offer-admin-table">
-          <thead><tr><th>Offer / public card</th><th>Provider</th><th>Slugs</th><th>Clicks</th><th>Status</th><th>Actions</th></tr></thead>
+          <thead><tr><th>Item / kartu publik</th><th>Penyedia</th><th>Slug</th><th>Klik</th><th>Status</th><th>Tindakan</th></tr></thead>
           <tbody>
             {{range .Offers}}
             <tr>
-              <td><div class="offer-admin-title">{{if .ImageURL}}<img src="{{.ImageURL}}" alt="" loading="lazy" />{{else}}<span class="offer-admin-placeholder">↗</span>{{end}}<div><strong>{{.Title}}</strong><span>{{if .HomeSlug}}/{{.HomeSlug}}{{else}}homepage link needed{{end}}{{if .Featured}} · hero{{end}}</span></div></div></td>
+              <td><div class="offer-admin-title">{{if .ImageURL}}<img src="{{.ImageURL}}" alt="" loading="lazy" />{{else}}<span class="offer-admin-placeholder">↗</span>{{end}}<div><strong>{{.Title}}</strong><span class="meta-badge">{{itemTypeLabel .ItemType}}</span><span>{{if .HomeSlug}}/{{.HomeSlug}}{{else}}Butuh tautan kartu{{end}}{{if .Featured}} · unggulan{{end}}</span></div></div></td>
               <td>{{if .Provider}}{{.Provider}}{{else}}—{{end}}</td>
-              <td>{{.LinkCount}}</td><td class="clicks-cell">{{.Clicks}}</td>
-              <td><span class="status {{if eq (offerStatus . $.Today) "active"}}on{{else}}off{{end}}">{{offerStatus . $.Today}}</span></td>
-              <td><div class="offer-admin-actions"><a class="btn btn-ghost btn-sm" href="/{{$.AdminPath}}/offers/{{.ID}}">edit / links</a><form method="POST" action="/{{$.AdminPath}}/offers/{{.ID}}/toggle"><button class="btn btn-ghost btn-sm" type="submit">{{if .Active}}pause{{else}}activate{{end}}</button></form></div></td>
+              <td>{{.LinkCount}}</td><td class="clicks-cell">{{.Clicks}}{{if .NoticeViews}}<div class="field-help">{{.NoticeViews}} tampilan pemberitahuan</div>{{end}}</td>
+              <td><span class="status {{if eq (offerStatus . $.Today) "active"}}on{{else}}off{{end}}">{{uiText (offerStatus . $.Today)}}</span></td>
+              <td><div class="offer-admin-actions"><a class="btn btn-ghost btn-sm" href="/{{$.AdminPath}}/offers/{{.ID}}">Edit / tautan</a><details class="row-menu"><summary class="btn btn-ghost btn-sm" aria-label="Tindakan untuk {{.Title}}">Lainnya</summary><div class="row-menu-panel"><form method="POST" action="/{{$.AdminPath}}/offers/{{.ID}}/toggle"><button class="row-menu-item" type="submit">{{if .Active}}Sembunyikan{{else}}Tampilkan{{end}}</button></form></div></details></div></td>
             </tr>
             {{end}}
           </tbody>
         </table>
       </div>
       {{else}}
-      <div class="empty-state offer-empty-state"><strong>No offers yet.</strong><span>Create one offer, add its homepage slug, then attach channel-specific slugs.</span><a href="/{{.AdminPath}}/offers/new" class="btn btn-primary">create first offer</a></div>
+      <div class="empty-state offer-empty-state"><strong>Belum ada item.</strong><span>Buat item, pilih slug kartu, lalu tambahkan tautan per channel.</span><a href="/{{.AdminPath}}/offers/new" class="btn btn-primary">Buat item pertama</a></div>
       {{end}}
       {{end}}
     </main>
   </div>
 </div>
+{{if .IsNew}}
+<script>
+  const reuseExistingSlug = document.getElementById('reuse-home-slug');
+  const newHomepageURL = document.getElementById('home-url');
+  function updateHomepageURL() {
+    newHomepageURL.disabled = reuseExistingSlug.checked;
+    newHomepageURL.required = !reuseExistingSlug.checked;
+  }
+  reuseExistingSlug.addEventListener('change', updateHomepageURL);
+  updateHomepageURL();
+</script>
+{{end}}
 </body>
 </html>
 {{end}}

@@ -24,18 +24,51 @@ type loginData struct {
 }
 
 type offersDashboardData struct {
-	Offers      []db.Offer
-	Offer       *db.Offer
-	Links       []db.Link
-	ActiveCount int
-	TotalClicks int64
-	IsForm      bool
-	IsNew       bool
-	Error       string
-	Today       string
-	AdminPath   string
-	PublicURL   string
-	Production  bool
+	Saved         bool
+	CatalogQuery  string
+	ItemType      string
+	ReuseHomeSlug bool
+	Offers        []db.Offer
+	Offer         *db.Offer
+	Links         []db.Link
+	LinkGroups    []offerLinkGroup
+	LinkQuery     string
+	LinkChannel   string
+	LinkCampaign  string
+	LinkChannels  []offerLinkFilterOption
+	LinkCampaigns []offerLinkFilterOption
+	ActiveCount   int
+	TotalClicks   int64
+	IsForm        bool
+	IsNew         bool
+	Error         string
+	Today         string
+	AdminPath     string
+	PublicURL     string
+	Production    bool
+}
+
+type offerLinkGroup struct {
+	Key    string
+	Label  string
+	Links  []db.Link
+	Clicks int64
+	Open   bool
+}
+
+type offerLinkFilterOption struct {
+	Value string
+	Label string
+}
+
+type settingsDashboardData struct {
+	EffectivePublicURL string
+	SEO                pageSEO
+	Settings           db.SiteSettings
+	AdminPath          string
+	Production         bool
+	Error              string
+	Saved              bool
 }
 
 type dashboardData struct {
@@ -183,7 +216,7 @@ func (s *Server) serveLinksSection(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "db error", http.StatusInternalServerError)
 		return
 	}
-	data.PublicURL = publicBaseURL(s.cfg.PublicURL, r)
+	data.PublicURL = s.publicURL(r)
 	data.OOB = true
 	if r.Header.Get("HX-Request") == "true" {
 		w.Header().Set("HX-Push-Url", s.dashboardURL(r))
@@ -895,7 +928,7 @@ func (s *Server) handleDashboard(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "db error", http.StatusInternalServerError)
 		return
 	}
-	data.PublicURL = publicBaseURL(s.cfg.PublicURL, r)
+	data.PublicURL = s.publicURL(r)
 	s.renderTemplate(w, "dashboard", data)
 }
 
@@ -1250,7 +1283,7 @@ func (s *Server) analyticsDataForLink(r *http.Request, link *db.Link, interactiv
 	return &analyticsData{
 		ID:                  link.ID,
 		Slug:                link.Slug,
-		ShortURL:            publicBaseURL(s.cfg.PublicURL, r) + "/" + link.Slug,
+		ShortURL:            s.publicURL(r) + "/" + link.Slug,
 		AnalyticsURL:        "/" + s.cfg.AdminPath + "/links/" + strconv.FormatInt(link.ID, 10) + "/analytics",
 		Destination:         link.URL,
 		Description:         link.Description,
@@ -1342,8 +1375,11 @@ func (s *Server) handleOverviewAnalyticsUI(w http.ResponseWriter, r *http.Reques
 }
 
 func offerStatus(offer db.Offer, today string) string {
+	if status := offer.LifecycleStatus(today); status != "active" {
+		return status
+	}
 	if !offer.Active {
-		return "paused"
+		return "hidden"
 	}
 	if offer.StartsOn != "" && offer.StartsOn > today {
 		return "upcoming"
@@ -1397,17 +1433,48 @@ func validOfferImage(raw string) bool {
 
 func parseOfferInput(r *http.Request) (db.OfferInput, error) {
 	input := db.OfferInput{
-		Title:       strings.TrimSpace(r.FormValue("title")),
-		Provider:    strings.TrimSpace(r.FormValue("provider")),
-		Description: strings.TrimSpace(r.FormValue("description")),
-		Category:    strings.TrimSpace(r.FormValue("category")),
-		ImageURL:    strings.TrimSpace(r.FormValue("image_url")),
-		ButtonLabel: strings.TrimSpace(r.FormValue("button_label")),
-		FallbackURL: strings.TrimSpace(r.FormValue("fallback_url")),
-		StartsOn:    strings.TrimSpace(r.FormValue("starts_on")),
-		EndsOn:      strings.TrimSpace(r.FormValue("ends_on")),
-		Active:      r.FormValue("active") == "1" || r.FormValue("active") == "on",
-		Featured:    r.FormValue("featured") == "1" || r.FormValue("featured") == "on",
+		ItemType:        strings.TrimSpace(r.FormValue("item_type")),
+		ProgramStatus:   strings.TrimSpace(r.FormValue("program_status")),
+		EndedBehavior:   strings.TrimSpace(r.FormValue("ended_behavior")),
+		NoticeMessage:   strings.TrimSpace(r.FormValue("notice_message")),
+		NoticeSourceURL: strings.TrimSpace(r.FormValue("notice_source_url")),
+		StatusChangedOn: strings.TrimSpace(r.FormValue("status_changed_on")),
+		VerifiedOn:      strings.TrimSpace(r.FormValue("verified_on")),
+		Title:           strings.TrimSpace(r.FormValue("title")),
+		Provider:        strings.TrimSpace(r.FormValue("provider")),
+		Description:     strings.TrimSpace(r.FormValue("description")),
+		Category:        strings.TrimSpace(r.FormValue("category")),
+		ImageURL:        strings.TrimSpace(r.FormValue("image_url")),
+		ButtonLabel:     strings.TrimSpace(r.FormValue("button_label")),
+		FallbackURL:     strings.TrimSpace(r.FormValue("fallback_url")),
+		StartsOn:        strings.TrimSpace(r.FormValue("starts_on")),
+		EndsOn:          strings.TrimSpace(r.FormValue("ends_on")),
+		Active:          r.FormValue("active") == "1" || r.FormValue("active") == "on",
+		Featured:        r.FormValue("featured") == "1" || r.FormValue("featured") == "on",
+	}
+	if input.ItemType == "" {
+		input.ItemType = "referral"
+	}
+	if input.ItemType != "product" && input.ItemType != "referral" && input.ItemType != "service" && input.ItemType != "resource" {
+		return input, fmt.Errorf("jenis item tidak valid")
+	}
+	if input.ProgramStatus == "" {
+		input.ProgramStatus = "active"
+	}
+	if input.EndedBehavior == "" {
+		input.EndedBehavior = "notice"
+	}
+	if input.ProgramStatus != "active" && input.ProgramStatus != "paused" && input.ProgramStatus != "ended" {
+		return input, fmt.Errorf("invalid program status")
+	}
+	if input.EndedBehavior != "notice" && input.EndedBehavior != "redirect" {
+		return input, fmt.Errorf("invalid behavior after program ends")
+	}
+	if input.EndedBehavior == "redirect" && input.FallbackURL == "" {
+		return input, fmt.Errorf("a destination URL is required for redirect after the program ends")
+	}
+	if input.NoticeSourceURL != "" && !validOfferDestination(input.NoticeSourceURL) {
+		return input, fmt.Errorf("source URL must start with http:// or https://")
 	}
 	priorityValue := strings.TrimSpace(r.FormValue("priority"))
 	if priorityValue != "" {
@@ -1432,6 +1499,8 @@ func parseOfferInput(r *http.Request) (db.OfferInput, error) {
 		{name: "image URL", value: input.ImageURL, limit: 2048},
 		{name: "button label", value: input.ButtonLabel, limit: 48},
 		{name: "fallback URL", value: input.FallbackURL, limit: 2048},
+		{name: "notice message", value: input.NoticeMessage, limit: 1000},
+		{name: "source URL", value: input.NoticeSourceURL, limit: 2048},
 	} {
 		if len(field.value) > field.limit {
 			return input, fmt.Errorf("%s must be %d characters or fewer", field.name, field.limit)
@@ -1449,6 +1518,8 @@ func parseOfferInput(r *http.Request) (db.OfferInput, error) {
 	}{
 		{name: "start date", value: input.StartsOn},
 		{name: "end date", value: input.EndsOn},
+		{name: "status effective date", value: input.StatusChangedOn},
+		{name: "last verified date", value: input.VerifiedOn},
 	} {
 		if field.value != "" {
 			parsed, err := time.Parse(dashboardDateLayout, field.value)
@@ -1465,18 +1536,143 @@ func parseOfferInput(r *http.Request) (db.OfferInput, error) {
 
 func offerFromInput(input db.OfferInput, id int64, homeSlug, homeURL string, homeActive bool) *db.Offer {
 	return &db.Offer{
-		ID: id, Title: input.Title, Provider: input.Provider, Description: input.Description, Category: input.Category,
+		ID: id, ItemType: input.ItemType, Title: input.Title, Provider: input.Provider, Description: input.Description, Category: input.Category,
+		ProgramStatus: input.ProgramStatus, EndedBehavior: input.EndedBehavior, NoticeMessage: input.NoticeMessage,
+		NoticeSourceURL: input.NoticeSourceURL, StatusChangedOn: input.StatusChangedOn, VerifiedOn: input.VerifiedOn,
 		ImageURL: input.ImageURL, ButtonLabel: input.ButtonLabel, FallbackURL: input.FallbackURL,
 		StartsOn: input.StartsOn, EndsOn: input.EndsOn, Active: input.Active, Featured: input.Featured,
 		Priority: input.Priority, HomeSlug: homeSlug, HomeURL: homeURL, HomeActive: homeActive,
 	}
 }
 
+const offerHomepageLinkFilter = "__homepage__"
+const offerUnassignedFilter = "__unassigned__"
+
+func offerLinkChannelFilterValue(link db.Link) string {
+	if link.OfferHome {
+		return offerHomepageLinkFilter
+	}
+	value := strings.ToLower(strings.TrimSpace(link.Channel))
+	if value == "" {
+		return offerUnassignedFilter
+	}
+	return value
+}
+
+func offerLinkCampaignFilterValue(link db.Link) string {
+	value := strings.ToLower(strings.TrimSpace(link.Campaign))
+	if value == "" {
+		return offerUnassignedFilter
+	}
+	return value
+}
+
+func sortOfferLinkOptions(options []offerLinkFilterOption) {
+	sort.Slice(options, func(i, j int) bool {
+		return strings.ToLower(options[i].Label) < strings.ToLower(options[j].Label)
+	})
+}
+
+func groupOfferLinks(links []db.Link, query, channelFilter, campaignFilter string) ([]offerLinkGroup, []offerLinkFilterOption, []offerLinkFilterOption) {
+	channelsByValue := make(map[string]string)
+	campaignsByValue := make(map[string]string)
+	for _, link := range links {
+		channelValue := offerLinkChannelFilterValue(link)
+		if _, ok := channelsByValue[channelValue]; !ok {
+			switch channelValue {
+			case offerHomepageLinkFilter:
+				channelsByValue[channelValue] = "Homepage"
+			case offerUnassignedFilter:
+				channelsByValue[channelValue] = "Unassigned"
+			default:
+				channelsByValue[channelValue] = strings.TrimSpace(link.Channel)
+			}
+		}
+		campaignValue := offerLinkCampaignFilterValue(link)
+		if _, ok := campaignsByValue[campaignValue]; !ok {
+			if campaignValue == offerUnassignedFilter {
+				campaignsByValue[campaignValue] = "Unassigned"
+			} else {
+				campaignsByValue[campaignValue] = strings.TrimSpace(link.Campaign)
+			}
+		}
+	}
+
+	channelOptions := make([]offerLinkFilterOption, 0, len(channelsByValue))
+	for value, label := range channelsByValue {
+		channelOptions = append(channelOptions, offerLinkFilterOption{Value: value, Label: label})
+	}
+	sortOfferLinkOptions(channelOptions)
+	campaignOptions := make([]offerLinkFilterOption, 0, len(campaignsByValue))
+	for value, label := range campaignsByValue {
+		campaignOptions = append(campaignOptions, offerLinkFilterOption{Value: value, Label: label})
+	}
+	sortOfferLinkOptions(campaignOptions)
+
+	query = strings.ToLower(strings.TrimSpace(query))
+	channelFilter = strings.ToLower(strings.TrimSpace(channelFilter))
+	campaignFilter = strings.ToLower(strings.TrimSpace(campaignFilter))
+	groupsByKey := make(map[string]*offerLinkGroup)
+	groupKeys := make([]string, 0)
+	for _, link := range links {
+		channelValue := offerLinkChannelFilterValue(link)
+		campaignValue := offerLinkCampaignFilterValue(link)
+		if channelFilter != "" && channelFilter != channelValue {
+			continue
+		}
+		if campaignFilter != "" && campaignFilter != campaignValue {
+			continue
+		}
+		if query != "" {
+			haystack := strings.ToLower(link.Slug + " " + link.URL + " " + link.Channel + " " + link.Campaign)
+			if !strings.Contains(haystack, query) {
+				continue
+			}
+		}
+
+		groupKey := channelValue
+		label := strings.TrimSpace(link.Channel)
+		if link.OfferHome {
+			groupKey, label = offerHomepageLinkFilter, "Homepage link"
+		} else if channelValue == offerUnassignedFilter {
+			label = "Unassigned"
+		}
+		group, ok := groupsByKey[groupKey]
+		if !ok {
+			group = &offerLinkGroup{Key: groupKey, Label: label, Open: link.OfferHome || query != "" || channelFilter != "" || campaignFilter != ""}
+			groupsByKey[groupKey] = group
+			groupKeys = append(groupKeys, groupKey)
+		}
+		group.Links = append(group.Links, link)
+		group.Clicks += link.Clicks
+	}
+	sort.SliceStable(groupKeys, func(i, j int) bool {
+		if groupKeys[i] == offerHomepageLinkFilter {
+			return groupKeys[j] != offerHomepageLinkFilter
+		}
+		if groupKeys[j] == offerHomepageLinkFilter {
+			return false
+		}
+		return strings.ToLower(groupsByKey[groupKeys[i]].Label) < strings.ToLower(groupsByKey[groupKeys[j]].Label)
+	})
+	groups := make([]offerLinkGroup, 0, len(groupKeys))
+	for _, key := range groupKeys {
+		groups = append(groups, *groupsByKey[key])
+	}
+	return groups, channelOptions, campaignOptions
+}
+
 func (s *Server) renderOffersDashboard(w http.ResponseWriter, r *http.Request, data offersDashboardData) {
 	data.AdminPath = s.cfg.AdminPath
-	data.PublicURL = publicBaseURL(s.cfg.PublicURL, r)
+	data.PublicURL = s.publicURL(r)
 	data.Production = s.cfg.Production
 	data.Today = time.Now().In(s.cfg.ReportLocation()).Format(dashboardDateLayout)
+	if data.Offer != nil && !data.IsNew {
+		data.LinkQuery = strings.TrimSpace(r.URL.Query().Get("q"))
+		data.LinkChannel = strings.TrimSpace(r.URL.Query().Get("channel"))
+		data.LinkCampaign = strings.TrimSpace(r.URL.Query().Get("campaign"))
+		data.LinkGroups, data.LinkChannels, data.LinkCampaigns = groupOfferLinks(data.Links, data.LinkQuery, data.LinkChannel, data.LinkCampaign)
+	}
 	s.renderTemplate(w, "offers-dashboard", data)
 }
 
@@ -1486,6 +1682,18 @@ func (s *Server) handleOffersDashboard(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "db error", http.StatusInternalServerError)
 		return
 	}
+	query, kind := strings.TrimSpace(r.URL.Query().Get("q")), r.URL.Query().Get("item_type")
+	filtered := make([]db.Offer, 0, len(offers))
+	for _, offer := range offers {
+		if kind != "" && offer.ItemType != kind {
+			continue
+		}
+		if query != "" && !strings.Contains(strings.ToLower(offer.Title+" "+offer.Provider+" "+offer.Category+" "+offer.HomeSlug), strings.ToLower(query)) {
+			continue
+		}
+		filtered = append(filtered, offer)
+	}
+	offers = filtered
 	today := time.Now().In(s.cfg.ReportLocation()).Format(dashboardDateLayout)
 	activeCount := 0
 	var totalClicks int64
@@ -1495,12 +1703,12 @@ func (s *Server) handleOffersDashboard(w http.ResponseWriter, r *http.Request) {
 		}
 		totalClicks += offer.Clicks
 	}
-	s.renderOffersDashboard(w, r, offersDashboardData{Offers: offers, ActiveCount: activeCount, TotalClicks: totalClicks})
+	s.renderOffersDashboard(w, r, offersDashboardData{Offers: offers, CatalogQuery: query, ItemType: kind, ActiveCount: activeCount, TotalClicks: totalClicks})
 }
 
 func (s *Server) handleNewOffer(w http.ResponseWriter, r *http.Request) {
 	today := time.Now().In(s.cfg.ReportLocation()).Format(dashboardDateLayout)
-	offer := &db.Offer{Active: true, ButtonLabel: "Lihat promo", StartsOn: today}
+	offer := &db.Offer{ItemType: "referral", Active: true, ProgramStatus: "active", EndedBehavior: "notice", ButtonLabel: "Lihat promo", StartsOn: today}
 	s.renderOffersDashboard(w, r, offersDashboardData{Offer: offer, IsForm: true, IsNew: true})
 }
 
@@ -1524,7 +1732,7 @@ func (s *Server) handleOfferDetail(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "db error", http.StatusInternalServerError)
 		return
 	}
-	s.renderOffersDashboard(w, r, offersDashboardData{Offer: offer, Links: links, IsForm: true, Error: r.URL.Query().Get("error")})
+	s.renderOffersDashboard(w, r, offersDashboardData{Offer: offer, Links: links, IsForm: true, Error: r.URL.Query().Get("error"), Saved: r.URL.Query().Get("saved") == "1"})
 }
 
 func (s *Server) handleCreateOffer(w http.ResponseWriter, r *http.Request) {
@@ -1535,27 +1743,37 @@ func (s *Server) handleCreateOffer(w http.ResponseWriter, r *http.Request) {
 	input, inputErr := parseOfferInput(r)
 	slug := strings.TrimSpace(r.FormValue("home_slug"))
 	urlValue := strings.TrimSpace(r.FormValue("home_url"))
+	reuse := r.FormValue("reuse_home_slug") == "1"
 	offer := offerFromInput(input, 0, slug, urlValue, true)
 	if inputErr == nil {
 		inputErr = validateOfferSlug(slug, s.cfg.AdminPath)
 	}
-	if inputErr == nil && !validOfferDestination(urlValue) {
+	if inputErr == nil && !reuse && !validOfferDestination(urlValue) {
 		inputErr = fmt.Errorf("affiliate URL must start with http:// or https://")
 	}
 	if inputErr != nil {
-		s.renderOffersDashboard(w, r, offersDashboardData{Offer: offer, IsForm: true, IsNew: true, Error: inputErr.Error()})
+		s.renderOffersDashboard(w, r, offersDashboardData{Offer: offer, ReuseHomeSlug: reuse, IsForm: true, IsNew: true, Error: inputErr.Error()})
 		return
 	}
-	created, err := s.db.CreateOfferWithHomepageLink(input, slug, urlValue)
+	var created *db.Offer
+	var err error
+	if reuse {
+		created, err = s.db.CreateOfferWithExistingHomepageLink(input, slug)
+	} else {
+		created, err = s.db.CreateOfferWithHomepageLink(input, slug, urlValue)
+	}
 	if err != nil {
 		msg := "failed to create offer"
+		if reuse {
+			msg = "existing slug must be active and not already attached to an offer"
+		}
 		if strings.Contains(err.Error(), "UNIQUE") {
 			msg = "slug already exists"
 		}
-		s.renderOffersDashboard(w, r, offersDashboardData{Offer: offer, IsForm: true, IsNew: true, Error: msg})
+		s.renderOffersDashboard(w, r, offersDashboardData{Offer: offer, ReuseHomeSlug: reuse, IsForm: true, IsNew: true, Error: msg})
 		return
 	}
-	http.Redirect(w, r, "/"+s.cfg.AdminPath+"/offers/"+strconv.FormatInt(created.ID, 10), http.StatusSeeOther)
+	http.Redirect(w, r, "/"+s.cfg.AdminPath+"/offers/"+strconv.FormatInt(created.ID, 10)+"?saved=1", http.StatusSeeOther)
 }
 
 func (s *Server) handleUpdateOffer(w http.ResponseWriter, r *http.Request) {
@@ -1588,7 +1806,7 @@ func (s *Server) handleUpdateOffer(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "failed to update offer", http.StatusInternalServerError)
 		return
 	}
-	http.Redirect(w, r, "/"+s.cfg.AdminPath+"/offers/"+strconv.FormatInt(id, 10), http.StatusSeeOther)
+	http.Redirect(w, r, "/"+s.cfg.AdminPath+"/offers/"+strconv.FormatInt(id, 10)+"?saved=1", http.StatusSeeOther)
 }
 
 func (s *Server) handleCreateOfferLink(w http.ResponseWriter, r *http.Request) {
@@ -1603,13 +1821,18 @@ func (s *Server) handleCreateOfferLink(w http.ResponseWriter, r *http.Request) {
 	}
 	slug := strings.TrimSpace(r.FormValue("slug"))
 	urlValue := strings.TrimSpace(r.FormValue("url"))
-	channel := strings.TrimSpace(r.FormValue("channel"))
+	channel := strings.ToLower(strings.TrimSpace(r.FormValue("channel")))
+	campaign := strings.ToLower(strings.TrimSpace(r.FormValue("campaign")))
 	if err := validateOfferSlug(slug, s.cfg.AdminPath); err != nil {
 		http.Redirect(w, r, "/"+s.cfg.AdminPath+"/offers/"+strconv.FormatInt(id, 10)+"?error="+url.QueryEscape(err.Error()), http.StatusSeeOther)
 		return
 	}
-	if channel == "" || len(channel) > 120 {
+	if channel == "" {
 		http.Redirect(w, r, "/"+s.cfg.AdminPath+"/offers/"+strconv.FormatInt(id, 10)+"?error=channel+is+required+and+must+be+120+characters+or+fewer", http.StatusSeeOther)
+		return
+	}
+	if err := validateLinkMetadata("", channel, campaign); err != nil {
+		http.Redirect(w, r, "/"+s.cfg.AdminPath+"/offers/"+strconv.FormatInt(id, 10)+"?error="+url.QueryEscape(err.Error()), http.StatusSeeOther)
 		return
 	}
 	offer, err := s.db.GetOfferByID(id)
@@ -1624,7 +1847,7 @@ func (s *Server) handleCreateOfferLink(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/"+s.cfg.AdminPath+"/offers/"+strconv.FormatInt(id, 10)+"?error=affiliate+URL+must+start+with+http%3A%2F%2F+or+https%3A%2F%2F", http.StatusSeeOther)
 		return
 	}
-	if _, err := s.db.CreateOfferLink(id, slug, urlValue, channel); err != nil {
+	if _, err := s.db.CreateOfferLink(id, slug, urlValue, channel, campaign); err != nil {
 		message := "failed to add link"
 		if strings.Contains(err.Error(), "UNIQUE") {
 			message = "slug already exists"

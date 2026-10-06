@@ -12,16 +12,23 @@ import (
 )
 
 type homeData struct {
-	Links           []db.PublicLink
-	Offers          []db.Offer
-	FeaturedOffers  []db.Offer
-	OfferCategories []string
-	Categories      []string
-	SiteName        string
-	SiteDesc        string
-	IsLoggedIn      bool
-	AdminPath       string
-	Production      bool
+	Settings            db.SiteSettings
+	SEO                 pageSEO
+	Links               []db.PublicLink
+	Offers              []db.Offer
+	FeaturedOffers      []db.Offer
+	Services            []db.Offer
+	ResourceOffers      []db.Offer
+	ServiceLinks        []db.PublicLink
+	OfferCategories     []string
+	Categories          []string
+	SiteName            string
+	SiteDesc            string
+	AffiliateDisclosure string
+	HeroEnabled         bool
+	IsLoggedIn          bool
+	AdminPath           string
+	Production          bool
 }
 
 type catalogPageLink struct {
@@ -61,7 +68,7 @@ type linkCatalogData struct {
 }
 
 func isOfferAvailable(offer db.Offer, today string) bool {
-	return offer.Active && offer.HomeActive &&
+	return offer.Active && offer.HomeActive && offer.LifecycleStatus(today) == "active" &&
 		(offer.StartsOn == "" || offer.StartsOn <= today) &&
 		(offer.EndsOn == "" || offer.EndsOn >= today)
 }
@@ -105,6 +112,11 @@ func providersForOffers(offers []db.Offer) []string {
 }
 
 func (s *Server) handleHome(w http.ResponseWriter, r *http.Request) {
+	settings, err := s.currentSiteSettings()
+	if err != nil {
+		http.Error(w, "db error", http.StatusInternalServerError)
+		return
+	}
 	all, err := s.db.ListPublicLinks()
 	if err != nil {
 		http.Error(w, "db error", http.StatusInternalServerError)
@@ -117,17 +129,17 @@ func (s *Server) handleHome(w http.ResponseWriter, r *http.Request) {
 	}
 	today := time.Now().In(s.cfg.ReportLocation()).Format(dashboardDateLayout)
 	activeOffers := publicOffers(offers, today)
-	featuredOffers := make([]db.Offer, 0, 3)
-	featuredOfferIDs := make(map[int64]bool, 3)
+	featuredOffers := make([]db.Offer, 0, settings.FeaturedLimit)
+	featuredOfferIDs := make(map[int64]bool, settings.FeaturedLimit)
 	for _, offer := range activeOffers {
-		if offer.Featured && len(featuredOffers) < 3 {
+		if settings.HeroEnabled && offer.ItemType != "service" && offer.ItemType != "resource" && offer.Featured && len(featuredOffers) < settings.FeaturedLimit {
 			featuredOffers = append(featuredOffers, offer)
 			featuredOfferIDs[offer.ID] = true
 		}
 	}
 	pageOffers := make([]db.Offer, 0, 6)
 	for _, offer := range activeOffers {
-		if featuredOfferIDs[offer.ID] {
+		if featuredOfferIDs[offer.ID] || offer.ItemType == "service" || offer.ItemType == "resource" {
 			continue
 		}
 		pageOffers = append(pageOffers, offer)
@@ -147,7 +159,24 @@ func (s *Server) handleHome(w http.ResponseWriter, r *http.Request) {
 	}
 	sort.Strings(categories)
 
-	links := all
+	var services, resourceOffers []db.Offer
+	for _, offer := range activeOffers {
+		if offer.ItemType == "service" {
+			services = append(services, offer)
+		}
+		if offer.ItemType == "resource" {
+			resourceOffers = append(resourceOffers, offer)
+		}
+	}
+	var serviceLinks, resources []db.PublicLink
+	for _, link := range all {
+		if isServiceCategory(link.Category) {
+			serviceLinks = append(serviceLinks, link)
+		} else {
+			resources = append(resources, link)
+		}
+	}
+	links := resources
 	if len(links) > 6 {
 		links = links[:6]
 	}
@@ -158,192 +187,156 @@ func (s *Server) handleHome(w http.ResponseWriter, r *http.Request) {
 	}
 
 	s.renderTemplate(w, "home", homeData{
-		Links:           links,
-		Offers:          pageOffers,
-		FeaturedOffers:  featuredOffers,
-		OfferCategories: categoriesForOffers(publicOffers(offers, today)),
-		Categories:      categories,
-		SiteName:        s.cfg.SiteName,
-		SiteDesc:        s.cfg.SiteDesc,
-		IsLoggedIn:      loggedIn,
-		AdminPath:       s.cfg.AdminPath,
-		Production:      s.cfg.Production,
+		SEO:      s.publicSEO(settings, r, ""),
+		Settings: settings,
+		Links:    links,
+		Services: services, ResourceOffers: resourceOffers, ServiceLinks: serviceLinks,
+		Offers:              pageOffers,
+		FeaturedOffers:      featuredOffers,
+		OfferCategories:     categoriesForOffers(publicOffers(offers, today)),
+		Categories:          categories,
+		SiteName:            settings.SiteName,
+		SiteDesc:            settings.SiteDesc,
+		AffiliateDisclosure: settings.AffiliateDisclosure,
+		HeroEnabled:         settings.HeroEnabled,
+		IsLoggedIn:          loggedIn,
+		AdminPath:           s.cfg.AdminPath,
+		Production:          s.cfg.Production,
 	})
 }
 
 func (s *Server) handleOfferCatalog(w http.ResponseWriter, r *http.Request) {
-	all, err := s.db.ListOffers()
-	if err != nil {
-		http.Error(w, "db error", http.StatusInternalServerError)
-		return
-	}
-	today := time.Now().In(s.cfg.ReportLocation()).Format(dashboardDateLayout)
-	visible := publicOffers(all, today)
-	category := strings.TrimSpace(r.URL.Query().Get("category"))
-	provider := strings.TrimSpace(r.URL.Query().Get("provider"))
-	query := strings.TrimSpace(r.URL.Query().Get("q"))
-	categories := categoriesForOffers(visible)
-	providers := providersForOffers(visible)
-	filtered := make([]db.Offer, 0, len(visible))
-	for _, offer := range visible {
-		if category != "" && offer.Category != category {
-			continue
-		}
-		if provider != "" && offer.Provider != provider {
-			continue
-		}
-		if query != "" {
-			haystack := strings.ToLower(offer.Title + " " + offer.Provider + " " + offer.Description + " " + offer.Category)
-			if !strings.Contains(haystack, strings.ToLower(query)) {
-				continue
-			}
-		}
-		filtered = append(filtered, offer)
-	}
-
-	const pageSize = 12
-	total := len(filtered)
-	page, _ := strconv.Atoi(r.URL.Query().Get("page"))
-	if page < 1 {
-		page = 1
-	}
-	pageCount := (total + pageSize - 1) / pageSize
-	if pageCount == 0 {
-		pageCount = 1
-	}
-	if page > pageCount {
-		page = pageCount
-	}
-	start := (page - 1) * pageSize
-	end := start + pageSize
-	if end > total {
-		end = total
-	}
-	pageOffers := filtered
-	if start < total {
-		pageOffers = filtered[start:end]
-	} else {
-		pageOffers = nil
-	}
-	pageURL := func(number int) string {
-		values := make(url.Values)
-		if query != "" {
-			values.Set("q", query)
-		}
-		if category != "" {
-			values.Set("category", category)
-		}
-		if provider != "" {
-			values.Set("provider", provider)
-		}
-		if number > 1 {
-			values.Set("page", strconv.Itoa(number))
-		}
-		if encoded := values.Encode(); encoded != "" {
-			return "/offers?" + encoded
-		}
-		return "/offers"
-	}
-	pages := make([]catalogPageLink, 0, pageCount)
-	for number := 1; number <= pageCount; number++ {
-		pages = append(pages, catalogPageLink{Number: number, URL: pageURL(number), Current: number == page})
-	}
-	previousURL, nextURL := "", ""
-	if page > 1 {
-		previousURL = pageURL(page - 1)
-	}
-	if page < pageCount {
-		nextURL = pageURL(page + 1)
-	}
-	s.renderTemplate(w, "offer-catalog", offerCatalogData{
-		Offers: pageOffers, Categories: categories, Providers: providers, Category: category, Provider: provider, Query: query, Page: page, Pages: pages,
-		PreviousURL: previousURL, NextURL: nextURL, Total: total, SiteName: s.cfg.SiteName, SiteDesc: s.cfg.SiteDesc,
-	})
+	s.handleBrowse(w, r, false)
+}
+func (s *Server) handleLinkCatalog(w http.ResponseWriter, r *http.Request) {
+	s.handleBrowse(w, r, true)
 }
 
-func (s *Server) handleLinkCatalog(w http.ResponseWriter, r *http.Request) {
-	all, err := s.db.ListPublicLinks()
+func isServiceCategory(category string) bool {
+	switch strings.ToLower(strings.TrimSpace(category)) {
+	case "service", "services", "jasa":
+		return true
+	}
+	return false
+}
+
+type publicCard struct {
+	Title, Provider, Description, Category, ImageURL, ButtonLabel, HomeSlug, ItemType string
+}
+type browseData struct {
+	Settings                                                                        db.SiteSettings
+	SEO                                                                             pageSEO
+	Cards                                                                           []publicCard
+	Categories, Providers                                                           []string
+	Category, Provider, Query, View, Title, SiteName, SiteDesc, AffiliateDisclosure string
+	Total                                                                           int
+	Pages                                                                           []catalogPageLink
+}
+
+func (s *Server) handleBrowse(w http.ResponseWriter, r *http.Request, resourcesOnly bool) {
+	settings, err := s.currentSiteSettings()
 	if err != nil {
-		http.Error(w, "db error", http.StatusInternalServerError)
+		http.Error(w, "db error", 500)
 		return
 	}
-	category := strings.TrimSpace(r.URL.Query().Get("category"))
-	query := strings.TrimSpace(r.URL.Query().Get("q"))
-	categories := make([]string, 0)
-	seenCategories := make(map[string]bool)
-	filtered := make([]db.PublicLink, 0, len(all))
-	loweredQuery := strings.ToLower(query)
-	for _, link := range all {
-		if link.Category != "" && !seenCategories[link.Category] {
-			seenCategories[link.Category] = true
-			categories = append(categories, link.Category)
+	offers, err := s.db.ListOffers()
+	if err != nil {
+		http.Error(w, "db error", 500)
+		return
+	}
+	links, err := s.db.ListPublicLinks()
+	if err != nil {
+		http.Error(w, "db error", 500)
+		return
+	}
+	view := r.URL.Query().Get("view")
+	if resourcesOnly {
+		view = "resources"
+	}
+	switch view {
+	case "services", "favorites", "resources":
+	default:
+		view = "categories"
+	}
+	all := []publicCard{}
+	for _, o := range publicOffers(offers, time.Now().In(s.cfg.ReportLocation()).Format(dashboardDateLayout)) {
+		all = append(all, publicCard{o.Title, o.Provider, o.Description, o.Category, o.ImageURL, o.ButtonLabel, o.HomeSlug, o.ItemType})
+	}
+	for _, l := range links {
+		kind := "resource"
+		if isServiceCategory(l.Category) {
+			kind = "service"
 		}
-		if category != "" && link.Category != category {
+		title := l.Description
+		if title == "" {
+			title = l.Slug
+		}
+		all = append(all, publicCard{Title: title, Provider: l.Provider, Category: l.Category, HomeSlug: l.Slug, ButtonLabel: "Buka tautan", ItemType: kind})
+	}
+	category, provider, query := strings.TrimSpace(r.URL.Query().Get("category")), strings.TrimSpace(r.URL.Query().Get("provider")), strings.TrimSpace(r.URL.Query().Get("q"))
+	categories, providers := []string{}, []string{}
+	seenCategory, seenProvider := map[string]bool{}, map[string]bool{}
+	cards := []publicCard{}
+	for _, card := range all {
+		if view == "services" && card.ItemType != "service" || view == "resources" && card.ItemType != "resource" {
 			continue
 		}
-		if loweredQuery != "" {
-			haystack := strings.ToLower(link.Slug + " " + link.Description + " " + link.Category)
-			if !strings.Contains(haystack, loweredQuery) {
-				continue
-			}
+		if card.Category != "" && !seenCategory[card.Category] {
+			categories = append(categories, card.Category)
+			seenCategory[card.Category] = true
 		}
-		filtered = append(filtered, link)
+		if card.Provider != "" && !seenProvider[card.Provider] {
+			providers = append(providers, card.Provider)
+			seenProvider[card.Provider] = true
+		}
+		if category != "" && card.Category != category || provider != "" && card.Provider != provider {
+			continue
+		}
+		if query != "" && !strings.Contains(strings.ToLower(card.Title+" "+card.Description+" "+card.Provider+" "+card.Category+" "+card.HomeSlug), strings.ToLower(query)) {
+			continue
+		}
+		cards = append(cards, card)
 	}
 	sort.Strings(categories)
-
-	const pageSize = 18
-	total := len(filtered)
-	page, _ := strconv.Atoi(r.URL.Query().Get("page"))
-	if page < 1 {
-		page = 1
-	}
-	pageCount := (total + pageSize - 1) / pageSize
-	if pageCount == 0 {
-		pageCount = 1
-	}
-	if page > pageCount {
-		page = pageCount
-	}
-	start := (page - 1) * pageSize
-	end := start + pageSize
-	if end > total {
-		end = total
-	}
-	pageLinks := filtered
-	if start < total {
-		pageLinks = filtered[start:end]
-	} else {
-		pageLinks = nil
-	}
-	pageURL := func(number int) string {
-		values := make(url.Values)
-		if query != "" {
-			values.Set("q", query)
+	sort.Strings(providers)
+	total := len(cards)
+	pages := []catalogPageLink{}
+	// Favorites are filtered in this browser, so all available cards must be supplied.
+	effectivePage := 1
+	if view != "favorites" {
+		pageCount := (total + 11) / 12
+		if pageCount < 1 {
+			pageCount = 1
 		}
-		if category != "" {
-			values.Set("category", category)
+		page, _ := strconv.Atoi(r.URL.Query().Get("page"))
+		if page < 1 {
+			page = 1
 		}
-		if number > 1 {
-			values.Set("page", strconv.Itoa(number))
+		if page > pageCount {
+			page = pageCount
 		}
-		if encoded := values.Encode(); encoded != "" {
-			return "/links?" + encoded
+		effectivePage = page
+		for n := 1; n <= pageCount; n++ {
+			values := url.Values{"view": {view}}
+			if category != "" {
+				values.Set("category", category)
+			}
+			if provider != "" {
+				values.Set("provider", provider)
+			}
+			if query != "" {
+				values.Set("q", query)
+			}
+			values.Set("page", strconv.Itoa(n))
+			pages = append(pages, catalogPageLink{Number: n, URL: "/offers?" + values.Encode(), Current: n == page})
 		}
-		return "/links"
+		start := (page - 1) * 12
+		end := start + 12
+		if end > total {
+			end = total
+		}
+		cards = cards[start:end]
 	}
-	pages := make([]catalogPageLink, 0, pageCount)
-	for number := 1; number <= pageCount; number++ {
-		pages = append(pages, catalogPageLink{Number: number, URL: pageURL(number), Current: number == page})
-	}
-	previousURL, nextURL := "", ""
-	if page > 1 {
-		previousURL = pageURL(page - 1)
-	}
-	if page < pageCount {
-		nextURL = pageURL(page + 1)
-	}
-	s.renderTemplate(w, "link-catalog", linkCatalogData{
-		Links: pageLinks, Categories: categories, Category: category, Query: query, Page: page, Pages: pages,
-		PreviousURL: previousURL, NextURL: nextURL, Total: total, SiteName: s.cfg.SiteName, SiteDesc: s.cfg.SiteDesc,
-	})
+	title := map[string]string{"categories": "Kategori", "services": settings.ServiceTitle, "favorites": "Favorit", "resources": "Resource"}[view]
+	s.renderTemplate(w, "browse", browseData{Settings: settings, SEO: s.publicSEO(settings, r, view, effectivePage), Cards: cards, Categories: categories, Providers: providers, Category: category, Provider: provider, Query: query, View: view, Title: title, Total: total, Pages: pages, SiteName: settings.SiteName, SiteDesc: settings.SiteDesc, AffiliateDisclosure: settings.AffiliateDisclosure})
 }

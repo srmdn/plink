@@ -1,22 +1,22 @@
 {{define "login"}}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 {{template "head" .}}
-<body>
-<div id="app">
+<body class="admin-page">
+<div id="app" class="admin-app">
   <header>
     <div class="logo">plink <span>/ admin</span></div>
   </header>
   <div id="login-view">
     <div class="login-box">
-      <h2>sign in to plink</h2>
-      {{if .Error}}<div class="login-error">incorrect password</div>{{end}}
+      <h2>Masuk ke Plink</h2>
+      {{if .Error}}<div class="login-error">Kata sandi salah</div>{{end}}
       <form method="POST" action="/{{.AdminPath}}/login">
         <div class="field">
-          <label for="password">password</label>
+          <label for="password">Kata sandi</label>
           <input type="password" id="password" name="password" autofocus autocomplete="current-password" />
         </div>
-        <button type="submit" class="btn btn-primary btn-full">sign in</button>
+        <button type="submit" class="btn btn-primary btn-full">Masuk</button>
       </form>
     </div>
   </div>

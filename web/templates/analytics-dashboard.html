@@ -1,149 +1,109 @@
 {{define "analytics-dashboard"}}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 {{template "head" .}}
 <body class="admin-page">
 <div id="app" class="admin-app">
-  <header class="admin-topbar">
-    <div class="admin-topbar-leading">
-      <button type="button" class="sidebar-toggle" onclick="toggleAdminSidebar()" aria-label="Collapse sidebar" aria-controls="admin-sidebar-nav" aria-expanded="true" title="Collapse sidebar">
-        <svg viewBox="0 0 20 20" aria-hidden="true"><rect x="2.5" y="3" width="15" height="14" rx="2"/><path d="M7.5 3.5v13"/><path class="sidebar-toggle-chevron" d="m12.5 7-3 3 3 3"/></svg>
-      </button>
-      <a class="admin-brand" href="/{{.AdminPath}}" aria-label="Plink admin home">
-        <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M12.1 19.9 9.8 22.2a5 5 0 0 1-7.1-7.1l6.1-6.1a5 5 0 0 1 7.1 0M19.9 12.1l2.3-2.3a5 5 0 0 1 7.1 7.1l-6.1 6.1a5 5 0 0 1-7.1 0M11.1 20.9l9.8-9.8"/></svg>
-        <span>plink</span><span class="admin-brand-context">admin</span>
-      </a>
-    </div>
-    <div class="admin-topbar-actions">
-      <span class="admin-topbar-label"><span class="admin-status-dot" aria-hidden="true"></span>self-hosted</span>
-      <form method="POST" action="/{{.AdminPath}}/logout">
-        <button type="submit" class="btn btn-ghost btn-sm">log out</button>
-      </form>
-    </div>
-  </header>
+  {{template "admin-header" .}}
 
   <div class="admin-layout">
-    <aside class="admin-sidebar">
-      <div class="admin-sidebar-label">Workspace</div>
-      <nav class="admin-sidebar-nav" id="admin-sidebar-nav" aria-label="Admin sections">
-        <a href="/{{.AdminPath}}/analytics/dashboard" class="admin-sidebar-link active" aria-current="page" aria-label="Analytics" title="Analytics">
-          <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 10h3v7H3zM8.5 5h3v12h-3zM14 2h3v15h-3z"/></svg>
-          <span>Analytics</span>
-        </a>
-        <a href="/{{.AdminPath}}" class="admin-sidebar-link" aria-label="Links" title="Links">
-          <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M7.8 12.2 6.4 13.6a3.5 3.5 0 0 1-5-5l3-3a3.5 3.5 0 0 1 5 0M12.2 7.8l1.4-1.4a3.5 3.5 0 0 1 5 5l-3 3a3.5 3.5 0 0 1-5 0M6.8 13.2l6.4-6.4"/></svg>
-          <span>Links</span>
-        </a>
-        <a href="/{{.AdminPath}}/offers" class="admin-sidebar-link" aria-label="Offers" title="Offers">
-          <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M2.5 9.5 9.6 2.4h6.1l2 2v6.1l-7.1 7.1-8.1-8.1Z"/><circle cx="14" cy="6" r="1"/></svg>
-          <span>Offers</span>
-        </a>
-      </nav>
-      <div class="admin-sidebar-foot">
-        <span class="admin-sidebar-accent" aria-hidden="true"></span>
-        <span>Short links.<br />Big results.</span>
-      </div>
-    </aside>
+{{template "admin-nav" (dict "AdminPath" .AdminPath "Active" "analytics")}}
 
-  <main class="admin-main analytics-page">
+  <main class="admin-main analytics-page{{if not .SelectedLink}} workspace-page analytics-overview{{end}}">
     {{if .SelectedLink}}
     {{template "analytics-link-detail" .SelectedLink}}
     {{else}}
     <div class="analytics-page-heading">
       <div>
-        <div class="admin-eyebrow">Performance</div>
-        <h1>Analytics overview</h1>
-        <p>See what deserves promotion — not just what was clicked.</p>
+        <div class="admin-eyebrow">Performa</div>
+        <h1>Ringkasan statistik</h1>
+        <p>Lihat performa tautan, sumber trafik, dan pilihan yang paling diminati.</p>
       </div>
-      <span class="analytics-period-badge"><span class="admin-status-dot" aria-hidden="true"></span>{{.PeriodLabel}} · reporting timezone</span>
     </div>
 
     <div class="analytics-page-filters">
-      <nav class="analytics-periods" aria-label="analytics date range">
-        {{range .Periods}}
-        <a href="?period={{.Key}}{{if $.Category}}&amp;category={{$.Category | urlquery}}{{end}}{{if ne $.Group "link"}}&amp;group={{$.Group | urlquery}}{{end}}" class="analytics-period {{if eq $.Period .Key}}active{{end}}" aria-current="{{if eq $.Period .Key}}page{{end}}">{{.Key}}</a>
-        {{end}}
-      </nav>
+      <div class="analytics-period-field"><label for="analytics-period">Periode</label><select id="analytics-period" onchange="var target = new window.URL(window.location.href); target.searchParams.set('period', this.value); window.location.assign(target.pathname + target.search)">{{range .Periods}}<option value="{{.Key}}" {{if eq $.Period .Key}}selected{{end}}>{{uiText .Label}}</option>{{end}}</select></div>
       <div class="analytics-selects">
-        <label class="sr-only" for="analytics-group">breakdown</label>
+        <div class="analytics-filter-field"><label for="analytics-group">Rincian</label>
         <select id="analytics-group" data-base-url="?period={{.Period}}{{if .Category}}&amp;category={{.Category | urlquery}}{{end}}" onchange="window.location.assign(this.dataset.baseUrl + (this.value &amp;&amp; this.value !== 'link' ? '&amp;group=' + encodeURIComponent(this.value) : ''))">
-          {{range .Groups}}<option value="{{.Key}}" {{if eq .Key $.Group}}selected{{end}}>{{.Label}}</option>{{end}}
+          {{range .Groups}}<option value="{{.Key}}" {{if eq .Key $.Group}}selected{{end}}>{{uiText .Label}}</option>{{end}}
         </select>
-        <label class="sr-only" for="analytics-category">category</label>
+        </div><div class="analytics-filter-field"><label for="analytics-category">Kategori</label>
         <select id="analytics-category" data-base-url="?period={{.Period}}{{if ne .Group "link"}}&amp;group={{.Group | urlquery}}{{end}}" onchange="window.location.assign(this.dataset.baseUrl + (this.value ? '&amp;category=' + encodeURIComponent(this.value) : ''))">
-          <option value="">all categories</option>
+          <option value="">Semua kategori</option>
           {{range .Categories}}<option value="{{.}}" {{if eq . $.Category}}selected{{end}}>{{.}}</option>{{end}}
         </select>
+        </div>
       </div>
     </div>
 
     <section class="analytics-page-kpis" aria-label="analytics summary">
       <div class="stat-card">
-        <div class="stat-card-top"><div class="stat-label">Clicks · {{.PeriodLabel}}</div><span class="stat-card-icon" aria-hidden="true"><svg viewBox="0 0 20 20"><path d="m4 2 12 9-5.1.8-2.7 4.7L4 2Z"/></svg></span></div>
-        <div class="stat-value">{{.TotalClicks}}</div><div class="stat-card-foot">Tracked link visits</div>
+        <div class="stat-card-top"><div class="stat-label">Klik · {{uiText .PeriodLabel}}</div><span class="stat-card-icon" aria-hidden="true"><svg viewBox="0 0 20 20"><path d="m4 2 12 9-5.1.8-2.7 4.7L4 2Z"/></svg></span></div>
+        <div class="stat-value">{{.TotalClicks}}</div><div class="stat-card-foot">Klik pengalihan yang tercatat</div>
       </div>
       <div class="stat-card">
-        <div class="stat-card-top"><div class="stat-label">Active links</div><span class="stat-card-icon" aria-hidden="true"><svg viewBox="0 0 20 20"><path d="M2 10 10 2h6l2 2v6l-8 8L2 10Z"/><circle cx="14" cy="6" r="1"/></svg></span></div>
-        <div class="stat-value">{{.ActiveLinks}}</div><div class="stat-card-foot">Live links in this scope</div>
+        <div class="stat-card-top"><div class="stat-label">Tautan aktif</div><span class="stat-card-icon" aria-hidden="true"><svg viewBox="0 0 20 20"><path d="M2 10 10 2h6l2 2v6l-8 8L2 10Z"/><circle cx="14" cy="6" r="1"/></svg></span></div>
+        <div class="stat-value">{{.ActiveLinks}}</div><div class="stat-card-foot">Tautan aktif dalam cakupan ini</div>
       </div>
       <div class="stat-card">
-        <div class="stat-card-top"><div class="stat-label">Direct / unknown</div><span class="stat-card-icon" aria-hidden="true"><svg viewBox="0 0 20 20"><circle cx="10" cy="6" r="3"/><path d="M3 17a7 7 0 0 1 14 0"/></svg></span></div>
-        <div class="stat-value">{{.DirectTraffic}}</div><div class="stat-card-foot">Visits without a referrer</div>
+        <div class="stat-card-top"><div class="stat-label">Langsung / tidak diketahui</div><span class="stat-card-icon" aria-hidden="true"><svg viewBox="0 0 20 20"><circle cx="10" cy="6" r="3"/><path d="M3 17a7 7 0 0 1 14 0"/></svg></span></div>
+        <div class="stat-value">{{.DirectTraffic}}</div><div class="stat-card-foot">Kunjungan tanpa informasi sumber</div>
       </div>
       <div class="stat-card">
-        <div class="stat-card-top"><div class="stat-label">Links in scope</div><span class="stat-card-icon" aria-hidden="true"><svg viewBox="0 0 20 20"><path d="M7.8 12.2 6.4 13.6a3.5 3.5 0 0 1-5-5l3-3a3.5 3.5 0 0 1 5 0M12.2 7.8l1.4-1.4a3.5 3.5 0 0 1 5 5l-3 3a3.5 3.5 0 0 1-5 0M6.8 13.2l6.4-6.4"/></svg></span></div>
-        <div class="stat-value">{{.TotalLinks}}</div><div class="stat-card-foot">Included in this view</div>
+        <div class="stat-card-top"><div class="stat-label">Tautan dalam cakupan</div><span class="stat-card-icon" aria-hidden="true"><svg viewBox="0 0 20 20"><path d="M7.8 12.2 6.4 13.6a3.5 3.5 0 0 1-5-5l3-3a3.5 3.5 0 0 1 5 0M12.2 7.8l1.4-1.4a3.5 3.5 0 0 1 5 5l-3 3a3.5 3.5 0 0 1-5 0M6.8 13.2l6.4-6.4"/></svg></span></div>
+        <div class="stat-value">{{.TotalLinks}}</div><div class="stat-card-foot">Termasuk dalam tampilan ini</div>
       </div>
     </section>
 
     <div class="analytics-page-grid">
       <section class="analytics-page-panel" aria-labelledby="click-share-heading">
         <div class="analytics-page-panel-heading">
-          <h2 id="click-share-heading">click share {{.GroupLabel}}</h2>
-          <span class="analytics-page-meta">top 5 + other</span>
+          <h2 id="click-share-heading">Porsi klik {{uiText .GroupLabel}}</h2>
+          <span class="analytics-page-meta">5 teratas + lainnya</span>
         </div>
         {{if .DonutSlices}}
         <div class="analytics-donut-layout">
           <div class="analytics-donut-wrap">
             {{.DonutSVG}}
-            <div class="analytics-donut-center"><strong>{{.TotalClicks}}</strong><span>total clicks</span></div>
+            <div class="analytics-donut-center"><strong>{{.TotalClicks}}</strong><span>Total klik</span></div>
             <div class="analytics-donut-tooltip" role="status" aria-live="polite" aria-hidden="true"></div>
           </div>
           <div class="analytics-legend">
             {{range .DonutSlices}}
-            <div class="analytics-legend-row"><span class="donut-dot {{.Class}}" aria-hidden="true"></span><span>{{.Label}}</span><span class="analytics-page-meta">{{.Clicks}} · {{.Percent}}%</span></div>
+            <div class="analytics-legend-row"><span class="donut-dot {{.Class}}" aria-hidden="true"></span><span>{{uiText .Label}}</span><span class="analytics-page-meta">{{.Clicks}} · {{.Percent}}%</span></div>
             {{end}}
           </div>
         </div>
         {{else}}
-        <div class="analytics-page-empty">no clicks in this period</div>
+        <div class="analytics-page-empty">Belum ada klik pada periode ini</div>
         {{end}}
       </section>
 
       <section class="analytics-page-panel" aria-labelledby="top-offers-heading">
         <div class="analytics-page-panel-heading">
-          <h2 id="top-offers-heading">{{if eq .Group "provider"}}top providers{{else if eq .Group "channel"}}top channels{{else if eq .Group "campaign"}}top campaigns{{else}}top links{{end}}</h2>
-          <span class="analytics-page-meta">up to 8 · share of all clicks · {{.PeriodLabel}}{{if and (eq .Group "provider") .HasTrend}} · trend vs previous period{{end}}</span>
+          <h2 id="top-offers-heading">{{if eq .Group "provider"}}Penyedia teratas{{else if eq .Group "channel"}}Channel teratas{{else if eq .Group "campaign"}}Kampanye teratas{{else}}Tautan teratas{{end}}</h2>
+          <span class="analytics-page-meta">8 teratas · porsi seluruh klik · {{uiText .PeriodLabel}}{{if and (eq .Group "provider") .HasTrend}} · tren dibanding periode sebelumnya{{end}}</span>
         </div>
         {{if .TopLinks}}
         <div class="analytics-offer-list">
           {{if eq .Group "provider"}}
-          <div class="analytics-offer-row analytics-provider-row{{if not $.HasTrend}} analytics-provider-row-no-trend{{end}} analytics-offer-header"><span>provider</span><span>share</span><span>clicks</span><span>avg/link</span>{{if $.HasTrend}}<span>trend</span>{{end}}</div>
+          <div class="analytics-offer-row analytics-provider-row{{if not $.HasTrend}} analytics-provider-row-no-trend{{end}} analytics-offer-header"><span>Penyedia</span><span>Porsi</span><span>Klik</span><span>Rata-rata/tautan</span>{{if $.HasTrend}}<span>Tren</span>{{end}}</div>
           {{else}}
-          <div class="analytics-offer-row analytics-offer-header"><span>{{if eq $.Group "link"}}link{{else if eq $.Group "channel"}}channel{{else}}campaign{{end}}</span><span>share</span><span>clicks</span></div>
+          <div class="analytics-offer-row analytics-offer-header"><span>{{if eq $.Group "link"}}Tautan{{else if eq $.Group "channel"}}Channel{{else}}Kampanye{{end}}</span><span>Porsi</span><span>Klik</span></div>
           {{end}}
           {{range .TopLinks}}
           {{if eq $.Group "provider"}}
           <div class="analytics-offer-row analytics-provider-row{{if not $.HasTrend}} analytics-provider-row-no-trend{{end}}">
-            <span>{{if gt .ID 0}}<a class="analytics-offer-link" href="?period={{$.Period}}{{if $.Category}}&amp;category={{$.Category | urlquery}}{{end}}{{if ne $.Group "link"}}&amp;group={{$.Group | urlquery}}{{end}}&amp;link={{.ID}}"><strong>{{.Slug}}</strong></a>{{else}}<strong>{{.Slug}}</strong>{{end}} <em>{{.LinkCount}} slugs</em></span>
+            <span>{{if gt .ID 0}}<a class="analytics-offer-link" href="?period={{$.Period}}{{if $.Category}}&amp;category={{$.Category | urlquery}}{{end}}{{if ne $.Group "link"}}&amp;group={{$.Group | urlquery}}{{end}}&amp;link={{.ID}}"><strong>{{.Slug}}</strong></a>{{else}}<strong>{{.Slug}}</strong>{{end}} <em>{{.LinkCount}} tautan</em></span>
             <span class="analytics-ranking-share"><span class="analytics-bar-track"><span class="analytics-bar" style="width:{{percent .Clicks $.TotalClicks}}%"></span></span><small>{{percentOfLabel .Clicks $.TotalClicks}}</small></span>
             <span class="analytics-offer-clicks">{{.Clicks}}</span>
             <span class="analytics-offer-clicks">{{.ClicksPerLink}}</span>
-            {{if $.HasTrend}}<span class="analytics-trend analytics-trend-{{.TrendClass}}">{{.TrendLabel}}</span>{{end}}
+            {{if $.HasTrend}}<span class="analytics-trend analytics-trend-{{.TrendClass}}">{{uiText .TrendLabel}}</span>{{end}}
           </div>
           {{else}}
           <div class="analytics-offer-row">
-            <span>{{if gt .ID 0}}<a class="analytics-offer-link" href="?period={{$.Period}}{{if $.Category}}&amp;category={{$.Category | urlquery}}{{end}}{{if ne $.Group "link"}}&amp;group={{$.Group | urlquery}}{{end}}&amp;link={{.ID}}"><strong>{{.Slug}}</strong></a>{{else}}<strong>{{.Slug}}</strong>{{end}}{{if eq $.Group "link"}}{{if .Category}} <em>{{.Category}}</em>{{end}}{{if .Provider}} <em>{{.Provider}}</em>{{end}}{{if .Channel}} <em>{{.Channel}}</em>{{end}}{{else}} <em>{{.LinkCount}} links</em>{{end}}</span>
+            <span>{{if gt .ID 0}}<a class="analytics-offer-link" href="?period={{$.Period}}{{if $.Category}}&amp;category={{$.Category | urlquery}}{{end}}{{if ne $.Group "link"}}&amp;group={{$.Group | urlquery}}{{end}}&amp;link={{.ID}}"><strong>{{.Slug}}</strong></a>{{else}}<strong>{{.Slug}}</strong>{{end}}{{if eq $.Group "link"}}{{if .Category}} <em>{{.Category}}</em>{{end}}{{if .Provider}} <em>{{.Provider}}</em>{{end}}{{if .Channel}} <em>{{.Channel}}</em>{{end}}{{else}} <em>{{.LinkCount}} tautan</em>{{end}}</span>
             <span class="analytics-ranking-share"><span class="analytics-bar-track"><span class="analytics-bar" style="width:{{percent .Clicks $.TotalClicks}}%"></span></span><small>{{percentOfLabel .Clicks $.TotalClicks}}</small></span>
             <span class="analytics-offer-clicks">{{.Clicks}}</span>
           </div>
@@ -151,15 +111,15 @@
           {{end}}
         </div>
         {{else}}
-        <div class="analytics-page-empty">no clicks in {{.PeriodLabel}} for these filters</div>
+        <div class="analytics-page-empty">Belum ada klik pada {{uiText .PeriodLabel}} untuk filter ini</div>
         {{end}}
       </section>
     </div>
 
     <section class="analytics-page-panel analytics-sources-panel" aria-labelledby="sources-heading">
       <div class="analytics-page-panel-heading">
-        <h2 id="sources-heading">traffic sources</h2>
-        <span class="analytics-page-meta">{{.TrafficSourcesLabel}}</span>
+        <h2 id="sources-heading">Sumber trafik</h2>
+        <span class="analytics-page-meta">{{uiText .TrafficSourcesLabel}}</span>
       </div>
       {{if .TrafficSources}}
       {{$max := (index .TrafficSources 0).Clicks}}
@@ -174,11 +134,11 @@
         {{end}}
       </div>
       {{else}}
-      <div class="analytics-page-empty">no traffic in this period</div>
+      <div class="analytics-page-empty">Belum ada trafik pada periode ini</div>
       {{end}}
     </section>
 
-    <p class="analytics-page-note">Click counts are link redirects. Conversion and revenue data are not connected yet.</p>
+    <p class="analytics-page-note">Klik dihitung dari pengalihan tautan. Data konversi dan pendapatan belum terhubung.</p>
     {{end}}
   </main>
 </div>

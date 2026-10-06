@@ -6,7 +6,7 @@
 
 <div class="links-controls">
   <div class="filter-group">
-    <label class="sr-only" for="category-filter">category</label>
+    <label class="sr-only" for="category-filter">Kategori</label>
     <select
       class="cat-filter"
       id="category-filter"
@@ -17,11 +17,11 @@
       hx-swap="innerHTML"
       hx-include="#search, select[name='category'], select[name='status'], #date-filter"
     >
-      <option value="">all categories</option>
+      <option value="">Semua kategori</option>
       {{range .Categories}}<option value="{{.}}" {{if eq . $.Category}}selected{{end}}>{{.}}</option>{{end}}
     </select>
 
-    <label class="sr-only" for="status-filter">status</label>
+    <label class="sr-only" for="status-filter">Status</label>
     <select
       class="cat-filter"
       id="status-filter"
@@ -32,19 +32,19 @@
       hx-swap="innerHTML"
       hx-include="#search, select[name='category'], select[name='status'], #date-filter"
     >
-      <option value="active" {{if eq .Status "active"}}selected{{end}}>active only</option>
-      <option value="" {{if eq .Status ""}}selected{{end}}>all statuses</option>
-      <option value="paused" {{if eq .Status "paused"}}selected{{end}}>paused</option>
+      <option value="active" {{if eq .Status "active"}}selected{{end}}>Hanya aktif</option>
+      <option value="" {{if eq .Status ""}}selected{{end}}>Semua status</option>
+      <option value="paused" {{if eq .Status "paused"}}selected{{end}}>Nonaktif</option>
     </select>
 
-    <label class="sr-only" for="date-filter">report date</label>
+    <label class="sr-only" for="date-filter">Tanggal laporan</label>
     <input
       class="date-filter"
       id="date-filter"
       type="date"
       name="date"
       value="{{.Date}}"
-      aria-label="filter by date"
+      aria-label="Filter tanggal"
       hx-get="/{{.AdminPath}}/links"
       hx-trigger="change"
       hx-target="#links-section"
@@ -53,10 +53,10 @@
     />
   </div>
 
-  <span class="status-summary"><strong>{{.ActiveCount}}</strong> active <span aria-hidden="true">·</span> <strong>{{.PausedCount}}</strong> paused</span>
+  <span class="status-summary"><strong>{{.ActiveCount}}</strong> Aktif <span aria-hidden="true">·</span> <strong>{{.PausedCount}}</strong> Nonaktif</span>
 
   {{if or .Query .Category .Date (ne .Status "active")}}
-  <a class="clear-filters" href="/{{.AdminPath}}">clear filters</a>
+  <a class="clear-filters" href="/{{.AdminPath}}">Hapus filter</a>
   {{end}}
 </div>
 
@@ -69,7 +69,7 @@
         <th class="destination">Destination</th>
         <th>{{if .Date}}Clicks · {{.DateLabel}}{{else}}Clicks{{end}}</th>
         {{if ne .Status "active"}}<th>Status</th>{{end}}
-        <th><span class="sr-only">Actions</span></th>
+        <th><span class="sr-only">Tindakan</span></th>
       </tr>
     </thead>
     <tbody>
@@ -89,7 +89,7 @@
                   hx-swap="innerHTML"
                   hx-include="#search, select[name='category'], select[name='status'], #date-filter"
                 >/{{.Slug}}</button>
-                {{if .Featured}}<span class="cat-badge featured-badge">featured</span>{{end}}
+                {{if .Featured}}<span class="cat-badge featured-badge">Unggulan</span>{{end}}
                 {{if .Priority}}<span class="priority-badge">p{{.Priority}}</span>{{end}}
                 {{if .Category}}<span class="cat-badge">{{.Category}}</span>{{end}}
               </div>
@@ -108,13 +108,13 @@
           <a class="link-destination" href="{{.URL}}" title="{{.URL}}" target="_blank" rel="noopener">{{.URL}}</a>
         </td>
         <td class="clicks-cell">{{.Clicks}}</td>
-        {{if ne $.Status "active"}}<td class="status-cell"><span class="status {{if .Active}}on{{else}}off{{end}}">{{if .Active}}active{{else}}paused{{end}}</span></td>{{end}}
+        {{if ne $.Status "active"}}<td class="status-cell"><span class="status {{if .Active}}on{{else}}off{{end}}">{{if .Active}}Aktif{{else}}Nonaktif{{end}}</span></td>{{end}}
         <td class="actions-cell">
           <div class="row-actions">
-            {{if .Active}}<button class="btn btn-ghost btn-sm btn-copy" data-label="copy" data-slug="{{.Slug}}" onclick="copyLink(this)">copy</button>{{end}}
-            <a class="btn btn-ghost btn-sm" href="/{{$.AdminPath}}/analytics/dashboard?link={{.ID}}">analytics</a>
+            {{if .Active}}<button class="btn btn-ghost btn-sm btn-copy" data-label="Salin" data-slug="{{.Slug}}" onclick="copyLink(this)">Salin</button>{{end}}
+            <a class="btn btn-ghost btn-sm" href="/{{$.AdminPath}}/analytics/dashboard?link={{.ID}}">Statistik</a>
             <details class="row-menu">
-              <summary class="btn btn-ghost btn-sm" aria-label="more actions for /{{.Slug}}">more</summary>
+              <summary class="btn btn-ghost btn-sm" aria-label="more actions for /{{.Slug}}">Lainnya</summary>
               <div class="row-menu-panel">
                 <button
                   class="row-menu-item"
@@ -122,7 +122,7 @@
                   hx-target="#links-section"
                   hx-swap="innerHTML"
                   hx-include="#search, select[name='category'], select[name='status'], #date-filter"
-                >{{if .Active}}pause{{else}}activate{{end}}</button>
+                >{{if .Active}}Nonaktifkan{{else}}Aktifkan{{end}}</button>
                 <button
                   class="row-menu-item row-menu-danger"
                   hx-delete="/{{$.AdminPath}}/links/{{.ID}}"
@@ -130,7 +130,7 @@
                   hx-swap="innerHTML"
                   hx-confirm="delete /{{.Slug}}? this cannot be undone"
                   hx-include="#search, select[name='category'], select[name='status'], #date-filter"
-                >delete</button>
+                >Hapus</button>
               </div>
             </details>
           </div>
@@ -141,6 +141,6 @@
   </table>
 </div>
 {{else}}
-<div class="empty-state">no links match the current filter</div>
+<div class="empty-state">Tidak ada tautan yang cocok dengan filter ini</div>
 {{end}}
 {{end}}

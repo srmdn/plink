@@ -7,8 +7,8 @@
     <a class="analytics-url" href="{{.ShortURL}}" target="_blank" rel="noopener">{{.ShortURL}}</a>
   </div>
   <div class="analytics-actions">
-    <button class="btn btn-ghost btn-sm" data-label="copy" data-url="{{.ShortURL}}" onclick="copyURL(this)">copy</button>
-    <button class="btn btn-ghost btn-sm" data-label="share" data-url="{{.ShortURL}}" onclick="shareURL(this)">share</button>
+    <button class="btn btn-ghost btn-sm" data-label="Salin" data-url="{{.ShortURL}}" onclick="copyURL(this)">Salin</button>
+    <button class="btn btn-ghost btn-sm" data-label="share" data-url="{{.ShortURL}}" onclick="shareURL(this)">Porsi</button>
   </div>
 </div>
 
@@ -22,27 +22,27 @@
     <div class="stat-label">last 30d</div>
   </div>
   <div class="stat-card">
-    <div class="stat-value stat-value-text" title="{{.LastClickTitle}}">{{.LastClick}}</div>
-    <div class="stat-label">last click</div>
+    <div class="stat-value stat-value-text" title="{{uiText .LastClickTitle}}">{{uiText .LastClick}}</div>
+    <div class="stat-label">Klik terakhir</div>
   </div>
   <div class="stat-card">
     <div class="stat-value">{{.DirectTraffic}}</div>
-    <div class="stat-label">{{.DirectTrafficLabel}}</div>
+    <div class="stat-label">{{uiText .DirectTrafficLabel}}</div>
   </div>
 </div>
 
 <div class="chart-wrap">
   <div class="section-heading">
     <div class="section-label">clicks — last 30 days</div>
-    <span class="section-meta">{{.Last30d}} clicks · select a day to filter</span>
+    <span class="section-meta">{{.Last30d}} klik · select a day to filter</span>
   </div>
-  {{if .HasRecentClicks}}{{.ChartSVG}}{{else}}<div class="chart-empty">no clicks in the last 30 days</div>{{end}}
+  {{if .HasRecentClicks}}{{.ChartSVG}}{{else}}<div class="chart-empty">Belum ada klik dalam 30 hari terakhir</div>{{end}}
 </div>
 
 <div style="margin-bottom:20px">
   <div class="section-heading">
-    <div class="section-label">traffic sources</div>
-    <span class="section-meta">{{.TrafficSourcesLabel}}</span>
+    <div class="section-label">Sumber trafik</div>
+    <span class="section-meta">{{uiText .TrafficSourcesLabel}}</span>
   </div>
   {{if .Referrers}}
   {{$max := (index .Referrers 0).Clicks}}
@@ -57,7 +57,7 @@
       <span class="ref-expand" aria-hidden="true">+</span>
     </summary>
     <div class="referrer-details">
-      <div class="ref-details-label">raw referrers</div>
+      <div class="ref-details-label">Detail URL sumber</div>
       {{range .Details}}
       <div class="ref-detail-row"><span title="{{.Source}}">{{.Source}}</span><span>{{.Clicks}}</span></div>
       {{end}}
@@ -75,7 +75,7 @@
   {{end}}
   {{end}}
   {{else}}
-  <p style="color:var(--muted);padding:12px 0;font-size:12px">{{.TrafficSourcesEmpty}}</p>
+  <p style="color:var(--muted);padding:12px 0;font-size:12px">{{uiText .TrafficSourcesEmpty}}</p>
   {{end}}
 </div>
 

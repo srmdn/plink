@@ -1,0 +1,5 @@
+{{define "brand-logo"}}
+{{$brand := branding}}
+{{if $brand.LogoURL}}<img class="brand-image" src="{{$brand.LogoURL}}" alt="" width="38" height="38" />{{else}}<svg class="brand-image brand-default" viewBox="0 0 32 32" width="38" height="38" aria-hidden="true" focusable="false"><rect width="32" height="32" rx="9" fill="currentColor"/><path d="M10 22 22 10M11 10h11v11" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>{{end}}
+{{end}}
+{{define "favicon-link"}}<link rel="icon" href="/favicon.svg?v={{(branding).Version}}" />{{end}}

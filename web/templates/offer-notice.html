@@ -1,0 +1,42 @@
+{{define "offer-notice"}}
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  {{template "public-seo" .SEO}}
+  {{template "favicon-link" .}}
+  {{template "storefront-styles" .}}
+  <style>
+.notice-main { max-width:480px; margin:0 auto; padding:24px 20px 48px; background:#fff; min-height:calc(100dvh - 70px); }
+.notice-panel { overflow-wrap:anywhere; }
+.notice-status { color:var(--accent); font-size:12px; font-weight:700; margin-bottom:12px; }
+.notice-panel h1 { font-size:28px; line-height:1.2; margin-bottom:16px; }
+.notice-message { color:var(--muted); white-space:pre-line; line-height:1.7; }
+.notice-details { background:var(--paper); padding:16px; border-radius:12px; margin:24px 0; font-size:13px; }
+.notice-details p { margin:8px 0; }
+.notice-actions { display:grid; gap:10px; margin-top:24px; }
+.notice-actions a { border-radius:12px; padding:12px 16px; text-align:center; background:var(--paper); color:var(--ink); text-decoration:none; }
+.notice-actions .notice-primary { background:var(--accent); color:white; font-weight:700; }
+.notice-footnote { color:var(--muted); font-size:12px; margin-top:16px; line-height:1.6; }
+  </style>
+</head>
+<body>
+  {{template "public-header" .}}
+  <main class="notice-main">
+    <article class="notice-panel">
+      <p class="notice-status">{{.Heading}}</p>
+      <h1>{{.Offer.Title}}</h1>
+      <p class="notice-message">{{.Message}}</p>
+      <div class="notice-details">
+        {{if .Date}}<p>{{.DateLabel}}: <time datetime="{{.Date}}">{{.Date}}</time></p>{{end}}
+        {{if .SourceURL}}<p><a href="{{.SourceURL}}" rel="noopener noreferrer">Baca keterangan resmi ↗</a></p>{{end}}
+        {{if .Offer.VerifiedOn}}<p>Terakhir diverifikasi: <time datetime="{{.Offer.VerifiedOn}}">{{.Offer.VerifiedOn}}</time></p>{{end}}
+      </div>
+      <div class="notice-actions">{{if .Destination}}<a class="notice-primary" href="{{.Destination}}" rel="noopener noreferrer">Buka website penyedia ↗</a>{{end}}<a href="/offers">Lihat promo aktif</a></div>
+      {{if .Destination}}<p class="notice-footnote">Membuka website penyedia tidak menjamin promo atau kredit referral lama masih tersedia.</p>{{end}}
+    </article>
+  </main>
+</body>
+</html>
+{{end}}

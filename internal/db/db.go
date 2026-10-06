@@ -19,6 +19,7 @@ func Init(path string) (*DB, error) {
 	conn.SetMaxOpenConns(1)
 
 	if err := migrate(conn); err != nil {
+		conn.Close()
 		return nil, fmt.Errorf("migrate: %w", err)
 	}
 
@@ -86,6 +87,56 @@ var migrations = []string{
 	CREATE INDEX IF NOT EXISTS idx_offers_active_priority ON offers(active, featured, priority);
 	CREATE UNIQUE INDEX IF NOT EXISTS idx_links_offer_homepage
 		ON links(offer_id) WHERE offer_id IS NOT NULL AND offer_homepage = 1`,
+
+	// v7: persist public storefront preferences separately from offer content.
+	`CREATE TABLE IF NOT EXISTS site_settings (
+		id                   INTEGER PRIMARY KEY CHECK (id = 1),
+		site_name            TEXT NOT NULL DEFAULT '',
+		site_desc            TEXT NOT NULL DEFAULT '',
+		affiliate_disclosure TEXT NOT NULL DEFAULT '',
+		hero_enabled         INTEGER NOT NULL DEFAULT 1,
+		featured_limit       INTEGER NOT NULL DEFAULT 3,
+		updated_at           INTEGER NOT NULL
+	)`,
+
+	// v8: program lifecycle and notice views, separate from redirect clicks.
+	`ALTER TABLE offers ADD COLUMN program_status TEXT NOT NULL DEFAULT 'active' CHECK (program_status IN ('active', 'paused', 'ended'));
+	ALTER TABLE offers ADD COLUMN ended_behavior TEXT NOT NULL DEFAULT 'notice' CHECK (ended_behavior IN ('notice', 'redirect'));
+	ALTER TABLE offers ADD COLUMN notice_message TEXT NOT NULL DEFAULT '';
+	ALTER TABLE offers ADD COLUMN notice_source_url TEXT NOT NULL DEFAULT '';
+	ALTER TABLE offers ADD COLUMN status_changed_on TEXT NOT NULL DEFAULT '';
+	ALTER TABLE offers ADD COLUMN verified_on TEXT NOT NULL DEFAULT '';
+	UPDATE offers SET ended_behavior = 'redirect' WHERE fallback_url != '';
+	CREATE TABLE notice_views (
+		id INTEGER PRIMARY KEY AUTOINCREMENT,
+		link_id INTEGER NOT NULL REFERENCES links(id) ON DELETE CASCADE,
+		viewed_at INTEGER NOT NULL,
+		program_status TEXT NOT NULL,
+		referrer TEXT NOT NULL DEFAULT '',
+		user_agent TEXT NOT NULL DEFAULT ''
+	);
+	CREATE INDEX idx_notice_views_link_id ON notice_views(link_id);`,
+	// v9: catalog types and independently configurable public/admin palettes.
+	`ALTER TABLE offers ADD COLUMN item_type TEXT NOT NULL DEFAULT 'referral' CHECK (item_type IN ('product','referral','service','resource'));
+	ALTER TABLE site_settings ADD COLUMN public_accent TEXT NOT NULL DEFAULT '#c43424';
+	ALTER TABLE site_settings ADD COLUMN public_background TEXT NOT NULL DEFAULT '#f4f1e9';
+	ALTER TABLE site_settings ADD COLUMN admin_accent TEXT NOT NULL DEFAULT '#c43424';
+	ALTER TABLE site_settings ADD COLUMN admin_background TEXT NOT NULL DEFAULT '#f4f1e9';`,
+	// v10: configurable brand image and favicon, without adding asset storage.
+	`ALTER TABLE site_settings ADD COLUMN logo_url TEXT NOT NULL DEFAULT '';
+	ALTER TABLE site_settings ADD COLUMN favicon_url TEXT NOT NULL DEFAULT '';`,
+	// v11: public SEO and social sharing defaults.
+	`ALTER TABLE site_settings ADD COLUMN seo_title TEXT NOT NULL DEFAULT '';
+	ALTER TABLE site_settings ADD COLUMN seo_description TEXT NOT NULL DEFAULT '';
+	ALTER TABLE site_settings ADD COLUMN share_image_url TEXT NOT NULL DEFAULT '';`,
+	// v12: editable public address and storefront copy.
+	`ALTER TABLE site_settings ADD COLUMN public_origin TEXT NOT NULL DEFAULT '';
+ALTER TABLE site_settings ADD COLUMN hero_eyebrow TEXT NOT NULL DEFAULT 'Pilihan Said';
+ALTER TABLE site_settings ADD COLUMN hero_title TEXT NOT NULL DEFAULT 'Temuan bagus.
+Buat kebutuhan lo.';
+ALTER TABLE site_settings ADD COLUMN hero_description TEXT NOT NULL DEFAULT 'Produk, referral, resource, dan jasa dalam satu tempat.';
+ALTER TABLE site_settings ADD COLUMN service_title TEXT NOT NULL DEFAULT 'Jasa Said';
+ALTER TABLE site_settings ADD COLUMN service_description TEXT NOT NULL DEFAULT 'Bantuan website, WordPress, dan VPS. Buka detail jasa untuk membahas kebutuhan lo.';`,
 }
 
 func migrate(conn *sql.DB) error {
@@ -96,15 +147,26 @@ func migrate(conn *sql.DB) error {
 	for i, sql := range migrations {
 		version := i + 1
 		var count int
-		conn.QueryRow(`SELECT COUNT(*) FROM _migrations WHERE version = ?`, version).Scan(&count)
+		if err := conn.QueryRow(`SELECT COUNT(*) FROM _migrations WHERE version = ?`, version).Scan(&count); err != nil {
+			return err
+		}
 		if count > 0 {
 			continue
 		}
-		if _, err := conn.Exec(sql); err != nil {
+		tx, err := conn.Begin()
+		if err != nil {
+			return err
+		}
+		if _, err := tx.Exec(sql); err != nil {
+			tx.Rollback()
 			return fmt.Errorf("migration v%d: %w", version, err)
 		}
-		if _, err := conn.Exec(`INSERT INTO _migrations (version) VALUES (?)`, version); err != nil {
+		if _, err := tx.Exec(`INSERT INTO _migrations (version) VALUES (?)`, version); err != nil {
+			tx.Rollback()
 			return fmt.Errorf("migration v%d record: %w", version, err)
+		}
+		if err := tx.Commit(); err != nil {
+			return fmt.Errorf("migration v%d commit: %w", version, err)
 		}
 	}
 	return nil

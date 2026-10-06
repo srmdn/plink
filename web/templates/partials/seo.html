@@ -1,0 +1,18 @@
+{{define "public-seo"}}
+<title>{{.Title}}</title>
+<meta name="description" content="{{.Description}}" />
+<link rel="canonical" href="{{.URL}}" />
+{{if .NoIndex}}<meta name="robots" content="noindex, follow" />{{end}}
+<meta property="og:type" content="website" />
+<meta property="og:locale" content="id_ID" />
+<meta property="og:site_name" content="{{.SiteName}}" />
+<meta property="og:title" content="{{.Title}}" />
+<meta property="og:description" content="{{.Description}}" />
+<meta property="og:url" content="{{.URL}}" />
+<meta property="og:image" content="{{.Image}}" />
+<meta property="og:image:alt" content="{{.Title}}" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="{{.Title}}" />
+<meta name="twitter:description" content="{{.Description}}" />
+<meta name="twitter:image" content="{{.Image}}" />
+{{end}}
