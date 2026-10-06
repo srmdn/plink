@@ -530,8 +530,8 @@ body[data-favorites-page] [data-favorite-card].is-favorite {
 .offer-card:hover { transform:translateY(-1px); box-shadow:none; }
 .offer-image { background:var(--soft); border-radius:12px; aspect-ratio:1.35; }
 .offer-card--no-image .offer-image { aspect-ratio:auto; height:82px; }
-.offer-image-placeholder { display:grid; place-items:center; color:var(--muted); }
-.offer-image-placeholder .nav-icon { width:26px; height:26px; }
+.offer-image-placeholder { display:grid; place-items:center; color:var(--accent); }
+.offer-image-placeholder .brand-mark { width:46px; height:46px; }
 .offer-card-copy { padding:10px 1px 4px; }
 .offer-card h3 { font-size:13px; margin:4px 0 6px; }
 .offer-provider { color:var(--muted); letter-spacing:.05em; }

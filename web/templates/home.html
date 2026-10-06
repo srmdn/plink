@@ -22,7 +22,7 @@
 <article class="offer-card offer-card--{{.ItemType}}{{if not .ImageURL}} offer-card--no-image{{end}}" data-favorite-card="{{.HomeSlug}}">
 <button class="favorite-button" type="button" data-favorite="{{.HomeSlug}}" aria-label="Simpan {{.Title}} ke favorit" aria-pressed="false">{{template "nav-icon" "heart"}}</button>
 <a href="/{{.HomeSlug}}" target="_blank" rel="noopener" aria-label="{{.Title}} — {{.ButtonLabel}}">
-<div class="offer-image">{{if .ImageURL}}<img src="{{.ImageURL}}" alt="" loading="lazy" />{{else}}<span class="offer-image-placeholder" aria-hidden="true">{{if eq .ItemType "service"}}{{template "nav-icon" "service"}}{{else if eq .ItemType "resource"}}{{template "nav-icon" "link"}}{{else}}{{template "nav-icon" "grid"}}{{end}}</span>{{end}}<span class="offer-badge">{{itemTypeLabel .ItemType}}</span></div>
+<div class="offer-image">{{if .ImageURL}}<img src="{{.ImageURL}}" alt="" loading="lazy" />{{else}}<span class="offer-image-placeholder" aria-hidden="true">{{template "brand-mark"}}</span>{{end}}<span class="offer-badge">{{itemTypeLabel .ItemType}}</span></div>
 <div class="offer-card-copy"><span class="offer-provider">{{if .Provider}}{{.Provider}}{{else}}{{.Category}}{{end}}</span><h3>{{.Title}}</h3>{{if .Description}}<p>{{.Description}}</p>{{end}}<span class="offer-card-cta">{{.ButtonLabel}} <span aria-hidden="true">↗</span></span></div>
 </a></article>
 {{end}}
