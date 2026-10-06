@@ -29,26 +29,8 @@ func (s *Server) renderOfferNotice(w http.ResponseWriter, r *http.Request, offer
 		http.Error(w, "db error", http.StatusInternalServerError)
 		return false
 	}
-	data := offerNoticeData{
-		SiteName: settings.SiteName, SiteDesc: settings.SiteDesc, Offer: offer,
-		Heading:   "Program sudah berakhir",
-		Message:   "Promo atau manfaat referral dari program ini sudah tidak berlaku. Tautan lama tetap tersedia agar lo bisa membaca pembaruan ini.",
-		DateLabel: "Status berlaku sejak", Date: offer.StatusChangedOn,
-	}
-	switch status {
-	case "paused":
-		data.Heading = "Program sedang dijeda"
-		data.Message = "Promo atau manfaat referral dari program ini sedang dijeda atau diverifikasi. Cek kembali sebelum mendaftar atau membeli."
-	case "upcoming":
-		data.Heading = "Program belum dimulai"
-		data.Message = "Promo atau manfaat referral dari program ini belum berlaku. Cek kembali setelah tanggal mulai."
-		data.DateLabel, data.Date = "Mulai berlaku", offer.StartsOn
-	case "expired":
-		data.DateLabel, data.Date = "Terakhir berlaku", offer.EndsOn
-	}
-	if offer.NoticeMessage != "" {
-		data.Message = offer.NoticeMessage
-	}
+	data := noticeContent(offer, status)
+	data.SiteName, data.SiteDesc = settings.SiteName, settings.SiteDesc
 	// The owner chooses a current, non-referral destination; never reuse a stale
 	// referral URL automatically, or accept destinations from request parameters.
 	if validOfferDestination(offer.FallbackURL) {
@@ -57,7 +39,7 @@ func (s *Server) renderOfferNotice(w http.ResponseWriter, r *http.Request, offer
 	if validOfferDestination(offer.NoticeSourceURL) {
 		data.SourceURL = offer.NoticeSourceURL
 	}
-	data.SEO = s.publicSEO(settings, r, "")
+	data.SEO = s.itemSEO(settings, r, offer, status, r.PathValue("slug"))
 	data.SEO.Title = data.Heading + " · " + offer.Title
 	data.SEO.Description = data.Message
 	data.SEO.URL = s.publicURL(r) + r.URL.Path
@@ -98,4 +80,28 @@ func (s *Server) handleAttachExistingOfferLink(w http.ResponseWriter, r *http.Re
 		return
 	}
 	http.Redirect(w, r, "/"+s.cfg.AdminPath+"/offers/"+strconv.FormatInt(id, 10), http.StatusSeeOther)
+}
+
+func noticeContent(offer *db.Offer, status string) offerNoticeData {
+	data := offerNoticeData{
+		Offer:     offer,
+		Heading:   "Program sudah berakhir",
+		Message:   "Promo atau manfaat referral dari program ini sudah tidak berlaku. Tautan lama tetap tersedia agar lo bisa membaca pembaruan ini.",
+		DateLabel: "Status berlaku sejak", Date: offer.StatusChangedOn,
+	}
+	switch status {
+	case "paused":
+		data.Heading = "Program sedang dijeda"
+		data.Message = "Promo atau manfaat referral dari program ini sedang dijeda atau diverifikasi. Cek kembali sebelum mendaftar atau membeli."
+	case "upcoming":
+		data.Heading = "Program belum dimulai"
+		data.Message = "Promo atau manfaat referral dari program ini belum berlaku. Cek kembali setelah tanggal mulai."
+		data.DateLabel, data.Date = "Mulai berlaku", offer.StartsOn
+	case "expired":
+		data.DateLabel, data.Date = "Terakhir berlaku", offer.EndsOn
+	}
+	if offer.NoticeMessage != "" {
+		data.Message = offer.NoticeMessage
+	}
+	return data
 }

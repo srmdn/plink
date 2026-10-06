@@ -186,8 +186,10 @@ local site path. Logo and favicon remain separate settings.
 
 `/robots.txt` and `/sitemap.xml` list the public sections. Admin/API responses,
 favorites, search/filter results, and program notices are marked `noindex`.
-Active short links retain their direct 302 redirect and destination preview behavior;
-this does not add public item detail pages. Verify real social previews after deployment
+Human visits to active short links retain their direct 302 redirect. When automatic
+item previews are enabled, recognized social-preview crawlers receive server-rendered
+metadata from the attached catalog item on the same slug; no extra share URL or
+public item detail page is required. Verify real social previews after deployment
 at the public URL, since crawlers cannot reach localhost and may cache old cards.
 Schema v11 adds three optional SEO settings and preserves existing values.
 
@@ -207,3 +209,27 @@ can use public HTTPS PNG/JPG/WebP logos or embedded `/js/` raster assets. Remote
 logos have time, byte, pixel, redirect, and public-network limits. Unsupported SVG
 or unreachable logos use the default mark; a custom share image is available for
 full art direction. Generated card variants are cached in memory.
+
+### Automatic catalog item previews
+
+Settings → SEO & berbagi includes **Preview otomatis per item Katalog**, enabled
+by default (schema v13). All active channel slugs inherit the attached item's title,
+description and image without duplicate fields. Missing descriptions use the item
+title/provider; missing images generate a themed 1200×630 card. Site share images
+remain section-level defaults and do not replace item-specific cards.
+
+Recognized Facebook/Meta, X, LinkedIn, WhatsApp, Discord, Slack, Telegram and
+Pinterest preview user agents receive metadata HTML. Browser visits retain the
+existing destination or lifecycle notice/fallback behavior; ordinary search
+crawlers retain redirects. Detection is based on user-agent hints, not verified
+identity, and unknown preview clients still receive the normal redirect.
+
+Known preview fetches and HEAD requests do not count as redirect clicks or notice
+views. Paused, upcoming, expired and ended item previews use current status text
+and generated status imagery instead of promotional images, including when the
+owner has selected a human fallback redirect. Disabled or missing slugs remain 404.
+Responses vary by User-Agent and use no-store. Social platforms can still retain
+cached previews; test the actual public slug on the platforms you use after
+deployment. Generated images have a bounded 16-variant in-memory cache, short
+HTTP cache lifetime and metadata-versioned URLs. No remote destination scraping,
+new mandatory fields, or per-item OG overrides are introduced.

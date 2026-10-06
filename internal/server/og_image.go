@@ -13,6 +13,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"time"
 
 	xdraw "golang.org/x/image/draw"
 	"golang.org/x/image/font"
@@ -82,6 +83,28 @@ func (s *Server) handleOGImage(w http.ResponseWriter, r *http.Request) {
 	case "resources":
 		title = "Resource pilihan"
 	}
+	if slug := r.URL.Query().Get("slug"); slug != "" {
+		link, err := s.db.GetLinkBySlug(slug)
+		if err != nil {
+			http.Error(w, "db error", 500)
+			return
+		}
+		if link == nil || link.OfferID == 0 {
+			http.NotFound(w, r)
+			return
+		}
+		offer, err := s.db.GetOfferLifecycle(link.OfferID)
+		if err != nil {
+			http.Error(w, "db error", 500)
+			return
+		}
+		status := offer.LifecycleStatus(time.Now().In(s.cfg.ReportLocation()).Format(dashboardDateLayout))
+		title, description = itemCopy(offer, status)
+		settings.HeroEyebrow = offer.Provider
+		if settings.HeroEyebrow == "" {
+			settings.HeroEyebrow = settings.SiteName
+		}
+	}
 	host := "Plink"
 	if parsed, e := url.Parse(s.publicURL(r)); e == nil {
 		host = parsed.Host
@@ -93,6 +116,7 @@ func (s *Server) handleOGImage(w http.ResponseWriter, r *http.Request) {
 		writeOGImage(w, body)
 		return
 	}
+	s.ogCacheMu.Unlock()
 	regular, bold := ogFonts()
 	heading, _ := opentype.NewFace(bold, &opentype.FaceOptions{Size: 64, DPI: 72, Hinting: font.HintingFull})
 	defer heading.Close()
@@ -150,12 +174,12 @@ func (s *Server) handleOGImage(w http.ResponseWriter, r *http.Request) {
 	}
 	var body bytes.Buffer
 	if err := png.Encode(&body, img); err != nil {
-		s.ogCacheMu.Unlock()
 		http.Error(w, "image error", 500)
 		return
 	}
-	// Keep only a few current variants; arbitrary query strings cannot grow the cache.
-	if len(s.ogCache) >= 4 || s.ogCache == nil {
+	// Bound memory across item variants; irrelevant query strings never change keys.
+	s.ogCacheMu.Lock()
+	if len(s.ogCache) >= 16 || s.ogCache == nil {
 		s.ogCache = make(map[string][]byte)
 	}
 	s.ogCache[cacheKey] = body.Bytes()

@@ -137,6 +137,8 @@ Buat kebutuhan lo.';
 ALTER TABLE site_settings ADD COLUMN hero_description TEXT NOT NULL DEFAULT 'Produk, referral, resource, dan jasa dalam satu tempat.';
 ALTER TABLE site_settings ADD COLUMN service_title TEXT NOT NULL DEFAULT 'Jasa Said';
 ALTER TABLE site_settings ADD COLUMN service_description TEXT NOT NULL DEFAULT 'Bantuan website, WordPress, dan VPS. Buka detail jasa untuk membahas kebutuhan lo.';`,
+	// v13: automatic catalog previews on existing short URLs.
+	`ALTER TABLE site_settings ADD COLUMN item_previews INTEGER NOT NULL DEFAULT 1 CHECK (item_previews IN (0, 1));`,
 }
 
 func migrate(conn *sql.DB) error {

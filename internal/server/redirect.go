@@ -27,6 +27,8 @@ func sanitizeReferrer(ref string) string {
 
 func (s *Server) handleRedirect(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Cache-Control", "no-store")
+	w.Header().Add("Vary", "User-Agent")
+	previewBot := isSocialPreviewBot(r.UserAgent())
 	slug := r.PathValue("slug")
 
 	link, err := s.db.GetLinkBySlug(slug)
@@ -48,11 +50,22 @@ func (s *Server) handleRedirect(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		status := offer.LifecycleStatus(today)
+		if previewBot {
+			settings, err := s.currentSiteSettings()
+			if err != nil {
+				http.Error(w, "db error", http.StatusInternalServerError)
+				return
+			}
+			if settings.ItemPreviews && (status != "active" || isAllowedURL(destination)) {
+				s.renderItemPreview(w, r, settings, offer, status, slug)
+				return
+			}
+		}
 		if status != "active" {
 			if (status == "ended" || status == "expired") && offer.EndedBehavior == "redirect" && validOfferDestination(offer.FallbackURL) {
 				destination = offer.FallbackURL
 			} else {
-				if s.renderOfferNotice(w, r, offer, status) && r.Method == http.MethodGet {
+				if s.renderOfferNotice(w, r, offer, status) && r.Method == http.MethodGet && !previewBot {
 					if err := s.db.RecordNoticeView(link.ID, status, sanitizeReferrer(r.Referer()), r.UserAgent(), time.Now().Unix()); err != nil {
 						log.Printf("record notice view: %v", err)
 					}
@@ -66,7 +79,7 @@ func (s *Server) handleRedirect(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if r.Method == http.MethodGet {
+	if r.Method == http.MethodGet && !previewBot {
 		go s.db.RecordClick(link.ID, sanitizeReferrer(r.Referer()), r.UserAgent())
 	}
 

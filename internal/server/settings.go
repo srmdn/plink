@@ -69,6 +69,15 @@ func (s *Server) handleSaveSettings(w http.ResponseWriter, r *http.Request) {
 		AffiliateDisclosure: strings.TrimSpace(r.FormValue("affiliate_disclosure")),
 		HeroEnabled:         r.FormValue("hero_enabled") == "1" || r.FormValue("hero_enabled") == "on",
 	}
+	settings.ItemPreviews = previous.ItemPreviews
+	if values, present := r.PostForm["item_previews_present"]; present {
+		checked := r.PostForm["item_previews"]
+		if len(values) != 1 || values[0] != "1" || len(checked) > 1 || (len(checked) == 1 && checked[0] != "1") {
+			http.Error(w, "bad request", http.StatusBadRequest)
+			return
+		}
+		settings.ItemPreviews = r.FormValue("item_previews") == "1"
+	}
 	settings.PublicOrigin, settings.HeroEyebrow, settings.HeroTitle, settings.HeroDescription = previous.PublicOrigin, previous.HeroEyebrow, previous.HeroTitle, previous.HeroDescription
 	settings.ServiceTitle, settings.ServiceDescription = previous.ServiceTitle, previous.ServiceDescription
 	for _, field := range []struct {

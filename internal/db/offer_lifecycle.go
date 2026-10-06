@@ -36,9 +36,9 @@ func normalizeOfferLifecycle(input OfferInput) OfferInput {
 // GetOfferLifecycle reads only the metadata needed by a public slug request.
 func (db *DB) GetOfferLifecycle(id int64) (*Offer, error) {
 	var offer Offer
-	err := db.QueryRow(`SELECT id, title, starts_on, ends_on, fallback_url,
+	err := db.QueryRow(`SELECT id, title, description, image_url, provider, item_type, starts_on, ends_on, fallback_url,
 		program_status, ended_behavior, notice_message, notice_source_url, status_changed_on, verified_on
-		FROM offers WHERE id = ?`, id).Scan(&offer.ID, &offer.Title, &offer.StartsOn, &offer.EndsOn, &offer.FallbackURL,
+		FROM offers WHERE id = ?`, id).Scan(&offer.ID, &offer.Title, &offer.Description, &offer.ImageURL, &offer.Provider, &offer.ItemType, &offer.StartsOn, &offer.EndsOn, &offer.FallbackURL,
 		&offer.ProgramStatus, &offer.EndedBehavior, &offer.NoticeMessage, &offer.NoticeSourceURL, &offer.StatusChangedOn, &offer.VerifiedOn)
 	if err != nil {
 		return nil, err

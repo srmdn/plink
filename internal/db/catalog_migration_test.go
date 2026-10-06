@@ -46,7 +46,7 @@ func TestCatalogMigrationPreservesExistingContentAndHistory(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if settings.LogoURL != "" || settings.FaviconURL != "" || settings.SiteName != "Existing identity" || settings.FeaturedLimit != 2 || settings.PublicAccent != "#c43424" || settings.AdminBackground != "#f4f1e9" {
+	if !settings.ItemPreviews || settings.LogoURL != "" || settings.FaviconURL != "" || settings.SiteName != "Existing identity" || settings.FeaturedLimit != 2 || settings.PublicAccent != "#c43424" || settings.AdminBackground != "#f4f1e9" {
 		t.Fatal("catalog migration changed existing settings")
 	}
 	if _, err = database.Exec(`UPDATE offers SET item_type='unknown' WHERE id=1`); err == nil {
