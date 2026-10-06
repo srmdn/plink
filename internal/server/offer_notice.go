@@ -21,6 +21,8 @@ type offerNoticeData struct {
 	Date        string
 	Destination string
 	SourceURL   string
+	IsLoggedIn  bool
+	AdminPath   string
 }
 
 func (s *Server) renderOfferNotice(w http.ResponseWriter, r *http.Request, offer *db.Offer, status string) bool {
@@ -31,6 +33,7 @@ func (s *Server) renderOfferNotice(w http.ResponseWriter, r *http.Request, offer
 	}
 	data := noticeContent(offer, status)
 	data.SiteName, data.SiteDesc = settings.SiteName, settings.SiteDesc
+	data.IsLoggedIn, data.AdminPath = s.isLoggedIn(r), s.cfg.AdminPath
 	// The owner chooses a current, non-referral destination; never reuse a stale
 	// referral URL automatically, or accept destinations from request parameters.
 	if validOfferDestination(offer.FallbackURL) {
@@ -51,6 +54,7 @@ func (s *Server) renderOfferNotice(w http.ResponseWriter, r *http.Request, offer
 	}
 	w.Header().Set("X-Robots-Tag", "noindex")
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	w.Header().Add("Vary", "Cookie")
 	_, err = w.Write(body.Bytes())
 	return err == nil
 }

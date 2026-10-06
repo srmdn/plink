@@ -11,6 +11,13 @@ import (
 	"github.com/srmdn/plink/internal/db"
 )
 
+// isLoggedIn reports whether the request carries a valid admin session. It is
+// only used to decide whether to show owner-only navigation on public pages.
+func (s *Server) isLoggedIn(r *http.Request) bool {
+	cookie, err := r.Cookie(cookieName)
+	return err == nil && s.sessions.valid(cookie.Value)
+}
+
 type homeData struct {
 	Settings            db.SiteSettings
 	SEO                 pageSEO
@@ -181,11 +188,9 @@ func (s *Server) handleHome(w http.ResponseWriter, r *http.Request) {
 		links = links[:6]
 	}
 
-	loggedIn := false
-	if cookie, err := r.Cookie(cookieName); err == nil && s.sessions.valid(cookie.Value) {
-		loggedIn = true
-	}
+	loggedIn := s.isLoggedIn(r)
 
+	w.Header().Add("Vary", "Cookie")
 	s.renderTemplate(w, "home", homeData{
 		SEO:      s.publicSEO(settings, r, ""),
 		Settings: settings,
@@ -231,6 +236,8 @@ type browseData struct {
 	Category, Provider, Query, View, Title, SiteName, SiteDesc, AffiliateDisclosure string
 	Total                                                                           int
 	Pages                                                                           []catalogPageLink
+	IsLoggedIn                                                                      bool
+	AdminPath                                                                       string
 }
 
 func (s *Server) handleBrowse(w http.ResponseWriter, r *http.Request, resourcesOnly bool) {
@@ -338,5 +345,6 @@ func (s *Server) handleBrowse(w http.ResponseWriter, r *http.Request, resourcesO
 		cards = cards[start:end]
 	}
 	title := map[string]string{"categories": "Kategori", "services": settings.ServiceTitle, "favorites": "Favorit", "resources": "Resource"}[view]
-	s.renderTemplate(w, "browse", browseData{Settings: settings, SEO: s.publicSEO(settings, r, view, effectivePage), Cards: cards, Categories: categories, Providers: providers, Category: category, Provider: provider, Query: query, View: view, Title: title, Total: total, Pages: pages, SiteName: settings.SiteName, SiteDesc: settings.SiteDesc, AffiliateDisclosure: settings.AffiliateDisclosure})
+	w.Header().Add("Vary", "Cookie")
+	s.renderTemplate(w, "browse", browseData{Settings: settings, SEO: s.publicSEO(settings, r, view, effectivePage), Cards: cards, Categories: categories, Providers: providers, Category: category, Provider: provider, Query: query, View: view, Title: title, Total: total, Pages: pages, SiteName: settings.SiteName, SiteDesc: settings.SiteDesc, AffiliateDisclosure: settings.AffiliateDisclosure, IsLoggedIn: s.isLoggedIn(r), AdminPath: s.cfg.AdminPath})
 }

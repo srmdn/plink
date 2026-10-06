@@ -109,11 +109,16 @@ p {
   margin:12px 0 0;
   font-size:12px
 }
-.store-admin-link {
-  display:inline-block;
-  margin-top:12px;
+.store-dashboard {
+  margin-left:auto;
   font-size:11px;
-  color:var(--accent)
+  font-weight:650;
+  color:var(--accent);
+  text-decoration:none;
+  padding:7px 11px;
+  border:1px solid var(--line);
+  border-radius:10px;
+  white-space:nowrap
 }
 .store-search {
   display:flex;
@@ -514,7 +519,6 @@ body[data-favorites-page] [data-favorite-card].is-favorite {
 .profile-intro { padding:0 0 10px; }
 .profile-intro h1 { font-size:27px; margin:7px 0; line-height:1.16; }
 .profile-intro p { margin:7px 0 0; }
-.store-admin-link { margin-top:7px; }
 .store-search { margin:6px 0 12px; }
 .store-search input { padding:11px 12px; }
 .store-chip { border:0; background:var(--soft); }
