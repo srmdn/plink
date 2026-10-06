@@ -12,7 +12,9 @@ import (
 	"net/http"
 	"net/netip"
 	"net/url"
+	"os"
 	"path"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -49,11 +51,17 @@ func (s *Server) ogLogo(raw string) image.Image {
 	}
 	var data []byte
 	if !u.IsAbs() {
-		// Only embedded public assets; never interpret a URL as a filesystem path.
-		if !strings.HasPrefix(u.Path, "/js/") {
+		// Only embedded public assets or uploaded media; never interpret a URL
+		// as an arbitrary filesystem path.
+		clean := path.Clean(u.Path)
+		switch {
+		case strings.HasPrefix(clean, "/js/"):
+			data, err = s.webFS.ReadFile("web" + clean)
+		case strings.HasPrefix(clean, "/media/") && mediaNamePattern.MatchString(path.Base(clean)):
+			data, err = os.ReadFile(filepath.Join(s.uploadsDir, path.Base(clean)))
+		default:
 			return nil
 		}
-		data, err = s.webFS.ReadFile("web" + path.Clean(u.Path))
 	} else {
 		transport := &http.Transport{DialContext: func(ctx context.Context, network, address string) (net.Conn, error) {
 			host, port, err := net.SplitHostPort(address)

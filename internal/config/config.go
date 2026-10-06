@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/url"
 	"os"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -24,6 +25,7 @@ type Config struct {
 	SiteDesc           string
 	AnalyticsScriptURL string
 	AnalyticsWebsiteID string
+	UploadsDir         string
 	reportLocation     *time.Location
 }
 
@@ -55,9 +57,15 @@ func Load() *Config {
 		analyticsURL = parsed.String()
 	}
 
+	dbPath := getEnv("DB_PATH", "plink.db")
+	uploadsDir := strings.TrimSpace(getEnv("UPLOADS_DIR", ""))
+	if uploadsDir == "" {
+		uploadsDir = filepath.Join(filepath.Dir(dbPath), "uploads")
+	}
+
 	return &Config{
 		Addr:               getEnv("ADDR", ":8080"),
-		DBPath:             getEnv("DB_PATH", "plink.db"),
+		DBPath:             dbPath,
 		AdminPassword:      password,
 		AdminPath:          getEnv("ADMIN_PATH", "admin"),
 		PublicURL:          publicURL,
@@ -68,6 +76,7 @@ func Load() *Config {
 		SiteDesc:           getEnv("SITE_DESC", "personal links"),
 		AnalyticsScriptURL: analyticsURL,
 		AnalyticsWebsiteID: strings.TrimSpace(getEnv("ANALYTICS_WEBSITE_ID", "")),
+		UploadsDir:         uploadsDir,
 		reportLocation:     reportLocation,
 	}
 }

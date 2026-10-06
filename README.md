@@ -26,6 +26,8 @@ yourdomain.com/tokopedia-promo  →  https://tokopedia.com/...
 - Mobile storefront — centered 480px frame, bottom navigation, unified catalog
   search, services, and browser-local favorites
 - Catalog types — products, referrals, services, and resources
+- Item images — upload PNG/JPEG/WebP (max 5 MB, 25 MP) or reference a URL; no
+  image shows the built-in mark
 - Featured picks — up to three manually scrollable cards, separate from the grid
 - Storefront settings — edit the public name, description, affiliate disclosure,
   featured-pick visibility/limit, logo/favicon image URLs, and separate public/admin

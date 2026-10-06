@@ -1,6 +1,7 @@
 package server
 
 import (
+	"errors"
 	"fmt"
 	"html"
 	"html/template"
@@ -1735,9 +1736,20 @@ func (s *Server) handleOfferDetail(w http.ResponseWriter, r *http.Request) {
 	s.renderOffersDashboard(w, r, offersDashboardData{Offer: offer, Links: links, IsForm: true, Error: r.URL.Query().Get("error"), Saved: r.URL.Query().Get("saved") == "1"})
 }
 
-func (s *Server) handleCreateOffer(w http.ResponseWriter, r *http.Request) {
-	if err := r.ParseForm(); err != nil {
+// parseOfferForm parses a urlencoded or multipart offer form with a bounded
+// body size, so a large image upload cannot exhaust memory. It reports whether
+// the request is usable.
+func (s *Server) parseOfferForm(w http.ResponseWriter, r *http.Request) bool {
+	r.Body = http.MaxBytesReader(w, r.Body, maxFormBytes)
+	if err := r.ParseMultipartForm(maxFormBytes); err != nil && !errors.Is(err, http.ErrNotMultipart) {
 		http.Error(w, "bad request", http.StatusBadRequest)
+		return false
+	}
+	return true
+}
+
+func (s *Server) handleCreateOffer(w http.ResponseWriter, r *http.Request) {
+	if !s.parseOfferForm(w, r) {
 		return
 	}
 	input, inputErr := parseOfferInput(r)
@@ -1750,6 +1762,14 @@ func (s *Server) handleCreateOffer(w http.ResponseWriter, r *http.Request) {
 	}
 	if inputErr == nil && !reuse && !validOfferDestination(urlValue) {
 		inputErr = fmt.Errorf("affiliate URL must start with http:// or https://")
+	}
+	if inputErr == nil {
+		if imageURL, err := s.applyUploadedImage(r); err != nil {
+			inputErr = err
+		} else if imageURL != "" {
+			input.ImageURL = imageURL
+			offer.ImageURL = imageURL
+		}
 	}
 	if inputErr != nil {
 		s.renderOffersDashboard(w, r, offersDashboardData{Offer: offer, ReuseHomeSlug: reuse, IsForm: true, IsNew: true, Error: inputErr.Error()})
@@ -1791,8 +1811,7 @@ func (s *Server) handleUpdateOffer(w http.ResponseWriter, r *http.Request) {
 		http.NotFound(w, r)
 		return
 	}
-	if err := r.ParseForm(); err != nil {
-		http.Error(w, "bad request", http.StatusBadRequest)
+	if !s.parseOfferForm(w, r) {
 		return
 	}
 	input, inputErr := parseOfferInput(r)
@@ -1801,6 +1820,13 @@ func (s *Server) handleUpdateOffer(w http.ResponseWriter, r *http.Request) {
 		links, _ := s.db.ListOfferLinks(id)
 		s.renderOffersDashboard(w, r, offersDashboardData{Offer: offer, Links: links, IsForm: true, Error: inputErr.Error()})
 		return
+	}
+	if imageURL, err := s.applyUploadedImage(r); err != nil {
+		links, _ := s.db.ListOfferLinks(id)
+		s.renderOffersDashboard(w, r, offersDashboardData{Offer: offer, Links: links, IsForm: true, Error: err.Error()})
+		return
+	} else if imageURL != "" {
+		input.ImageURL = imageURL
 	}
 	if err := s.db.UpdateOffer(id, input); err != nil {
 		http.Error(w, "failed to update offer", http.StatusInternalServerError)

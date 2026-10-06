@@ -29,6 +29,7 @@ var reservedSlugs = map[string]bool{
 	"offers":       true,
 	"links":        true,
 	"js":           true,
+	"media":        true,
 	"favicon.svg":  true,
 	"favicon.ico":  true,
 	"robots.txt":   true,

@@ -20,6 +20,7 @@ type Server struct {
 	sessions     *sessionStore
 	loginLimiter *loginLimiter
 	webFS        embed.FS
+	uploadsDir   string
 	tmpl         *template.Template
 }
 
@@ -104,6 +105,7 @@ func New(cfg *config.Config, database *db.DB, webFS embed.FS) http.Handler {
 		sessions:     newSessionStore(),
 		loginLimiter: newLoginLimiter(),
 		webFS:        webFS,
+		uploadsDir:   cfg.UploadsDir,
 		tmpl:         tmpl,
 	}
 
@@ -117,6 +119,7 @@ func New(cfg *config.Config, database *db.DB, webFS embed.FS) http.Handler {
 	mux.HandleFunc("GET /js/theme.css", s.handleTheme)
 	mux.HandleFunc("GET /favicon.svg", s.handleFavicon)
 	mux.HandleFunc("GET /favicon.ico", s.handleFavicon)
+	mux.HandleFunc("GET /media/{name}", s.handleMedia)
 
 	// Auth
 	mux.HandleFunc("GET "+ap+"/login", s.handleLoginPage)

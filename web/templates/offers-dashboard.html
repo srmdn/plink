@@ -19,7 +19,7 @@
       {{if .Error}}<div class="offer-error" role="alert">{{uiText .Error}}</div>{{end}}
 
       <section class="analytics-page-panel offer-editor-panel">
-        <form method="POST" action="{{if .IsNew}}/{{.AdminPath}}/offers{{else}}/{{.AdminPath}}/offers/{{.Offer.ID}}{{end}}">
+        <form method="POST" enctype="multipart/form-data" action="{{if .IsNew}}/{{.AdminPath}}/offers{{else}}/{{.AdminPath}}/offers/{{.Offer.ID}}{{end}}">
           <div class="form-section"><div class="offer-form-heading"><h2>Informasi item</h2><span>Satu kartu pada halaman publik</span></div>
           <div class="field"><label for="offer-item-type">Jenis item</label><select id="offer-item-type" name="item_type"><option value="referral" {{if eq .Offer.ItemType "referral"}}selected{{end}}>Referral</option><option value="product" {{if eq .Offer.ItemType "product"}}selected{{end}}>Produk</option><option value="service" {{if eq .Offer.ItemType "service"}}selected{{end}}>Jasa</option><option value="resource" {{if eq .Offer.ItemType "resource"}}selected{{end}}>Resource</option></select><p class="field-help">Jasa muncul di tab Jasa. Jenis item terpisah dari kategori dan status program.</p></div>
           <div class="form-pair">
@@ -29,7 +29,7 @@
           <div class="field"><label for="offer-description">Deskripsi singkat</label><textarea id="offer-description" name="description" maxlength="500" rows="3" placeholder="Jelaskan manfaat atau detail yang perlu diketahui">{{if .Offer}}{{.Offer.Description}}{{end}}</textarea></div>
           <div class="form-pair">
             <div class="field"><label for="offer-category">Kategori</label><input type="text" id="offer-category" name="category" maxlength="80" value="{{if .Offer}}{{.Offer.Category}}{{end}}" placeholder="VPS, Fashion, Accessories" /></div>
-            <div class="field"><label for="offer-image">URL gambar</label><input type="url" id="offer-image" name="image_url" value="{{if .Offer}}{{.Offer.ImageURL}}{{end}}" placeholder="https://cdn.example.com/product.webp" /><div class="field-help">Gunakan URL gambar HTTPS atau path gambar di Plink. Gambar ini juga dipakai saat slug item dibagikan. Tanpa gambar, preview dibuat otomatis.</div></div>
+            <div class="field"><label for="offer-image">Gambar</label><input type="url" id="offer-image" name="image_url" value="{{if .Offer}}{{.Offer.ImageURL}}{{end}}" placeholder="https://cdn.example.com/product.webp" /><input type="file" id="offer-image-file" name="image_file" accept="image/png,image/jpeg,image/webp" /><div class="field-help">Unggah PNG/JPEG/WebP maks 5 MB, atau isi URL/path. Rasio ideal ±3:2 atau 4:3, subjek di tengah. Gambar ini juga dipakai saat slug dibagikan; tanpa gambar, mark bawaan ditampilkan.</div></div>
           </div>
           <div class="form-pair">
             <div class="field"><label for="offer-button">Teks tombol</label><input type="text" id="offer-button" name="button_label" maxlength="48" value="{{if .Offer}}{{.Offer.ButtonLabel}}{{else}}Lihat promo{{end}}" placeholder="Lihat di Shopee" /></div>
