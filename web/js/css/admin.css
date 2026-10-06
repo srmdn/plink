@@ -772,6 +772,14 @@
   .admin-page .analytics-overview > .analytics-page-kpis { padding-inline:14px; }
 }
 
+/* Keep the closing page notes aligned with the workspace gutter and give them room. */
+.admin-page .analytics-page-note { margin:18px 20px 0; }
+.admin-page .guide-end { padding-inline:20px; }
+@media(max-width:350px) {
+  .admin-page .analytics-page-note { margin-inline:14px; }
+  .admin-page .guide-end { padding-inline:14px; }
+}
+
 .admin-page .share-preview { margin:16px 0 0; background:var(--surface2); border-radius:12px; overflow:hidden; }
 .admin-page .share-preview img { display:block; width:100%; aspect-ratio:1200/630; object-fit:cover; }
 .admin-page .share-preview figcaption { display:grid; gap:6px; padding:14px; }
