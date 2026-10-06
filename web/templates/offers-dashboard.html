@@ -24,7 +24,7 @@
           <div class="field"><label for="offer-item-type">Jenis item</label><select id="offer-item-type" name="item_type"><option value="referral" {{if eq .Offer.ItemType "referral"}}selected{{end}}>Referral</option><option value="product" {{if eq .Offer.ItemType "product"}}selected{{end}}>Produk</option><option value="service" {{if eq .Offer.ItemType "service"}}selected{{end}}>Jasa</option><option value="resource" {{if eq .Offer.ItemType "resource"}}selected{{end}}>Resource</option></select><p class="field-help">Jasa muncul di tab Jasa. Jenis item terpisah dari kategori dan status program.</p></div>
           <div class="form-pair">
             <div class="field"><label for="offer-title">Nama item</label><input type="text" id="offer-title" name="title" maxlength="160" required value="{{if .Offer}}{{.Offer.Title}}{{end}}" placeholder="Nama produk, promo, atau jasa" /></div>
-            <div class="field"><label for="offer-provider">Penyedia atau toko</label><input type="text" id="offer-provider" name="provider" maxlength="120" value="{{if .Offer}}{{.Offer.Provider}}{{end}}" placeholder="GreenCloud, Shopee, atau Jasa Said" /></div>
+            <div class="field"><label for="offer-provider">Penyedia atau toko</label><input type="text" id="offer-provider" name="provider" maxlength="120" value="{{if .Offer}}{{.Offer.Provider}}{{end}}" placeholder="Contoh: Shopee, Tokopedia, atau penyedia lain" /></div>
           </div>
           <div class="field"><label for="offer-description">Deskripsi singkat</label><textarea id="offer-description" name="description" maxlength="500" rows="3" placeholder="Jelaskan manfaat atau detail yang perlu diketahui">{{if .Offer}}{{.Offer.Description}}{{end}}</textarea></div>
           <div class="form-pair">

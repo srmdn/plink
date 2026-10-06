@@ -40,7 +40,7 @@ func TestPublicSEOAndShareImage(t *testing.T) {
 		}
 	}
 	services := get("/offers?view=services")
-	if !strings.Contains(services.Body.String(), `Jasa Said · Said &amp; tools`) || strings.Contains(services.Body.String(), `content="noindex, follow"`) {
+	if !strings.Contains(services.Body.String(), `Jasa · Said &amp; tools`) || strings.Contains(services.Body.String(), `content="noindex, follow"`) {
 		t.Fatal("service SEO incorrect")
 	}
 	if !strings.Contains(get("/links").Body.String(), `href="`+cfg.PublicURL+`/links"`) {

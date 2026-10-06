@@ -23,15 +23,29 @@ type Server struct {
 	tmpl         *template.Template
 }
 
-func securityHeaders(next http.Handler) http.Handler {
+// analyticsTag is the optional, operator-configured analytics snippet rendered
+// on admin pages. It is empty unless ANALYTICS_SCRIPT_URL is set at launch, so
+// self-hosted instances never load a third-party script by default.
+type analyticsTag struct {
+	URL string
+	ID  string
+}
+
+func (s *Server) securityHeaders(next http.Handler) http.Handler {
+	scriptSrc := "script-src 'self' 'unsafe-inline'"
+	connectSrc := ""
+	if origin := s.cfg.AnalyticsOrigin(); origin != "" {
+		scriptSrc += " " + origin
+		connectSrc = " connect-src 'self' " + origin + ";"
+	}
+	csp := "default-src 'self'; " + scriptSrc + "; style-src 'self' 'unsafe-inline'; img-src 'self' https: data:; object-src 'none'; base-uri 'self'; frame-ancestors 'none'" + connectSrc
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("X-Content-Type-Options", "nosniff")
 		w.Header().Set("X-Frame-Options", "DENY")
 		w.Header().Set("Referrer-Policy", "strict-origin-when-cross-origin")
 		w.Header().Set("Permissions-Policy", "geolocation=(), microphone=(), camera=()")
 		w.Header().Set("Strict-Transport-Security", "max-age=31536000; includeSubDomains")
-		w.Header().Set("Content-Security-Policy",
-			"default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' https: data:; object-src 'none'; base-uri 'self'; frame-ancestors 'none'")
+		w.Header().Set("Content-Security-Policy", csp)
 		next.ServeHTTP(w, r)
 	})
 }
@@ -72,6 +86,12 @@ func New(cfg *config.Config, database *db.DB, webFS embed.FS) http.Handler {
 			},
 			"js":       template.JSEscaper,
 			"urlquery": template.URLQueryEscaper,
+			"analyticsTag": func() any {
+				if cfg.AnalyticsScriptURL == "" {
+					return nil
+				}
+				return analyticsTag{URL: cfg.AnalyticsScriptURL, ID: cfg.AnalyticsWebsiteID}
+			},
 		}).ParseFS(webFS,
 			"web/templates/*.html",
 			"web/templates/partials/*.html",
@@ -151,7 +171,7 @@ func New(cfg *config.Config, database *db.DB, webFS embed.FS) http.Handler {
 	// Catch-all: slug redirect (must be last)
 	mux.HandleFunc("GET /{slug}", s.handleRedirect)
 
-	return securityHeaders(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	return s.securityHeaders(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path == ap || strings.HasPrefix(r.URL.Path, ap+"/") || strings.HasPrefix(r.URL.Path, "/api/") {
 			w.Header().Set("X-Robots-Tag", "noindex, nofollow")
 		}

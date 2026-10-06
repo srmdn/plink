@@ -82,6 +82,11 @@ precedence for public pages.
 - **Secure cookies** — set `APP_ENV=production` to enable `Secure` flag (HTTPS only)
 - **Security headers** — CSP, HSTS, X-Frame-Options, and more applied automatically
 - **URL validation** — only `http`/`https` redirect targets accepted
+- **No third-party tracking by default** — the binary ships with no analytics or
+  external scripts. Operators who want visitor analytics on the public pages can
+  set `ANALYTICS_SCRIPT_URL` (and optional `ANALYTICS_WEBSITE_ID`); that exact
+  origin is then allowed through the Content-Security-Policy automatically. A
+  self-hosted instance never loads anyone else's analytics.
 
 ## Public homepage
 

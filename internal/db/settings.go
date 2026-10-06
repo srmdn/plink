@@ -32,7 +32,7 @@ type SiteSettings struct {
 }
 
 func (db *DB) GetSiteSettings() (SiteSettings, error) {
-	settings := SiteSettings{ItemPreviews: true, PublicOrigin: "", HeroEyebrow: "Pilihan Said", HeroTitle: "Temuan bagus.\nBuat kebutuhan lo.", HeroDescription: "Produk, referral, resource, dan jasa dalam satu tempat.", ServiceTitle: "Jasa Said", ServiceDescription: "Bantuan website, WordPress, dan VPS. Buka detail jasa untuk membahas kebutuhan lo.", HeroEnabled: true, FeaturedLimit: 3, PublicAccent: "#c43424", PublicBackground: "#f4f1e9", AdminAccent: "#c43424", AdminBackground: "#f4f1e9"}
+	settings := SiteSettings{ItemPreviews: true, PublicOrigin: "", HeroEyebrow: "Pilihan", HeroTitle: "Temuan bagus.\nBuat kebutuhan lo.", HeroDescription: "Produk, referral, resource, dan jasa dalam satu tempat.", ServiceTitle: "Jasa", ServiceDescription: "Bantuan website, WordPress, dan VPS. Buka detail jasa untuk membahas kebutuhan lo.", HeroEnabled: true, FeaturedLimit: 3, PublicAccent: "#c43424", PublicBackground: "#f4f1e9", AdminAccent: "#c43424", AdminBackground: "#f4f1e9"}
 	err := db.QueryRow(`
 		SELECT site_name, site_desc, affiliate_disclosure, hero_enabled, featured_limit, public_accent, public_background, admin_accent, admin_background, logo_url, favicon_url, seo_title, seo_description, share_image_url, public_origin, hero_eyebrow, hero_title, hero_description, service_title, service_description, item_previews
 		FROM site_settings WHERE id = 1

@@ -3,6 +3,7 @@ package config
 import (
 	"bufio"
 	"log"
+	"net/url"
 	"os"
 	"strings"
 	"time"
@@ -11,17 +12,19 @@ import (
 )
 
 type Config struct {
-	Addr           string
-	DBPath         string
-	AdminPassword  string
-	AdminPath      string
-	PublicURL      string
-	Timezone       string
-	SecureCookies  bool
-	Production     bool
-	SiteName       string
-	SiteDesc       string
-	reportLocation *time.Location
+	Addr               string
+	DBPath             string
+	AdminPassword      string
+	AdminPath          string
+	PublicURL          string
+	Timezone           string
+	SecureCookies      bool
+	Production         bool
+	SiteName           string
+	SiteDesc           string
+	AnalyticsScriptURL string
+	AnalyticsWebsiteID string
+	reportLocation     *time.Location
 }
 
 func Load() *Config {
@@ -43,19 +46,44 @@ func Load() *Config {
 		log.Fatalf("PUBLIC_URL tidak valid: %v", err)
 	}
 
-	return &Config{
-		Addr:           getEnv("ADDR", ":8080"),
-		DBPath:         getEnv("DB_PATH", "plink.db"),
-		AdminPassword:  password,
-		AdminPath:      getEnv("ADMIN_PATH", "admin"),
-		PublicURL:      publicURL,
-		Timezone:       timezone,
-		SecureCookies:  getEnv("APP_ENV", "development") == "production",
-		Production:     getEnv("APP_ENV", "development") == "production",
-		SiteName:       getEnv("SITE_NAME", "plink"),
-		SiteDesc:       getEnv("SITE_DESC", "personal links"),
-		reportLocation: reportLocation,
+	analyticsURL := strings.TrimSpace(getEnv("ANALYTICS_SCRIPT_URL", ""))
+	if analyticsURL != "" {
+		parsed, err := url.Parse(analyticsURL)
+		if err != nil || (parsed.Scheme != "http" && parsed.Scheme != "https") || parsed.Host == "" {
+			log.Fatalf("ANALYTICS_SCRIPT_URL must be an http(s) URL with a host: %q", analyticsURL)
+		}
+		analyticsURL = parsed.String()
 	}
+
+	return &Config{
+		Addr:               getEnv("ADDR", ":8080"),
+		DBPath:             getEnv("DB_PATH", "plink.db"),
+		AdminPassword:      password,
+		AdminPath:          getEnv("ADMIN_PATH", "admin"),
+		PublicURL:          publicURL,
+		Timezone:           timezone,
+		SecureCookies:      getEnv("APP_ENV", "development") == "production",
+		Production:         getEnv("APP_ENV", "development") == "production",
+		SiteName:           getEnv("SITE_NAME", "plink"),
+		SiteDesc:           getEnv("SITE_DESC", "personal links"),
+		AnalyticsScriptURL: analyticsURL,
+		AnalyticsWebsiteID: strings.TrimSpace(getEnv("ANALYTICS_WEBSITE_ID", "")),
+		reportLocation:     reportLocation,
+	}
+}
+
+// AnalyticsOrigin returns the scheme and host of the configured analytics
+// script, or an empty string when no valid script is configured. It is used to
+// allow that exact origin through the Content-Security-Policy.
+func (c *Config) AnalyticsOrigin() string {
+	if c == nil || c.AnalyticsScriptURL == "" {
+		return ""
+	}
+	parsed, err := url.Parse(c.AnalyticsScriptURL)
+	if err != nil || (parsed.Scheme != "http" && parsed.Scheme != "https") || parsed.Host == "" {
+		return ""
+	}
+	return parsed.Scheme + "://" + parsed.Host
 }
 
 // ReportLocation returns the timezone used for calendar-day analytics. The

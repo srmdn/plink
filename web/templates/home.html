@@ -30,7 +30,7 @@
 <article class="resource-card" data-favorite-card="{{.Slug}}"><a href="/{{.Slug}}"><span class="resource-icon" aria-hidden="true">{{template "nav-icon" "link"}}</span><span class="resource-copy"><strong>{{if .Description}}{{.Description}}{{else}}{{.Slug}}{{end}}</strong><small>{{.Category}}</small></span></a><button type="button" class="favorite-button" data-favorite="{{.Slug}}" aria-label="Simpan {{.Slug}} ke favorit" aria-pressed="false">{{template "nav-icon" "heart"}}</button></article>
 {{end}}
 {{define "home"}}
-<!doctype html><html lang="id"><head><meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />{{template "public-seo" .SEO}}{{template "favicon-link" .}}{{template "storefront-styles" .}}</head>
+<!doctype html><html lang="id"><head><meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />{{template "public-seo" .SEO}}{{template "favicon-link" .}}{{template "storefront-styles" .}}{{template "analytics-tag" .}}</head>
 <body>{{template "public-header" .}}
 <main class="store-main">
 <section class="profile-intro">{{if .Settings.HeroEyebrow}}<span class="store-eyebrow">{{.Settings.HeroEyebrow}}</span>{{end}}<h1 class="hero-title">{{.Settings.HeroTitle}}</h1>{{if .Settings.HeroDescription}}<p>{{.Settings.HeroDescription}}</p>{{end}}{{if .IsLoggedIn}}<a class="store-admin-link" href="/{{.AdminPath}}">Kelola halaman ↗</a>{{end}}</section>
