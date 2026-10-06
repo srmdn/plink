@@ -124,9 +124,11 @@ try {
   .date-filter {
     background: var(--surface); color: var(--muted); border: 1px solid var(--border);
     border-radius: var(--radius); padding: 7px 10px; font-family: inherit;
-    font-size: 12px; cursor: pointer; outline: none; min-width: 142px; color-scheme: dark;
+    font-size: 12px; cursor: pointer; outline: none; min-width: 142px; color-scheme: light;
   }
   .date-filter:focus { border-color: var(--accent); }
+  input[type="date"]::-webkit-calendar-picker-indicator { cursor: pointer; opacity: .65; }
+  input[type="date"]::-webkit-calendar-picker-indicator:hover { opacity: 1; }
   .count { color: var(--muted); font-size: 11px; white-space: nowrap; }
 
   .dashboard-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-bottom: 24px; }
@@ -720,7 +722,7 @@ try {
     width: 100%; color: var(--text); background: var(--bg); border: 1px solid var(--border);
     border-radius: var(--radius); font: inherit; font-size: 13px; padding: 9px 11px;
   }
-  .offer-editor-panel input[type="date"] { color-scheme: dark; }
+  .offer-editor-panel input[type="date"] { color-scheme: light; }
   .offer-editor-panel textarea { resize: vertical; min-height: 76px; }
   .offer-form-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin: 0 0 16px; }
   .offer-form-heading h2 { font-size: 14px; font-weight: 650; }
