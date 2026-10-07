@@ -24,7 +24,7 @@
 </nav>
 {{end}}
 {{define "public-footer"}}
-<footer class="store-footer">Dikurasi dengan <a href="https://github.com/srmdn/plink" rel="noopener">Plink</a>.</footer>
+<footer class="store-footer">Dibikin pakai <a href="https://github.com/srmdn/plink" rel="noopener">Plink</a>.</footer>
 <div class="favorite-status ui-toast" role="status" aria-live="polite"></div>
 <script src="/js/storefront.js" defer></script>
 {{end}}
@@ -44,12 +44,12 @@
 <body>{{template "public-header" .}}
 <main class="store-main">
 <section class="profile-intro">{{if .Settings.HeroEyebrow}}<span class="store-eyebrow">{{.Settings.HeroEyebrow}}</span>{{end}}<h1 class="hero-title">{{.Settings.HeroTitle}}</h1>{{if .Settings.HeroDescription}}<p>{{.Settings.HeroDescription}}</p>{{end}}</section>
-<form class="store-search" method="get" action="/offers" role="search"><input type="search" name="q" placeholder="Cari produk, jasa, atau resource…" aria-label="Cari di seluruh katalog" /><button type="submit">Cari</button></form>
+<form class="store-search" method="get" action="/offers" role="search"><input type="search" name="q" placeholder="Cari barang, jasa, atau tautan…" aria-label="Cari di seluruh katalog" /><button type="submit">Cari</button></form>
 {{if .OfferCategories}}<nav class="store-categories" aria-label="Kategori"><a class="store-chip active" href="/offers">Semua</a>{{range .OfferCategories}}<a class="store-chip" href="/offers?category={{. | urlquery}}">{{.}}</a>{{end}}</nav>{{end}}
-{{if and .HeroEnabled .FeaturedOffers}}<section class="store-section"><div class="store-section-head"><div><span class="store-eyebrow">Layak dilirik</span><h2>Pilihan utama</h2></div></div><div class="featured-track">{{range .FeaturedOffers}}{{template "offer-card" .}}{{end}}</div></section>{{end}}
+{{if and .HeroEnabled .FeaturedOffers}}<section class="store-section"><div class="store-section-head"><div><span class="store-eyebrow">Coba lihat</span><h2>Pilihan utama</h2></div></div><div class="featured-track">{{range .FeaturedOffers}}{{template "offer-card" .}}{{end}}</div></section>{{end}}
 {{if .Offers}}<section class="store-section"><div class="store-section-head"><h2>Produk &amp; referral</h2><a href="/offers">Lihat semua →</a></div><div class="offer-grid">{{range .Offers}}{{template "offer-card" .}}{{end}}</div></section>{{end}}
 {{if .Articles}}<section class="store-section article-section"><div class="store-section-head"><div><span class="store-eyebrow">Bacaan</span><h2>Artikel</h2></div><a href="/offers?view=articles">Lihat semua →</a></div><div class="offer-grid">{{range .Articles}}{{template "offer-card" .}}{{end}}</div></section>{{end}}
-<section class="store-section service-section"><div class="store-section-head"><div><span class="store-eyebrow">Dikerjakan langsung</span><h2>{{.Settings.ServiceTitle}}</h2></div><a href="/offers?view=services">Lihat jasa →</a></div><p class="section-note">{{.Settings.ServiceDescription}}</p>{{if .Services}}<div class="offer-grid">{{range .Services}}{{template "offer-card" .}}{{end}}</div>{{end}}{{if .ServiceLinks}}<div class="resource-grid">{{range .ServiceLinks}}{{template "resource-card" .}}{{end}}</div>{{end}}{{if and (not .Services) (not .ServiceLinks)}}<p class="store-empty">Belum ada jasa yang ditampilkan.</p>{{end}}</section>
+<section class="store-section service-section"><div class="store-section-head"><div><span class="store-eyebrow">Dikerjain langsung</span><h2>{{.Settings.ServiceTitle}}</h2></div><a href="/offers?view=services">Lihat jasa →</a></div><p class="section-note">{{.Settings.ServiceDescription}}</p>{{if .Services}}<div class="offer-grid">{{range .Services}}{{template "offer-card" .}}{{end}}</div>{{end}}{{if .ServiceLinks}}<div class="resource-grid">{{range .ServiceLinks}}{{template "resource-card" .}}{{end}}</div>{{end}}{{if and (not .Services) (not .ServiceLinks)}}<p class="store-empty">Belum ada jasa di sini.</p>{{end}}</section>
 {{if or .Links .ResourceOffers}}<section class="store-section"><div class="store-section-head"><h2>Resource</h2><a href="/links">Lihat semua →</a></div>{{if .ResourceOffers}}<div class="offer-grid">{{range .ResourceOffers}}{{template "offer-card" .}}{{end}}</div>{{end}}<div class="resource-grid">{{range .Links}}{{template "resource-card" .}}{{end}}</div></section>{{end}}
 {{if .AffiliateDisclosure}}<p class="affiliate-note">{{.AffiliateDisclosure}}</p>{{end}}
 </main>{{template "public-footer" .}}{{template "public-nav" "home"}}</body></html>

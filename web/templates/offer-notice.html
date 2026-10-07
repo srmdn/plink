@@ -31,11 +31,11 @@
       <p class="notice-message">{{.Message}}</p>
       <div class="notice-details">
         {{if .Date}}<p>{{.DateLabel}}: <time datetime="{{.Date}}">{{.Date}}</time></p>{{end}}
-        {{if .SourceURL}}<p><a href="{{.SourceURL}}" rel="noopener noreferrer">Baca keterangan resmi ↗</a></p>{{end}}
+        {{if .SourceURL}}<p><a href="{{.SourceURL}}" rel="noopener noreferrer">Baca info resmi ↗</a></p>{{end}}
         {{if .Offer.VerifiedOn}}<p>Terakhir diverifikasi: <time datetime="{{.Offer.VerifiedOn}}">{{.Offer.VerifiedOn}}</time></p>{{end}}
       </div>
-      <div class="notice-actions">{{if .Destination}}<a class="notice-primary" href="{{.Destination}}" rel="noopener noreferrer">Buka website penyedia ↗</a>{{end}}<a href="/offers">Lihat promo aktif</a></div>
-      {{if .Destination}}<p class="notice-footnote">Membuka website penyedia tidak menjamin promo atau kredit referral lama masih tersedia.</p>{{end}}
+      <div class="notice-actions">{{if .Destination}}<a class="notice-primary" href="{{.Destination}}" rel="noopener noreferrer">Buka website penyedia ↗</a>{{end}}<a href="/offers">Lihat promo yang aktif</a></div>
+      {{if .Destination}}<p class="notice-footnote">Buka website penyedia belum tentu promo atau komisinya masih sama.</p>{{end}}
     </article>
   </main>
 </body>
