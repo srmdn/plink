@@ -18,9 +18,20 @@ func Init(path string) (*DB, error) {
 	}
 	conn.SetMaxOpenConns(1)
 
+	// Migrations may rebuild a parent table (for example, to widen the
+	// item_type CHECK). Foreign keys are disabled for the duration so a DROP of
+	// the old table cannot cascade into child rows, then re-enabled after.
+	if _, err := conn.Exec(`PRAGMA foreign_keys=off`); err != nil {
+		conn.Close()
+		return nil, fmt.Errorf("disable foreign keys: %w", err)
+	}
 	if err := migrate(conn); err != nil {
 		conn.Close()
 		return nil, fmt.Errorf("migrate: %w", err)
+	}
+	if _, err := conn.Exec(`PRAGMA foreign_keys=on`); err != nil {
+		conn.Close()
+		return nil, fmt.Errorf("enable foreign keys: %w", err)
 	}
 
 	return &DB{conn}, nil
@@ -139,6 +150,40 @@ ALTER TABLE site_settings ADD COLUMN service_title TEXT NOT NULL DEFAULT 'Jasa S
 ALTER TABLE site_settings ADD COLUMN service_description TEXT NOT NULL DEFAULT 'Bantuan website, WordPress, dan VPS. Buka detail jasa untuk membahas kebutuhan lo.';`,
 	// v13: automatic catalog previews on existing short URLs.
 	`ALTER TABLE site_settings ADD COLUMN item_previews INTEGER NOT NULL DEFAULT 1 CHECK (item_previews IN (0, 1));`,
+	// v14: allow blog articles as a catalog item type. SQLite cannot widen a
+	// CHECK constraint in place, so the table is rebuilt with its data.
+	`CREATE TABLE offers_v14 (
+		id                 INTEGER PRIMARY KEY AUTOINCREMENT,
+		title              TEXT NOT NULL,
+		provider           TEXT NOT NULL DEFAULT '',
+		description        TEXT NOT NULL DEFAULT '',
+		category           TEXT NOT NULL DEFAULT '',
+		image_url          TEXT NOT NULL DEFAULT '',
+		button_label       TEXT NOT NULL DEFAULT 'Lihat promo',
+		fallback_url       TEXT NOT NULL DEFAULT '',
+		starts_on          TEXT NOT NULL DEFAULT '',
+		ends_on            TEXT NOT NULL DEFAULT '',
+		active             INTEGER NOT NULL DEFAULT 1,
+		featured           INTEGER NOT NULL DEFAULT 0,
+		priority           INTEGER NOT NULL DEFAULT 0,
+		created_at         INTEGER NOT NULL,
+		updated_at         INTEGER NOT NULL,
+		program_status     TEXT NOT NULL DEFAULT 'active' CHECK (program_status IN ('active', 'paused', 'ended')),
+		ended_behavior     TEXT NOT NULL DEFAULT 'notice' CHECK (ended_behavior IN ('notice', 'redirect')),
+		notice_message     TEXT NOT NULL DEFAULT '',
+		notice_source_url  TEXT NOT NULL DEFAULT '',
+		status_changed_on  TEXT NOT NULL DEFAULT '',
+		verified_on        TEXT NOT NULL DEFAULT '',
+		item_type          TEXT NOT NULL DEFAULT 'referral' CHECK (item_type IN ('product', 'referral', 'service', 'resource', 'article'))
+	);
+	INSERT INTO offers_v14 (id, title, provider, description, category, image_url, button_label, fallback_url, starts_on, ends_on, active, featured, priority, created_at, updated_at, program_status, ended_behavior, notice_message, notice_source_url, status_changed_on, verified_on, item_type)
+		SELECT id, title, provider, description, category, image_url, button_label, fallback_url, starts_on, ends_on, active, featured, priority, created_at, updated_at, program_status, ended_behavior, notice_message, notice_source_url, status_changed_on, verified_on, item_type FROM offers;
+	DROP TABLE offers;
+	ALTER TABLE offers_v14 RENAME TO offers;
+	CREATE INDEX IF NOT EXISTS idx_offers_active_priority ON offers(active, featured, priority);`,
+	// v15: biolink profile avatar and optional social links.
+	`ALTER TABLE site_settings ADD COLUMN avatar_url TEXT NOT NULL DEFAULT '';
+	ALTER TABLE site_settings ADD COLUMN social_links TEXT NOT NULL DEFAULT '';`,
 }
 
 func migrate(conn *sql.DB) error {

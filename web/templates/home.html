@@ -3,7 +3,16 @@
 <link rel="stylesheet" href="/js/theme.css" />
 {{end}}
 {{define "public-header"}}
-<header class="store-header"><a class="store-brand" href="/">{{template "brand-logo" .}}<span><strong>{{.SiteName}}</strong><small>{{.SiteDesc}}</small></span></a>{{if .IsLoggedIn}}<a class="store-dashboard" href="/{{.AdminPath}}">Dashboard</a>{{end}}</header>
+{{$profile := publicProfile}}
+<header class="store-header profile-header">
+  <div class="profile-block">
+    <span class="profile-avatar">{{if $profile.AvatarURL}}<img src="{{$profile.AvatarURL}}" alt="" />{{else}}{{template "brand-mark"}}{{end}}</span>
+    <strong class="profile-name">{{.SiteName}}</strong>
+    {{if .SiteDesc}}<p class="profile-bio">{{.SiteDesc}}</p>{{end}}
+    {{if $profile.Links}}<nav class="profile-social" aria-label="Tautan sosial">{{range $profile.Links}}<a href="{{.URL}}" target="_blank" rel="noopener me" aria-label="{{.Label}}" title="{{.Label}}">{{template "social-icon" .Key}}</a>{{end}}</nav>{{end}}
+  </div>
+  {{if .IsLoggedIn}}<a class="store-dashboard" href="/{{.AdminPath}}">Dashboard</a>{{end}}
+</header>
 {{end}}
 {{define "public-nav"}}
 <nav class="bottom-nav" aria-label="Navigasi utama">
@@ -21,7 +30,7 @@
 {{define "offer-card"}}
 <article class="offer-card offer-card--{{.ItemType}}{{if not .ImageURL}} offer-card--no-image{{end}}" data-favorite-card="{{.HomeSlug}}">
 <button class="favorite-button" type="button" data-favorite="{{.HomeSlug}}" aria-label="Simpan {{.Title}} ke favorit" aria-pressed="false">{{template "nav-icon" "heart"}}</button>
-<a href="/{{.HomeSlug}}" target="_blank" rel="noopener" aria-label="{{.Title}} — {{.ButtonLabel}}">
+<a href="{{if eq .ItemType "article"}}{{.HomeURL}}{{else}}/{{.HomeSlug}}{{end}}" target="_blank" rel="noopener" aria-label="{{.Title}} — {{.ButtonLabel}}">
 <div class="offer-image">{{if .ImageURL}}<img src="{{.ImageURL}}" alt="" loading="lazy" />{{else}}<span class="offer-image-placeholder" aria-hidden="true">{{template "brand-mark"}}</span>{{end}}<span class="offer-badge">{{itemTypeLabel .ItemType}}</span></div>
 <div class="offer-card-copy"><span class="offer-provider">{{if .Provider}}{{.Provider}}{{else}}{{.Category}}{{end}}</span><h3>{{.Title}}</h3>{{if .Description}}<p>{{.Description}}</p>{{end}}<span class="offer-card-cta">{{.ButtonLabel}} <span aria-hidden="true">↗</span></span></div>
 </a></article>
@@ -38,6 +47,7 @@
 {{if .OfferCategories}}<nav class="store-categories" aria-label="Kategori"><a class="store-chip active" href="/offers">Semua</a>{{range .OfferCategories}}<a class="store-chip" href="/offers?category={{. | urlquery}}">{{.}}</a>{{end}}</nav>{{end}}
 {{if and .HeroEnabled .FeaturedOffers}}<section class="store-section"><div class="store-section-head"><div><span class="store-eyebrow">Layak dilirik</span><h2>Pilihan utama</h2></div></div><div class="featured-track">{{range .FeaturedOffers}}{{template "offer-card" .}}{{end}}</div></section>{{end}}
 {{if .Offers}}<section class="store-section"><div class="store-section-head"><h2>Produk &amp; referral</h2><a href="/offers">Lihat semua →</a></div><div class="offer-grid">{{range .Offers}}{{template "offer-card" .}}{{end}}</div></section>{{end}}
+{{if .Articles}}<section class="store-section article-section"><div class="store-section-head"><div><span class="store-eyebrow">Bacaan</span><h2>Artikel</h2></div><a href="/offers?view=articles">Lihat semua →</a></div><div class="offer-grid">{{range .Articles}}{{template "offer-card" .}}{{end}}</div></section>{{end}}
 <section class="store-section service-section"><div class="store-section-head"><div><span class="store-eyebrow">Dikerjakan langsung</span><h2>{{.Settings.ServiceTitle}}</h2></div><a href="/offers?view=services">Lihat jasa →</a></div><p class="section-note">{{.Settings.ServiceDescription}}</p>{{if .Services}}<div class="offer-grid">{{range .Services}}{{template "offer-card" .}}{{end}}</div>{{end}}{{if .ServiceLinks}}<div class="resource-grid">{{range .ServiceLinks}}{{template "resource-card" .}}{{end}}</div>{{end}}{{if and (not .Services) (not .ServiceLinks)}}<p class="store-empty">Belum ada jasa yang ditampilkan.</p>{{end}}</section>
 {{if or .Links .ResourceOffers}}<section class="store-section"><div class="store-section-head"><h2>Resource</h2><a href="/links">Lihat semua →</a></div>{{if .ResourceOffers}}<div class="offer-grid">{{range .ResourceOffers}}{{template "offer-card" .}}{{end}}</div>{{end}}<div class="resource-grid">{{range .Links}}{{template "resource-card" .}}{{end}}</div></section>{{end}}
 {{if .AffiliateDisclosure}}<p class="affiliate-note">{{.AffiliateDisclosure}}</p>{{end}}

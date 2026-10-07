@@ -37,6 +37,7 @@ func (s *Server) renderSettingsDashboard(w http.ResponseWriter, r *http.Request,
 	data.EffectivePublicURL = s.publicURL(r)
 	data.SEO = s.publicSEO(data.Settings, r, "")
 	data.SEO.Title, data.SEO.Description = seoIdentity(data.Settings)
+	data.Social = parseSocialLinks(data.Settings.SocialLinks)
 	data.AdminPath = s.cfg.AdminPath
 	data.Production = s.cfg.Production
 	s.renderTemplate(w, "settings-dashboard", data)
@@ -119,6 +120,7 @@ func (s *Server) handleSaveSettings(w http.ResponseWriter, r *http.Request) {
 	settings.PublicAccent, settings.PublicBackground = previous.PublicAccent, previous.PublicBackground
 	settings.AdminAccent, settings.AdminBackground = previous.AdminAccent, previous.AdminBackground
 	settings.LogoURL, settings.FaviconURL = previous.LogoURL, previous.FaviconURL
+	settings.AvatarURL, settings.SocialLinks = previous.AvatarURL, previous.SocialLinks
 	settings.SEOTitle, settings.SEODescription, settings.ShareImageURL = previous.SEOTitle, previous.SEODescription, previous.ShareImageURL
 	for _, field := range []struct {
 		name  string
@@ -148,7 +150,7 @@ func (s *Server) handleSaveSettings(w http.ResponseWriter, r *http.Request) {
 	for _, asset := range []struct {
 		name  string
 		value *string
-	}{{"logo_url", &settings.LogoURL}, {"favicon_url", &settings.FaviconURL}} {
+	}{{"logo_url", &settings.LogoURL}, {"favicon_url", &settings.FaviconURL}, {"avatar_url", &settings.AvatarURL}} {
 		if values, present := r.PostForm[asset.name]; present {
 			if len(values) != 1 {
 				http.Error(w, "bad request", 400)
@@ -156,7 +158,7 @@ func (s *Server) handleSaveSettings(w http.ResponseWriter, r *http.Request) {
 			}
 			*asset.value = strings.TrimSpace(values[0])
 			if !validBrandImage(*asset.value) {
-				s.renderSettingsDashboard(w, r, settingsDashboardData{Settings: settings, Error: "Logo dan favicon harus berupa URL HTTPS atau path lokal, maksimal 2048 karakter."})
+				s.renderSettingsDashboard(w, r, settingsDashboardData{Settings: settings, Error: "Logo, favicon, dan avatar harus berupa URL HTTPS atau path lokal, maksimal 2048 karakter."})
 				return
 			}
 		}
@@ -164,7 +166,7 @@ func (s *Server) handleSaveSettings(w http.ResponseWriter, r *http.Request) {
 	for _, asset := range []struct {
 		field string
 		value *string
-	}{{"logo_file", &settings.LogoURL}, {"favicon_file", &settings.FaviconURL}} {
+	}{{"logo_file", &settings.LogoURL}, {"favicon_file", &settings.FaviconURL}, {"avatar_file", &settings.AvatarURL}} {
 		path, err := s.applyUploadedFile(r, asset.field)
 		if err != nil {
 			s.renderSettingsDashboard(w, r, settingsDashboardData{Settings: settings, Error: err.Error()})
@@ -174,6 +176,31 @@ func (s *Server) handleSaveSettings(w http.ResponseWriter, r *http.Request) {
 			*asset.value = path
 		}
 	}
+	socialValues := parseSocialLinks(settings.SocialLinks)
+	for _, platform := range socialPlatformList {
+		values, present := r.PostForm["social_"+platform.Key]
+		if !present {
+			continue
+		}
+		if len(values) != 1 {
+			http.Error(w, "bad request", 400)
+			return
+		}
+		raw := strings.TrimSpace(values[0])
+		if !validSocialURL(platform.Key, raw) {
+			s.renderSettingsDashboard(w, r, settingsDashboardData{Settings: settings, Error: "Tautan sosial tidak valid. Gunakan URL http(s), atau alamat email untuk Email."})
+			return
+		}
+		if raw == "" {
+			delete(socialValues, platform.Key)
+		} else {
+			if platform.Key == "email" && !strings.HasPrefix(raw, "mailto:") {
+				raw = "mailto:" + raw
+			}
+			socialValues[platform.Key] = raw
+		}
+	}
+	settings.SocialLinks = encodeSocialLinks(socialValues)
 	for _, color := range []struct {
 		name  string
 		value *string

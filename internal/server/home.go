@@ -25,6 +25,7 @@ type homeData struct {
 	Offers              []db.Offer
 	FeaturedOffers      []db.Offer
 	Services            []db.Offer
+	Articles            []db.Offer
 	ResourceOffers      []db.Offer
 	ServiceLinks        []db.PublicLink
 	OfferCategories     []string
@@ -139,14 +140,14 @@ func (s *Server) handleHome(w http.ResponseWriter, r *http.Request) {
 	featuredOffers := make([]db.Offer, 0, settings.FeaturedLimit)
 	featuredOfferIDs := make(map[int64]bool, settings.FeaturedLimit)
 	for _, offer := range activeOffers {
-		if settings.HeroEnabled && offer.ItemType != "service" && offer.ItemType != "resource" && offer.Featured && len(featuredOffers) < settings.FeaturedLimit {
+		if settings.HeroEnabled && offer.ItemType != "service" && offer.ItemType != "resource" && offer.ItemType != "article" && offer.Featured && len(featuredOffers) < settings.FeaturedLimit {
 			featuredOffers = append(featuredOffers, offer)
 			featuredOfferIDs[offer.ID] = true
 		}
 	}
 	pageOffers := make([]db.Offer, 0, 6)
 	for _, offer := range activeOffers {
-		if featuredOfferIDs[offer.ID] || offer.ItemType == "service" || offer.ItemType == "resource" {
+		if featuredOfferIDs[offer.ID] || offer.ItemType == "service" || offer.ItemType == "resource" || offer.ItemType == "article" {
 			continue
 		}
 		pageOffers = append(pageOffers, offer)
@@ -166,13 +167,16 @@ func (s *Server) handleHome(w http.ResponseWriter, r *http.Request) {
 	}
 	sort.Strings(categories)
 
-	var services, resourceOffers []db.Offer
+	var services, resourceOffers, articles []db.Offer
 	for _, offer := range activeOffers {
 		if offer.ItemType == "service" {
 			services = append(services, offer)
 		}
 		if offer.ItemType == "resource" {
 			resourceOffers = append(resourceOffers, offer)
+		}
+		if offer.ItemType == "article" && len(articles) < 4 {
+			articles = append(articles, offer)
 		}
 	}
 	var serviceLinks, resources []db.PublicLink
@@ -195,7 +199,7 @@ func (s *Server) handleHome(w http.ResponseWriter, r *http.Request) {
 		SEO:      s.publicSEO(settings, r, ""),
 		Settings: settings,
 		Links:    links,
-		Services: services, ResourceOffers: resourceOffers, ServiceLinks: serviceLinks,
+		Services: services, Articles: articles, ResourceOffers: resourceOffers, ServiceLinks: serviceLinks,
 		Offers:              pageOffers,
 		FeaturedOffers:      featuredOffers,
 		OfferCategories:     categoriesForOffers(publicOffers(offers, today)),
@@ -226,7 +230,7 @@ func isServiceCategory(category string) bool {
 }
 
 type publicCard struct {
-	Title, Provider, Description, Category, ImageURL, ButtonLabel, HomeSlug, ItemType string
+	Title, Provider, Description, Category, ImageURL, ButtonLabel, HomeSlug, HomeURL, ItemType string
 }
 type browseData struct {
 	Settings                                                                        db.SiteSettings
@@ -261,13 +265,13 @@ func (s *Server) handleBrowse(w http.ResponseWriter, r *http.Request, resourcesO
 		view = "resources"
 	}
 	switch view {
-	case "services", "favorites", "resources":
+	case "services", "favorites", "resources", "articles":
 	default:
 		view = "categories"
 	}
 	all := []publicCard{}
 	for _, o := range publicOffers(offers, time.Now().In(s.cfg.ReportLocation()).Format(dashboardDateLayout)) {
-		all = append(all, publicCard{o.Title, o.Provider, o.Description, o.Category, o.ImageURL, o.ButtonLabel, o.HomeSlug, o.ItemType})
+		all = append(all, publicCard{o.Title, o.Provider, o.Description, o.Category, o.ImageURL, o.ButtonLabel, o.HomeSlug, o.HomeURL, o.ItemType})
 	}
 	for _, l := range links {
 		kind := "resource"
@@ -285,7 +289,7 @@ func (s *Server) handleBrowse(w http.ResponseWriter, r *http.Request, resourcesO
 	seenCategory, seenProvider := map[string]bool{}, map[string]bool{}
 	cards := []publicCard{}
 	for _, card := range all {
-		if view == "services" && card.ItemType != "service" || view == "resources" && card.ItemType != "resource" {
+		if view == "services" && card.ItemType != "service" || view == "resources" && card.ItemType != "resource" || view == "articles" && card.ItemType != "article" {
 			continue
 		}
 		if card.Category != "" && !seenCategory[card.Category] {
@@ -344,7 +348,7 @@ func (s *Server) handleBrowse(w http.ResponseWriter, r *http.Request, resourcesO
 		}
 		cards = cards[start:end]
 	}
-	title := map[string]string{"categories": "Kategori", "services": settings.ServiceTitle, "favorites": "Favorit", "resources": "Resource"}[view]
+	title := map[string]string{"categories": "Kategori", "services": settings.ServiceTitle, "favorites": "Favorit", "resources": "Resource", "articles": "Artikel"}[view]
 	w.Header().Add("Vary", "Cookie")
 	s.renderTemplate(w, "browse", browseData{Settings: settings, SEO: s.publicSEO(settings, r, view, effectivePage), Cards: cards, Categories: categories, Providers: providers, Category: category, Provider: provider, Query: query, View: view, Title: title, Total: total, Pages: pages, SiteName: settings.SiteName, SiteDesc: settings.SiteDesc, AffiliateDisclosure: settings.AffiliateDisclosure, IsLoggedIn: s.isLoggedIn(r), AdminPath: s.cfg.AdminPath})
 }

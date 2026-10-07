@@ -66,6 +66,7 @@ type settingsDashboardData struct {
 	EffectivePublicURL string
 	SEO                pageSEO
 	Settings           db.SiteSettings
+	Social             map[string]string
 	AdminPath          string
 	Production         bool
 	Error              string
@@ -1456,7 +1457,7 @@ func parseOfferInput(r *http.Request) (db.OfferInput, error) {
 	if input.ItemType == "" {
 		input.ItemType = "referral"
 	}
-	if input.ItemType != "product" && input.ItemType != "referral" && input.ItemType != "service" && input.ItemType != "resource" {
+	if input.ItemType != "product" && input.ItemType != "referral" && input.ItemType != "service" && input.ItemType != "resource" && input.ItemType != "article" {
 		return input, fmt.Errorf("jenis item tidak valid")
 	}
 	if input.ProgramStatus == "" {

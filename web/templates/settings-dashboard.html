@@ -21,10 +21,20 @@
       <form method="POST" enctype="multipart/form-data" action="/{{.AdminPath}}/settings">
         <section class="analytics-page-panel settings-panel"><div class="offer-form-heading"><h2>Logo &amp; favicon</h2><span>Logo dipakai pada header publik dan admin.</span></div><div class="field"><label for="settings-logo">URL logo</label><input id="settings-logo" type="text" name="logo_url" maxlength="2048" value="{{.Settings.LogoURL}}" placeholder="https://domain-lo.com/logo.png" /><input type="file" id="settings-logo-file" name="logo_file" accept="image/png,image/jpeg,image/webp" /><p class="field-help">Unggah PNG/JPEG/WebP maks 5 MB, atau isi URL/path (termasuk SVG). Unggahan menimpa URL. Kosongkan untuk memakai logo bawaan.</p></div><div class="field"><label for="settings-favicon">URL favicon</label><input id="settings-favicon" type="text" name="favicon_url" maxlength="2048" value="{{.Settings.FaviconURL}}" placeholder="https://domain-lo.com/favicon.png" /><input type="file" id="settings-favicon-file" name="favicon_file" accept="image/png,image/jpeg,image/webp" /><p class="field-help">Opsional. Jika kosong, favicon memakai logo lo; tanpa logo khusus, favicon mengikuti warna aksen publik. Unggah PNG/JPEG/WebP atau isi URL HTTPS/path lokal.</p></div><div class="brand-preview">{{template "brand-logo" .}}<span>Logo yang sedang digunakan</span></div></section>
         <section class="analytics-page-panel settings-panel">
+          <div class="offer-form-heading"><h2>Profil &amp; tautan sosial</h2><span>Bagian atas halaman publik. Tautan sosial opsional.</span></div>
+          <div class="field"><label for="settings-avatar">URL avatar</label><input id="settings-avatar" type="text" name="avatar_url" maxlength="2048" value="{{.Settings.AvatarURL}}" placeholder="https://domain-lo.com/foto.jpg" /><input type="file" id="settings-avatar-file" name="avatar_file" accept="image/png,image/jpeg,image/webp" /><p class="field-help">Foto profil bulat di header. Unggah PNG/JPEG/WebP maks 5 MB atau isi URL/path. Kosongkan untuk memakai logo.</p></div>
+          <div class="profile-social-fields">
+            {{range socialPlatforms}}
+            <div class="field"><label for="settings-social-{{.Key}}">{{.Label}}</label><input id="settings-social-{{.Key}}" type="text" name="social_{{.Key}}" maxlength="2048" value="{{index $.Social .Key}}" placeholder="{{if eq .Key "email"}}nama@email.com{{else}}https://…{{end}}" /></div>
+            {{end}}
+          </div>
+          <p class="field-help">Isi hanya tautan yang dipakai. Jika semua kosong, baris ikon sosial tidak muncul di halaman publik.</p>
+        </section>
+        <section class="analytics-page-panel settings-panel">
           <div class="offer-form-heading"><h2>Identitas halaman</h2><span>Ditampilkan pada halaman publik.</span></div>
           <div class="form-pair">
             <div class="field"><label for="settings-site-name">Nama halaman</label><input id="settings-site-name" name="site_name" type="text" maxlength="80" required value="{{.Settings.SiteName}}" /></div>
-            <div class="field"><label for="settings-site-desc">Deskripsi singkat</label><input id="settings-site-desc" name="site_desc" type="text" maxlength="200" value="{{.Settings.SiteDesc}}" /></div>
+            <div class="field"><label for="settings-site-desc">Deskripsi singkat</label><input id="settings-site-desc" name="site_desc" type="text" maxlength="200" value="{{.Settings.SiteDesc}}" /><p class="field-help">Juga dipakai sebagai bio di header profil.</p></div>
           </div>
         </section>
 

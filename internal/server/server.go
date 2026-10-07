@@ -62,7 +62,12 @@ func New(cfg *config.Config, database *db.DB, webFS embed.FS) http.Handler {
 				return result
 			},
 			"itemTypeLabel": func(value string) string {
-				return map[string]string{"product": "Produk", "referral": "Referral", "service": "Jasa", "resource": "Resource"}[value]
+				return map[string]string{"product": "Produk", "referral": "Referral", "service": "Jasa", "resource": "Resource", "article": "Artikel"}[value]
+			},
+			"socialPlatforms": func() []socialPlatform { return socialPlatformList },
+			"publicProfile": func() publicProfile {
+				settings, _ := database.GetSiteSettings()
+				return buildPublicProfile(settings)
 			},
 			"percent": func(val, max int64) int64 {
 				if max == 0 {
