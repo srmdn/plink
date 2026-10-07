@@ -11,21 +11,25 @@ import (
 // socialPlatform is one supported profile link. The order here drives both the
 // admin form and the public icon row.
 type socialPlatform struct {
-	Key   string
-	Label string
+	Key     string
+	Label   string
+	Support bool
 }
 
 var socialPlatformList = []socialPlatform{
-	{"website", "Website"},
-	{"instagram", "Instagram"},
-	{"x", "X"},
-	{"facebook", "Facebook"},
-	{"youtube", "YouTube"},
-	{"github", "GitHub"},
-	{"linkedin", "LinkedIn"},
-	{"telegram", "Telegram"},
-	{"whatsapp", "WhatsApp"},
-	{"email", "Email"},
+	{Key: "website", Label: "Website"},
+	{Key: "instagram", Label: "Instagram"},
+	{Key: "x", Label: "X"},
+	{Key: "facebook", Label: "Facebook"},
+	{Key: "youtube", Label: "YouTube"},
+	{Key: "github", Label: "GitHub"},
+	{Key: "linkedin", Label: "LinkedIn"},
+	{Key: "telegram", Label: "Telegram"},
+	{Key: "whatsapp", Label: "WhatsApp"},
+	{Key: "email", Label: "Email"},
+	{Key: "trakteer", Label: "Trakteer", Support: true},
+	{Key: "kofi", Label: "Ko-fi", Support: true},
+	{Key: "buymeacoffee", Label: "Buy Me a Coffee", Support: true},
 }
 
 type socialLink struct {
@@ -37,6 +41,7 @@ type socialLink struct {
 type publicProfile struct {
 	AvatarURL string
 	Links     []socialLink
+	Support   []socialLink
 }
 
 // parseSocialLinks reads the stored JSON into a platform -> URL map. Unknown
@@ -90,8 +95,15 @@ func buildPublicProfile(settings db.SiteSettings) publicProfile {
 	}
 	values := parseSocialLinks(settings.SocialLinks)
 	for _, platform := range socialPlatformList {
-		if value := values[platform.Key]; value != "" {
-			profile.Links = append(profile.Links, socialLink{Key: platform.Key, Label: platform.Label, URL: value})
+		value := values[platform.Key]
+		if value == "" {
+			continue
+		}
+		link := socialLink{Key: platform.Key, Label: platform.Label, URL: value}
+		if platform.Support {
+			profile.Support = append(profile.Support, link)
+		} else {
+			profile.Links = append(profile.Links, link)
 		}
 	}
 	return profile

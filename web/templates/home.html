@@ -5,13 +5,14 @@
 {{define "public-header"}}
 {{$profile := publicProfile}}
 <header class="store-header profile-header">
+  {{if .IsLoggedIn}}<a class="store-dashboard" href="/{{.AdminPath}}">{{template "nav-icon" "settings"}}<span>Kelola</span></a>{{end}}
   <div class="profile-block">
     <span class="profile-avatar">{{if $profile.AvatarURL}}<img src="{{$profile.AvatarURL}}" alt="" />{{else}}{{template "brand-mark"}}{{end}}</span>
     <strong class="profile-name">{{.SiteName}}</strong>
     {{if .SiteDesc}}<p class="profile-bio">{{.SiteDesc}}</p>{{end}}
+    {{if $profile.Support}}<div class="profile-support"><span class="profile-support-label">Dukungan</span><div class="profile-support-row">{{range $profile.Support}}<a href="{{.URL}}" target="_blank" rel="noopener me">{{template "social-icon" .Key}}<span>{{.Label}}</span></a>{{end}}</div></div>{{end}}
     {{if $profile.Links}}<nav class="profile-social" aria-label="Tautan sosial">{{range $profile.Links}}<a href="{{.URL}}" target="_blank" rel="noopener me" aria-label="{{.Label}}" title="{{.Label}}">{{template "social-icon" .Key}}</a>{{end}}</nav>{{end}}
   </div>
-  {{if .IsLoggedIn}}<a class="store-dashboard" href="/{{.AdminPath}}">Dashboard</a>{{end}}
 </header>
 {{end}}
 {{define "public-nav"}}
@@ -28,8 +29,8 @@
 <script src="/js/storefront.js" defer></script>
 {{end}}
 {{define "offer-card"}}
-<article class="offer-card offer-card--{{.ItemType}}{{if not .ImageURL}} offer-card--no-image{{end}}" data-favorite-card="{{.HomeSlug}}">
-<button class="favorite-button" type="button" data-favorite="{{.HomeSlug}}" aria-label="Simpan {{.Title}} ke favorit" aria-pressed="false">{{template "nav-icon" "heart"}}</button>
+<article class="offer-card offer-card--{{.ItemType}}{{if not .ImageURL}} offer-card--no-image{{end}}"{{if ne .ItemType "article"}} data-favorite-card="{{.HomeSlug}}"{{end}}>
+{{if ne .ItemType "article"}}<button class="favorite-button" type="button" data-favorite="{{.HomeSlug}}" aria-label="Simpan {{.Title}} ke favorit" aria-pressed="false">{{template "nav-icon" "heart"}}</button>{{end}}
 <a href="{{if eq .ItemType "article"}}{{.HomeURL}}{{else}}/{{.HomeSlug}}{{end}}" target="_blank" rel="noopener" aria-label="{{.Title}} — {{.ButtonLabel}}">
 <div class="offer-image">{{if .ImageURL}}<img src="{{.ImageURL}}" alt="" loading="lazy" />{{else}}<span class="offer-image-placeholder" aria-hidden="true">{{template "brand-mark"}}</span>{{end}}<span class="offer-badge">{{itemTypeLabel .ItemType}}</span></div>
 <div class="offer-card-copy"><span class="offer-provider">{{if .Provider}}{{.Provider}}{{else}}{{.Category}}{{end}}</span><h3>{{.Title}}</h3>{{if .Description}}<p>{{.Description}}</p>{{end}}<span class="offer-card-cta">{{.ButtonLabel}} <span aria-hidden="true">↗</span></span></div>

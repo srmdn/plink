@@ -30,11 +30,25 @@ func TestArticleCatalogItem(t *testing.T) {
 	if !strings.Contains(body, "Artikel") {
 		t.Fatal("home article section missing")
 	}
+	if strings.Contains(body, `data-favorite-card="cara-pilih-vps"`) || strings.Contains(body, `data-favorite="cara-pilih-vps"`) {
+		t.Fatal("article card should not offer a favorite action")
+	}
 
 	list := httptest.NewRecorder()
 	handler.ServeHTTP(list, httptest.NewRequest("GET", "/offers?view=articles", nil))
 	if list.Code != http.StatusOK || !strings.Contains(list.Body.String(), "Cara pilih VPS") {
 		t.Fatalf("articles view missing the item: %d", list.Code)
+	}
+
+	catalog := httptest.NewRecorder()
+	handler.ServeHTTP(catalog, httptest.NewRequest("GET", "/offers", nil))
+	if strings.Contains(catalog.Body.String(), "Cara pilih VPS") {
+		t.Fatal("article should be excluded from the main catalog grid")
+	}
+	search := httptest.NewRecorder()
+	handler.ServeHTTP(search, httptest.NewRequest("GET", "/offers?q=pilih+VPS", nil))
+	if !strings.Contains(search.Body.String(), "Cara pilih VPS") {
+		t.Fatal("article should still be found through search")
 	}
 }
 
@@ -52,6 +66,7 @@ func TestSettingsProfileAndSocialLinks(t *testing.T) {
 		"avatar_url":       {"/media/avatar.png"},
 		"social_instagram": {"https://instagram.com/said"},
 		"social_email":     {"me@example.com"},
+		"social_trakteer":  {"https://trakteer.id/said"},
 	}
 	post := func() *httptest.ResponseRecorder {
 		r := httptest.NewRequest("POST", "/admin/settings", strings.NewReader(form.Encode()))
@@ -88,6 +103,9 @@ func TestSettingsProfileAndSocialLinks(t *testing.T) {
 	}
 	if !strings.Contains(body, `href="https://instagram.com/said"`) || !strings.Contains(body, `href="mailto:me@example.com"`) {
 		t.Fatal("social links not rendered in the public header")
+	}
+	if !strings.Contains(body, "profile-support") || !strings.Contains(body, `href="https://trakteer.id/said"`) || !strings.Contains(body, "Trakteer") {
+		t.Fatal("support link not rendered as a donation button")
 	}
 
 	form.Set("social_instagram", "javascript:alert(1)")

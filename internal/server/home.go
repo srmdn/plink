@@ -292,6 +292,11 @@ func (s *Server) handleBrowse(w http.ResponseWriter, r *http.Request, resourcesO
 		if view == "services" && card.ItemType != "service" || view == "resources" && card.ItemType != "resource" || view == "articles" && card.ItemType != "article" {
 			continue
 		}
+		// Articles live in their own section and view; keep them out of the
+		// general catalog grid unless the visitor is actively searching.
+		if view == "categories" && card.ItemType == "article" && query == "" {
+			continue
+		}
 		if card.Category != "" && !seenCategory[card.Category] {
 			categories = append(categories, card.Category)
 			seenCategory[card.Category] = true

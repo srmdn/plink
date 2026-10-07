@@ -104,7 +104,7 @@
           <a class="guide-module" href="/{{.AdminPath}}"><strong>Tautan</strong><span>Slug, URL tujuan, kategori, penyedia, channel, dan kampanye. Cocok untuk tautan biasa maupun mengedit tujuan tautan milik Item.</span><small>Buka Tautan ↗</small></a>
           <a class="guide-module" href="/{{.AdminPath}}/offers"><strong>Katalog</strong><span>Satu kartu produk atau program, beberapa slug, tanggal berlaku, dan Status program yang dibagikan ke semua slug terkait.</span><small>Buka Katalog ↗</small></a>
           <a class="guide-module" href="/{{.AdminPath}}/analytics/dashboard"><strong>Statistik</strong><span>Bandingkan klik pengalihan menurut tautan, penyedia, channel, atau kampanye. Buka satu tautan untuk melihat detailnya.</span><small>Buka Statistik ↗</small></a>
-          <a class="guide-module" href="/{{.AdminPath}}/settings"><strong>Pengaturan</strong><span>Identitas halaman, keterangan referral, pilihan utama, SEO &amp; berbagi, serta warna publik/admin. Konten kartu tetap di Katalog.</span><small>Buka Pengaturan ↗</small></a>
+          <a class="guide-module" href="/{{.AdminPath}}/settings"><strong>Pengaturan</strong><span>Identitas halaman, profil &amp; tautan sosial, keterangan referral, pilihan utama, SEO &amp; berbagi, serta warna publik/admin. Konten kartu tetap di Katalog.</span><small>Buka Pengaturan ↗</small></a>
         </div>
         <div class="guide-example"><strong>Contoh: satu program promo</strong><p>Item <b>promo-bulanan</b> punya slug <code>/promo-bulanan</code> untuk kartu beranda, <code>/promo-bulanan-threads</code> untuk Threads, dan <code>/promo-bulanan-instagram</code> untuk Instagram. Tiap slug punya statistik sendiri. Status program cukup diubah sekali di Item.</p></div>
       </section>
@@ -188,6 +188,8 @@
         <ol class="guide-steps">
           <li>Buka <a href="/{{.AdminPath}}/settings">Pengaturan</a> → <b>Identitas halaman</b> untuk mengganti nama dan deskripsi situs.</li>
           <li>Di <b>Logo &amp; favicon</b>, unggah PNG/JPEG/WebP (maks 5 MB) atau isi <b>URL logo</b> dan <b>URL favicon</b> (URL HTTPS atau path lokal; SVG lewat URL). Unggahan menimpa URL. Logo tampil di publik dan admin. Favicon kosong mengikuti logo; tanpa keduanya, ikon bawaan mengikuti aksen publik.</li>
+          <li>Di <b>Profil &amp; tautan sosial</b>, atur <b>avatar</b> (kosong = memakai logo) dan tautan sosial opsional. <b>Deskripsi singkat</b> dipakai sebagai bio. Trakteer, Ko-fi, dan Buy Me a Coffee tampil sebagai tombol Dukungan; tautan lain sebagai ikon. Baris ini tersembunyi jika kosong.</li>
+          <li>Di Katalog, jenis item <b>Artikel</b> menampilkan kartu di section Bacaan beranda dan halaman Artikel; kliknya langsung ke URL tulisan, dan kartu artikel tidak punya tombol favorit.</li>
           <li>Di <b>Keterangan referral</b>, tulis catatan afiliasi yang tampil di katalog.</li>
           <li>Di <b>SEO &amp; berbagi</b>, atur <b>Judul SEO</b>, <b>Deskripsi SEO</b>, <b>URL gambar share</b> (atau unggah PNG/JPEG/WebP 1200 × 630), dan <b>Alamat publik</b>. <b>Preview otomatis per Item Katalog</b> membuat kartu share dari judul, deskripsi, dan gambar Item.</li>
           <li>Di <b>Pilihan utama</b>, aktifkan tampilan pilihan utama di beranda dan pilih jumlah 1–3 kartu.</li>
