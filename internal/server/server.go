@@ -72,7 +72,7 @@ func New(cfg *config.Config, database *db.DB, webFS embed.FS) http.Handler {
 				return result
 			},
 			"itemTypeLabel": func(value string) string {
-				return map[string]string{"product": "Produk", "referral": "Referral", "service": "Jasa", "resource": "Resource", "article": "Artikel"}[value]
+				return map[string]string{"product": "Produk", "referral": "Referral", "service": "Jasa", "resource": "Resource", "article": "Artikel", "project": "Proyek"}[value]
 			},
 			"socialPlatforms": func() []socialPlatform { return socialPlatformList },
 			"publicProfile": func() publicProfile {

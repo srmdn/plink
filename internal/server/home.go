@@ -26,6 +26,7 @@ type homeData struct {
 	FeaturedOffers      []db.Offer
 	Services            []db.Offer
 	Articles            []db.Offer
+	Projects            []db.Offer
 	ResourceOffers      []db.Offer
 	ServiceLinks        []db.PublicLink
 	OfferCategories     []string
@@ -140,14 +141,14 @@ func (s *Server) handleHome(w http.ResponseWriter, r *http.Request) {
 	featuredOffers := make([]db.Offer, 0, settings.FeaturedLimit)
 	featuredOfferIDs := make(map[int64]bool, settings.FeaturedLimit)
 	for _, offer := range activeOffers {
-		if settings.HeroEnabled && offer.ItemType != "service" && offer.ItemType != "resource" && offer.ItemType != "article" && offer.Featured && len(featuredOffers) < settings.FeaturedLimit {
+		if settings.HeroEnabled && offer.ItemType != "service" && offer.ItemType != "resource" && offer.ItemType != "article" && offer.ItemType != "project" && offer.Featured && len(featuredOffers) < settings.FeaturedLimit {
 			featuredOffers = append(featuredOffers, offer)
 			featuredOfferIDs[offer.ID] = true
 		}
 	}
 	pageOffers := make([]db.Offer, 0, 6)
 	for _, offer := range activeOffers {
-		if featuredOfferIDs[offer.ID] || offer.ItemType == "service" || offer.ItemType == "resource" || offer.ItemType == "article" {
+		if featuredOfferIDs[offer.ID] || offer.ItemType == "service" || offer.ItemType == "resource" || offer.ItemType == "article" || offer.ItemType == "project" {
 			continue
 		}
 		pageOffers = append(pageOffers, offer)
@@ -167,7 +168,7 @@ func (s *Server) handleHome(w http.ResponseWriter, r *http.Request) {
 	}
 	sort.Strings(categories)
 
-	var services, resourceOffers, articles []db.Offer
+	var services, resourceOffers, articles, projects []db.Offer
 	for _, offer := range activeOffers {
 		if offer.ItemType == "service" {
 			services = append(services, offer)
@@ -177,6 +178,9 @@ func (s *Server) handleHome(w http.ResponseWriter, r *http.Request) {
 		}
 		if offer.ItemType == "article" && len(articles) < 4 {
 			articles = append(articles, offer)
+		}
+		if offer.ItemType == "project" && len(projects) < 4 {
+			projects = append(projects, offer)
 		}
 	}
 	var serviceLinks, resources []db.PublicLink
@@ -199,7 +203,7 @@ func (s *Server) handleHome(w http.ResponseWriter, r *http.Request) {
 		SEO:      s.publicSEO(settings, r, ""),
 		Settings: settings,
 		Links:    links,
-		Services: services, Articles: articles, ResourceOffers: resourceOffers, ServiceLinks: serviceLinks,
+		Services: services, Articles: articles, Projects: projects, ResourceOffers: resourceOffers, ServiceLinks: serviceLinks,
 		Offers:              pageOffers,
 		FeaturedOffers:      featuredOffers,
 		OfferCategories:     categoriesForOffers(publicOffers(offers, today)),
@@ -265,7 +269,7 @@ func (s *Server) handleBrowse(w http.ResponseWriter, r *http.Request, resourcesO
 		view = "resources"
 	}
 	switch view {
-	case "services", "favorites", "resources", "articles":
+	case "services", "favorites", "resources", "articles", "projects":
 	default:
 		view = "categories"
 	}
@@ -289,12 +293,12 @@ func (s *Server) handleBrowse(w http.ResponseWriter, r *http.Request, resourcesO
 	seenCategory, seenProvider := map[string]bool{}, map[string]bool{}
 	cards := []publicCard{}
 	for _, card := range all {
-		if view == "services" && card.ItemType != "service" || view == "resources" && card.ItemType != "resource" || view == "articles" && card.ItemType != "article" {
+		if view == "services" && card.ItemType != "service" || view == "resources" && card.ItemType != "resource" || view == "articles" && card.ItemType != "article" || view == "projects" && card.ItemType != "project" {
 			continue
 		}
-		// Articles live in their own section and view; keep them out of the
-		// general catalog grid unless the visitor is actively searching.
-		if view == "categories" && card.ItemType == "article" && query == "" {
+		// Articles and projects live in their own section and view; keep them
+		// out of the general catalog grid unless the visitor is searching.
+		if view == "categories" && (card.ItemType == "article" || card.ItemType == "project") && query == "" {
 			continue
 		}
 		if card.Category != "" && !seenCategory[card.Category] {
@@ -353,7 +357,7 @@ func (s *Server) handleBrowse(w http.ResponseWriter, r *http.Request, resourcesO
 		}
 		cards = cards[start:end]
 	}
-	title := map[string]string{"categories": "Kategori", "services": settings.ServiceTitle, "favorites": "Favorit", "resources": "Resource", "articles": "Artikel"}[view]
+	title := map[string]string{"categories": "Kategori", "services": settings.ServiceTitle, "favorites": "Favorit", "resources": "Resource", "articles": "Artikel", "projects": "Proyek"}[view]
 	w.Header().Add("Vary", "Cookie")
 	s.renderTemplate(w, "browse", browseData{Settings: settings, SEO: s.publicSEO(settings, r, view, effectivePage), Cards: cards, Categories: categories, Providers: providers, Category: category, Provider: provider, Query: query, View: view, Title: title, Total: total, Pages: pages, SiteName: settings.SiteName, SiteDesc: settings.SiteDesc, AffiliateDisclosure: settings.AffiliateDisclosure, IsLoggedIn: s.isLoggedIn(r), AdminPath: s.cfg.AdminPath})
 }

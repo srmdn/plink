@@ -82,6 +82,8 @@ func (s *Server) handleOGImage(w http.ResponseWriter, r *http.Request) {
 		title = "Katalog pilihan"
 	case "resources":
 		title = "Resource pilihan"
+	case "projects":
+		title = "Proyek pilihan"
 	}
 	if slug := r.URL.Query().Get("slug"); slug != "" {
 		link, err := s.db.GetLinkBySlug(slug)

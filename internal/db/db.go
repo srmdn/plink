@@ -184,6 +184,37 @@ ALTER TABLE site_settings ADD COLUMN service_description TEXT NOT NULL DEFAULT '
 	// v15: biolink profile avatar and optional social links.
 	`ALTER TABLE site_settings ADD COLUMN avatar_url TEXT NOT NULL DEFAULT '';
 	ALTER TABLE site_settings ADD COLUMN social_links TEXT NOT NULL DEFAULT '';`,
+	// v16: allow portfolio projects as a catalog item type. LIKE v14, SQLite
+	// cannot widen a CHECK constraint in place, so the table is rebuilt.
+	`CREATE TABLE offers_v16 (
+		id                 INTEGER PRIMARY KEY AUTOINCREMENT,
+		title              TEXT NOT NULL,
+		provider           TEXT NOT NULL DEFAULT '',
+		description        TEXT NOT NULL DEFAULT '',
+		category           TEXT NOT NULL DEFAULT '',
+		image_url          TEXT NOT NULL DEFAULT '',
+		button_label       TEXT NOT NULL DEFAULT 'Lihat promo',
+		fallback_url       TEXT NOT NULL DEFAULT '',
+		starts_on          TEXT NOT NULL DEFAULT '',
+		ends_on            TEXT NOT NULL DEFAULT '',
+		active             INTEGER NOT NULL DEFAULT 1,
+		featured           INTEGER NOT NULL DEFAULT 0,
+		priority           INTEGER NOT NULL DEFAULT 0,
+		created_at         INTEGER NOT NULL,
+		updated_at         INTEGER NOT NULL,
+		program_status     TEXT NOT NULL DEFAULT 'active' CHECK (program_status IN ('active', 'paused', 'ended')),
+		ended_behavior     TEXT NOT NULL DEFAULT 'notice' CHECK (ended_behavior IN ('notice', 'redirect')),
+		notice_message     TEXT NOT NULL DEFAULT '',
+		notice_source_url  TEXT NOT NULL DEFAULT '',
+		status_changed_on  TEXT NOT NULL DEFAULT '',
+		verified_on        TEXT NOT NULL DEFAULT '',
+		item_type          TEXT NOT NULL DEFAULT 'referral' CHECK (item_type IN ('product', 'referral', 'service', 'resource', 'article', 'project'))
+	);
+	INSERT INTO offers_v16 (id, title, provider, description, category, image_url, button_label, fallback_url, starts_on, ends_on, active, featured, priority, created_at, updated_at, program_status, ended_behavior, notice_message, notice_source_url, status_changed_on, verified_on, item_type)
+		SELECT id, title, provider, description, category, image_url, button_label, fallback_url, starts_on, ends_on, active, featured, priority, created_at, updated_at, program_status, ended_behavior, notice_message, notice_source_url, status_changed_on, verified_on, item_type FROM offers;
+	DROP TABLE offers;
+	ALTER TABLE offers_v16 RENAME TO offers;
+	CREATE INDEX IF NOT EXISTS idx_offers_active_priority ON offers(active, featured, priority);`,
 }
 
 func migrate(conn *sql.DB) error {

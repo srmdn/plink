@@ -66,7 +66,7 @@ func TestPublicSEOAndShareImage(t *testing.T) {
 			Location string `xml:"loc"`
 		} `xml:"url"`
 	}
-	if err := xml.Unmarshal(sitemap.Body.Bytes(), &parsed); err != nil || len(parsed.URLs) != 5 {
+	if err := xml.Unmarshal(sitemap.Body.Bytes(), &parsed); err != nil || len(parsed.URLs) != 6 {
 		t.Fatal("invalid sitemap")
 	}
 	for _, entry := range parsed.URLs {

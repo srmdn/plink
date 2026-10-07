@@ -84,6 +84,9 @@ func (s *Server) publicSEO(settings db.SiteSettings, r *http.Request, view strin
 		case "articles":
 			label = "Artikel"
 			values.Set("view", "articles")
+		case "projects":
+			label = "Proyek"
+			values.Set("view", "projects")
 		}
 		title = label + " · " + settings.SiteName
 		page, _ := strconv.Atoi(r.URL.Query().Get("page"))
@@ -115,7 +118,7 @@ func (s *Server) handleSitemap(w http.ResponseWriter, r *http.Request) {
 		URLs      []entry  `xml:"url"`
 	}{Namespace: "http://www.sitemaps.org/schemas/sitemap/0.9"}
 	base := s.publicURL(r)
-	for _, path := range []string{"/", "/offers", "/offers?view=services", "/offers?view=articles", "/links"} {
+	for _, path := range []string{"/", "/offers", "/offers?view=services", "/offers?view=articles", "/offers?view=projects", "/links"} {
 		body.URLs = append(body.URLs, entry{base + path})
 	}
 	w.Header().Set("Content-Type", "application/xml; charset=utf-8")

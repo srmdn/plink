@@ -1457,7 +1457,7 @@ func parseOfferInput(r *http.Request) (db.OfferInput, error) {
 	if input.ItemType == "" {
 		input.ItemType = "referral"
 	}
-	if input.ItemType != "product" && input.ItemType != "referral" && input.ItemType != "service" && input.ItemType != "resource" && input.ItemType != "article" {
+	if input.ItemType != "product" && input.ItemType != "referral" && input.ItemType != "service" && input.ItemType != "resource" && input.ItemType != "article" && input.ItemType != "project" {
 		return input, fmt.Errorf("jenis item tidak valid")
 	}
 	if input.ProgramStatus == "" {
