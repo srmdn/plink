@@ -1,6 +1,7 @@
 package server
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"regexp"
@@ -53,9 +54,19 @@ func (s *Server) handleSettingsPage(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-func (s *Server) handleSaveSettings(w http.ResponseWriter, r *http.Request) {
-	if err := r.ParseForm(); err != nil {
+// parseSettingsForm parses a urlencoded or multipart settings form with a
+// bounded body size, so a logo or share-image upload cannot exhaust memory.
+func (s *Server) parseSettingsForm(w http.ResponseWriter, r *http.Request) bool {
+	r.Body = http.MaxBytesReader(w, r.Body, maxFormBytes)
+	if err := r.ParseMultipartForm(maxFormBytes); err != nil && !errors.Is(err, http.ErrNotMultipart) {
 		http.Error(w, "bad request", http.StatusBadRequest)
+		return false
+	}
+	return true
+}
+
+func (s *Server) handleSaveSettings(w http.ResponseWriter, r *http.Request) {
+	if !s.parseSettingsForm(w, r) {
 		return
 	}
 	previous, err := s.currentSiteSettings()
@@ -124,6 +135,12 @@ func (s *Server) handleSaveSettings(w http.ResponseWriter, r *http.Request) {
 			*field.value = strings.TrimSpace(values[0])
 		}
 	}
+	if path, err := s.applyUploadedFile(r, "share_image_file"); err != nil {
+		s.renderSettingsDashboard(w, r, settingsDashboardData{Settings: settings, Error: err.Error()})
+		return
+	} else if path != "" {
+		settings.ShareImageURL = path
+	}
 	if !validBrandImage(settings.ShareImageURL) || strings.HasPrefix(settings.ShareImageURL, "/og-image.png") {
 		s.renderSettingsDashboard(w, r, settingsDashboardData{Settings: settings, Error: "Gambar share harus berupa URL HTTPS atau path gambar lokal, bukan endpoint gambar otomatis."})
 		return
@@ -142,6 +159,19 @@ func (s *Server) handleSaveSettings(w http.ResponseWriter, r *http.Request) {
 				s.renderSettingsDashboard(w, r, settingsDashboardData{Settings: settings, Error: "Logo dan favicon harus berupa URL HTTPS atau path lokal, maksimal 2048 karakter."})
 				return
 			}
+		}
+	}
+	for _, asset := range []struct {
+		field string
+		value *string
+	}{{"logo_file", &settings.LogoURL}, {"favicon_file", &settings.FaviconURL}} {
+		path, err := s.applyUploadedFile(r, asset.field)
+		if err != nil {
+			s.renderSettingsDashboard(w, r, settingsDashboardData{Settings: settings, Error: err.Error()})
+			return
+		}
+		if path != "" {
+			*asset.value = path
 		}
 	}
 	for _, color := range []struct {

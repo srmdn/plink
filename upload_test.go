@@ -83,6 +83,79 @@ func createOfferRequest(t *testing.T, cookies []*http.Cookie, fields map[string]
 	return req
 }
 
+func settingsUploadRequest(t *testing.T, cookies []*http.Cookie, fields map[string]string, fileField, fileName string, fileData []byte) *http.Request {
+	t.Helper()
+	var body bytes.Buffer
+	mw := multipart.NewWriter(&body)
+	base := map[string]string{"site_name": "Test", "featured_limit": "3", "hero_title": "Beranda", "service_title": "Jasa"}
+	for k, v := range fields {
+		base[k] = v
+	}
+	for k, v := range base {
+		if err := mw.WriteField(k, v); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if fileName != "" {
+		fw, err := mw.CreateFormFile(fileField, fileName)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if _, err := fw.Write(fileData); err != nil {
+			t.Fatal(err)
+		}
+	}
+	mw.Close()
+	req := httptest.NewRequest("POST", "/admin/settings", &body)
+	req.Header.Set("Content-Type", mw.FormDataContentType())
+	for _, c := range cookies {
+		req.AddCookie(c)
+		if c.Name == "plink_csrf" {
+			req.Header.Set("X-CSRF-Token", c.Value)
+		}
+	}
+	return req
+}
+
+func TestSettingsAssetUpload(t *testing.T) {
+	database, handler, cfg := uploadTestServer(t)
+	cookies := loginAs(t, handler, cfg)
+
+	rec := httptest.NewRecorder()
+	handler.ServeHTTP(rec, settingsUploadRequest(t, cookies, nil, "logo_file", "logo.png", testPNG(t)))
+	if rec.Code != http.StatusSeeOther {
+		t.Fatalf("settings logo upload: %d %s", rec.Code, rec.Body.String())
+	}
+	settings, err := database.GetSiteSettings()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.HasPrefix(settings.LogoURL, "/media/") || !strings.HasSuffix(settings.LogoURL, ".png") {
+		t.Fatalf("logo url = %q, want /media/<hash>.png", settings.LogoURL)
+	}
+	name := strings.TrimPrefix(settings.LogoURL, "/media/")
+	media := httptest.NewRecorder()
+	handler.ServeHTTP(media, httptest.NewRequest("GET", "/media/"+name, nil))
+	if media.Code != http.StatusOK {
+		t.Fatalf("uploaded logo media returned %d", media.Code)
+	}
+	favicon := httptest.NewRecorder()
+	handler.ServeHTTP(favicon, httptest.NewRequest("GET", "/favicon.svg", nil))
+	if favicon.Code != http.StatusFound || favicon.Header().Get("Location") != settings.LogoURL {
+		t.Fatalf("favicon fallback: %d %q", favicon.Code, favicon.Header().Get("Location"))
+	}
+
+	rec = httptest.NewRecorder()
+	handler.ServeHTTP(rec, settingsUploadRequest(t, cookies, nil, "share_image_file", "note.txt", []byte("this is not an image")))
+	if rec.Code != http.StatusOK || !strings.Contains(rec.Body.String(), "PNG") {
+		t.Fatalf("invalid share image should re-render, got %d", rec.Code)
+	}
+	saved, _ := database.GetSiteSettings()
+	if saved.LogoURL != settings.LogoURL || saved.ShareImageURL != settings.ShareImageURL {
+		t.Fatal("invalid upload modified saved assets")
+	}
+}
+
 func TestOfferImageUpload(t *testing.T) {
 	database, handler, cfg := uploadTestServer(t)
 	cookies := loginAs(t, handler, cfg)

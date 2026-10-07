@@ -75,7 +75,13 @@ func (s *Server) storeImage(data []byte) (string, error) {
 // applyUploadedImage stores the optional image_file field from a form and
 // returns its public path, or an empty string when no file was submitted.
 func (s *Server) applyUploadedImage(r *http.Request) (string, error) {
-	file, header, err := r.FormFile("image_file")
+	return s.applyUploadedFile(r, "image_file")
+}
+
+// applyUploadedFile stores the optional named file field from a form and
+// returns its public path, or an empty string when no file was submitted.
+func (s *Server) applyUploadedFile(r *http.Request, field string) (string, error) {
+	file, header, err := r.FormFile(field)
 	if err != nil {
 		return "", nil
 	}
