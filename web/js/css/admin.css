@@ -785,3 +785,27 @@
 .admin-page .share-preview figcaption { display:grid; gap:6px; padding:14px; }
 .admin-page .share-preview small,.admin-page .share-preview span { color:var(--muted); font-size:12px; overflow-wrap:anywhere; }
 .admin-page .share-preview strong { font-size:16px; overflow-wrap:anywhere; }
+
+/* Native <datalist> dropdowns are inconsistent across browsers (the caret can
+   show without opening, e.g. Safari 26.2). Inputs are enhanced into a custom
+   combobox that keeps free-text entry and works everywhere. */
+.admin-page .combo { position:relative; }
+.admin-page .combo > input { padding-right:36px; }
+.admin-page .combo-toggle {
+  position:absolute; top:50%; right:4px; transform:translateY(-50%);
+  width:28px; height:28px; padding:0; border:0; border-radius:8px;
+  background:transparent; color:var(--muted); cursor:pointer;
+  display:inline-flex; align-items:center; justify-content:center;
+}
+.admin-page .combo-toggle:hover { color:var(--text); background:var(--surface2); }
+.admin-page .combo-toggle svg { width:14px; height:14px; }
+.combo-list {
+  position:fixed; z-index:400; margin:0; padding:4px; list-style:none;
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:var(--radius); box-shadow:0 12px 32px rgba(0,0,0,.16);
+  max-height:220px; overflow-y:auto;
+}
+.combo-list[hidden] { display:none; }
+.combo-option { padding:8px 10px; border-radius:8px; font-size:13px; color:var(--text); cursor:pointer; }
+.combo-option:hover,.combo-option.is-active { background:var(--surface2); }
+.combo-empty { padding:8px 10px; font-size:12px; color:var(--muted); }

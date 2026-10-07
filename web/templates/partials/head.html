@@ -1018,9 +1018,143 @@ document.addEventListener('click', () => {
   const m = document.getElementById('export-menu');
   if (m) m.classList.add('hidden');
 });
+// Native <datalist> dropdowns are unreliable across browsers (the caret can
+// show without opening in some Safari versions). Enhance list inputs into a
+// custom combobox that keeps free-text entry while offering the suggestions.
+function enhanceComboInputs(root) {
+  var liveTokens = {};
+  document.querySelectorAll('input[data-combo-token]').forEach(function(el) { liveTokens[el.dataset.comboToken] = true; });
+  document.querySelectorAll('.combo-list').forEach(function(el) { if (!liveTokens[el.dataset.comboOwner]) el.remove(); });
+  (root || document).querySelectorAll('input[list]').forEach(function(input) {
+    if (input.dataset.comboEnhanced === '1') return;
+    var listId = input.getAttribute('list');
+    var datalist = listId ? document.getElementById(listId) : null;
+    var values = datalist ? Array.prototype.map.call(datalist.options, function(o) { return o.value; }).filter(Boolean) : [];
+    if (!values.length) return;
+    input.dataset.comboEnhanced = '1';
+    input.removeAttribute('list');
+    input.setAttribute('role', 'combobox');
+    input.setAttribute('aria-autocomplete', 'list');
+    input.setAttribute('aria-expanded', 'false');
+    var wrap = document.createElement('div');
+    wrap.className = 'combo';
+    input.parentNode.insertBefore(wrap, input);
+    wrap.appendChild(input);
+    var toggle = document.createElement('button');
+    toggle.type = 'button';
+    toggle.className = 'combo-toggle';
+    toggle.tabIndex = -1;
+    toggle.setAttribute('aria-label', 'Tampilkan pilihan');
+    toggle.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>';
+    wrap.appendChild(toggle);
+    var list = document.createElement('ul');
+    list.className = 'combo-list';
+    list.setAttribute('role', 'listbox');
+    list.hidden = true;
+    list.id = 'combo-' + Math.random().toString(36).slice(2, 9);
+    var token = 'c' + Math.random().toString(36).slice(2, 10);
+    input.dataset.comboToken = token;
+    list.dataset.comboOwner = token;
+    input.setAttribute('aria-controls', list.id);
+    document.body.appendChild(list);
+    var visible = [];
+    var activeIndex = -1;
+    function position() {
+      var rect = input.getBoundingClientRect();
+      list.style.left = rect.left + 'px';
+      list.style.top = (rect.bottom + 4) + 'px';
+      list.style.width = Math.max(rect.width, 120) + 'px';
+    }
+    function render(matchValue) {
+      var query = matchValue ? input.value.trim().toLowerCase() : '';
+      visible = values.filter(function(value) { return !query || value.toLowerCase().indexOf(query) !== -1; });
+      list.textContent = '';
+      activeIndex = -1;
+      input.removeAttribute('aria-activedescendant');
+      if (!visible.length) {
+        var empty = document.createElement('li');
+        empty.className = 'combo-empty';
+        empty.textContent = 'Tidak ada pilihan';
+        list.appendChild(empty);
+        return;
+      }
+      visible.forEach(function(value, index) {
+        var option = document.createElement('li');
+        option.className = 'combo-option';
+        option.id = list.id + '-opt-' + index;
+        option.setAttribute('role', 'option');
+        option.textContent = value;
+        option.addEventListener('mousedown', function(event) { event.preventDefault(); });
+        option.addEventListener('click', function() { choose(value); });
+        list.appendChild(option);
+      });
+    }
+    function open() {
+      if (!list.hidden) { position(); return; }
+      render(false);
+      position();
+      list.hidden = false;
+      input.setAttribute('aria-expanded', 'true');
+      window.addEventListener('scroll', position, true);
+      window.addEventListener('resize', position);
+    }
+    function close() {
+      if (list.hidden) return;
+      list.hidden = true;
+      input.setAttribute('aria-expanded', 'false');
+      input.removeAttribute('aria-activedescendant');
+      window.removeEventListener('scroll', position, true);
+      window.removeEventListener('resize', position);
+    }
+    function choose(value) {
+      input.value = value;
+      close();
+      input.dispatchEvent(new Event('change', { bubbles: true }));
+      input.focus();
+    }
+    function highlight() {
+      Array.prototype.forEach.call(list.children, function(option, index) {
+        var isActive = index === activeIndex;
+        option.classList.toggle('is-active', isActive);
+        option.setAttribute('aria-selected', String(isActive));
+      });
+      if (activeIndex >= 0 && list.children[activeIndex]) {
+        input.setAttribute('aria-activedescendant', list.children[activeIndex].id);
+        list.children[activeIndex].scrollIntoView({ block: 'nearest' });
+      } else {
+        input.removeAttribute('aria-activedescendant');
+      }
+    }
+    function move(delta) {
+      if (list.hidden) { open(); return; }
+      if (!visible.length) return;
+      activeIndex = (activeIndex + delta + visible.length) % visible.length;
+      highlight();
+    }
+    input.addEventListener('focus', open);
+    input.addEventListener('click', open);
+    input.addEventListener('input', function() { if (list.hidden) open(); render(true); position(); });
+    input.addEventListener('keydown', function(event) {
+      if (event.key === 'ArrowDown') { event.preventDefault(); move(1); }
+      else if (event.key === 'ArrowUp') { event.preventDefault(); move(-1); }
+      else if (event.key === 'Enter') { if (!list.hidden && visible.length) { event.preventDefault(); choose(visible[activeIndex >= 0 ? activeIndex : 0]); } }
+      else if (event.key === 'Escape') { close(); }
+      else if (event.key === 'Tab') { close(); }
+    });
+    toggle.addEventListener('mousedown', function(event) { event.preventDefault(); });
+    toggle.addEventListener('click', function() { if (list.hidden) { input.focus(); open(); } else { close(); } });
+    input.addEventListener('blur', function() {
+      window.setTimeout(function() { if (!list.hidden && document.activeElement !== input) close(); }, 0);
+    });
+    document.addEventListener('click', function(event) {
+      if (!wrap.contains(event.target) && !list.contains(event.target)) close();
+    });
+  });
+}
+document.addEventListener('DOMContentLoaded', function() { enhanceComboInputs(document); });
 // Open modals when htmx swaps content into them
 document.addEventListener('htmx:afterSwap', function(e) {
-  if (e.detail.target.id === 'modal-body') openModal();
+  if (e.detail.target.id === 'modal-body') { openModal(); enhanceComboInputs(e.detail.target); }
   if (e.detail.target.id === 'analytics-body') openAnalyticsModal();
 });
 // Close modal after successful form save (triggered by HX-Trigger: closeModal)
