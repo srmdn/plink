@@ -25,6 +25,7 @@ type Config struct {
 	SiteDesc           string
 	AnalyticsScriptURL string
 	AnalyticsWebsiteID string
+	CloudflareInsights bool
 	UploadsDir         string
 	reportLocation     *time.Location
 }
@@ -46,6 +47,12 @@ func Load() *Config {
 	publicURL, err := NormalizePublicURL(getEnv("PUBLIC_URL", ""), getEnv("APP_ENV", "development") == "production")
 	if err != nil {
 		log.Fatalf("PUBLIC_URL tidak valid: %v", err)
+	}
+
+	cloudflareInsights := false
+	switch strings.ToLower(strings.TrimSpace(getEnv("CLOUDFLARE_INSIGHTS", ""))) {
+	case "1", "true", "on", "yes":
+		cloudflareInsights = true
 	}
 
 	analyticsURL := strings.TrimSpace(getEnv("ANALYTICS_SCRIPT_URL", ""))
@@ -76,6 +83,7 @@ func Load() *Config {
 		SiteDesc:           getEnv("SITE_DESC", "personal links"),
 		AnalyticsScriptURL: analyticsURL,
 		AnalyticsWebsiteID: strings.TrimSpace(getEnv("ANALYTICS_WEBSITE_ID", "")),
+		CloudflareInsights: cloudflareInsights,
 		UploadsDir:         uploadsDir,
 		reportLocation:     reportLocation,
 	}

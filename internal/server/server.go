@@ -34,12 +34,22 @@ type analyticsTag struct {
 
 func (s *Server) securityHeaders(next http.Handler) http.Handler {
 	scriptSrc := "script-src 'self' 'unsafe-inline'"
-	connectSrc := ""
+	// Third-party origins allowed in connect-src. Empty keeps the directive out
+	// entirely so a plain self-hosted instance sends no third-party allowance.
+	var connect []string
+	if s.cfg.CloudflareInsights {
+		// Cloudflare Web Analytics is injected by the proxy; only allow-listed.
+		scriptSrc += " https://static.cloudflareinsights.com"
+		connect = append(connect, "https://cloudflareinsights.com")
+	}
 	if origin := s.cfg.AnalyticsOrigin(); origin != "" {
 		scriptSrc += " " + origin
-		connectSrc = " connect-src 'self' " + origin + ";"
+		connect = append(connect, origin)
 	}
-	csp := "default-src 'self'; " + scriptSrc + "; style-src 'self' 'unsafe-inline'; img-src 'self' https: data:; object-src 'none'; base-uri 'self'; frame-ancestors 'none'" + connectSrc
+	csp := "default-src 'self'; " + scriptSrc + "; style-src 'self' 'unsafe-inline'; img-src 'self' https: data:; object-src 'none'; base-uri 'self'; frame-ancestors 'none';"
+	if len(connect) > 0 {
+		csp += " connect-src 'self' " + strings.Join(connect, " ") + ";"
+	}
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("X-Content-Type-Options", "nosniff")
 		w.Header().Set("X-Frame-Options", "DENY")
