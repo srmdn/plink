@@ -142,12 +142,12 @@ var migrations = []string{
 	ALTER TABLE site_settings ADD COLUMN share_image_url TEXT NOT NULL DEFAULT '';`,
 	// v12: editable public address and storefront copy.
 	`ALTER TABLE site_settings ADD COLUMN public_origin TEXT NOT NULL DEFAULT '';
-ALTER TABLE site_settings ADD COLUMN hero_eyebrow TEXT NOT NULL DEFAULT 'Rekomendasi gue';
+ALTER TABLE site_settings ADD COLUMN hero_eyebrow TEXT NOT NULL DEFAULT 'Rekomendasi saya';
 ALTER TABLE site_settings ADD COLUMN hero_title TEXT NOT NULL DEFAULT 'Barang bagus,
-buat kebutuhan lo.';
-ALTER TABLE site_settings ADD COLUMN hero_description TEXT NOT NULL DEFAULT 'Kumpulan barang, kelas, dan jasa yang gue pakai dan rekomendasiin.';
+untuk kebutuhan Anda.';
+ALTER TABLE site_settings ADD COLUMN hero_description TEXT NOT NULL DEFAULT 'Kumpulan barang, kelas, dan jasa yang saya pakai dan rekomendasikan.';
 ALTER TABLE site_settings ADD COLUMN service_title TEXT NOT NULL DEFAULT 'Jasa';
-ALTER TABLE site_settings ADD COLUMN service_description TEXT NOT NULL DEFAULT 'Butuh bikin website, beresin WordPress, atau ngurus VPS? Ceritain kebutuhan lo.';`,
+ALTER TABLE site_settings ADD COLUMN service_description TEXT NOT NULL DEFAULT 'Butuh membuat website, membereskan WordPress, atau mengurus VPS? Ceritakan kebutuhan Anda.';`,
 	// v13: automatic catalog previews on existing short URLs.
 	`ALTER TABLE site_settings ADD COLUMN item_previews INTEGER NOT NULL DEFAULT 1 CHECK (item_previews IN (0, 1));`,
 	// v14: allow blog articles as a catalog item type. SQLite cannot widen a

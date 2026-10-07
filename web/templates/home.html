@@ -10,7 +10,7 @@
     <span class="profile-avatar">{{if $profile.AvatarURL}}<img src="{{$profile.AvatarURL}}" alt="" />{{else}}{{template "brand-mark"}}{{end}}</span>
     <strong class="profile-name">{{.SiteName}}</strong>
     {{if .SiteDesc}}<p class="profile-bio">{{.SiteDesc}}</p>{{end}}
-    {{if $profile.Support}}<div class="profile-support"><span class="profile-support-label">Dukungan</span><div class="profile-support-row">{{range $profile.Support}}<a href="{{.URL}}" target="_blank" rel="noopener me">{{template "social-icon" .Key}}<span>{{.Label}}</span></a>{{end}}</div></div>{{end}}
+    {{if $profile.Support}}<div class="profile-support"><span class="profile-support-label">Dukung saya</span><div class="profile-support-row">{{range $profile.Support}}<a href="{{.URL}}" target="_blank" rel="noopener me">{{template "social-icon" .Key}}<span>{{.Label}}</span></a>{{end}}</div></div>{{end}}
     {{if $profile.Links}}<nav class="profile-social" aria-label="Tautan sosial">{{range $profile.Links}}<a href="{{.URL}}" target="_blank" rel="noopener me" aria-label="{{.Label}}" title="{{.Label}}">{{template "social-icon" .Key}}</a>{{end}}</nav>{{end}}
   </div>
 </header>
