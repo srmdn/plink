@@ -837,21 +837,6 @@ function openModal() {
 function closeModal() {
   document.getElementById('link-modal').classList.add('hidden');
 }
-function openAnalyticsModal() {
-  document.getElementById('analytics-modal').classList.remove('hidden');
-}
-function closeAnalyticsModal() {
-  document.getElementById('analytics-modal').classList.add('hidden');
-}
-function refreshOpenAnalytics() {
-  var modal = document.getElementById('analytics-modal');
-  var content = document.getElementById('analytics-refresh');
-  var date = document.getElementById('date-filter');
-  if (!modal || modal.classList.contains('hidden') || !content || !content.dataset.analyticsUrl) return;
-  var url = content.dataset.analyticsUrl;
-  if (date && date.value) url += '?date=' + encodeURIComponent(date.value);
-  htmx.ajax('GET', url, {target: '#analytics-body', swap: 'innerHTML'});
-}
 function selectReportDate(value) {
   var date = document.getElementById('date-filter');
   if (!date || !value) return;
@@ -1138,7 +1123,6 @@ document.addEventListener('DOMContentLoaded', function() { enhanceComboInputs(do
 // Open modals when htmx swaps content into them
 document.addEventListener('htmx:afterSwap', function(e) {
   if (e.detail.target.id === 'modal-body') { openModal(); enhanceComboInputs(e.detail.target); }
-  if (e.detail.target.id === 'analytics-body') openAnalyticsModal();
 });
 // Close modal after successful form save (triggered by HX-Trigger: closeModal)
 document.addEventListener('closeModal', closeModal);

@@ -1,6 +1,5 @@
 {{define "overview-analytics"}}
-<script>document.getElementById('analytics-title').textContent = 'traffic sources';</script>
-<div id="analytics-refresh" data-analytics-url="{{.AnalyticsURL}}">
+<div>
 <div class="analytics-grid{{if .DateSelected}} analytics-grid-compact{{end}}">
   <div class="stat-card">
     <div class="stat-value">{{.Total}}</div>

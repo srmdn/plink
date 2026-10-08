@@ -111,7 +111,6 @@ type analyticsData struct {
 	ID                  int64
 	Slug                string
 	ShortURL            string
-	AnalyticsURL        string
 	OverviewURL         string
 	Destination         string
 	Description         string
@@ -143,7 +142,6 @@ type overviewAnalyticsData struct {
 	Referrers           []db.SourceSummary
 	TrafficSourcesLabel string
 	TrafficSourcesEmpty string
-	AnalyticsURL        string
 	DateSelected        bool
 }
 
@@ -1286,7 +1284,6 @@ func (s *Server) analyticsDataForLink(r *http.Request, link *db.Link, interactiv
 		ID:                  link.ID,
 		Slug:                link.Slug,
 		ShortURL:            s.publicURL(r) + "/" + link.Slug,
-		AnalyticsURL:        "/" + s.cfg.AdminPath + "/links/" + strconv.FormatInt(link.ID, 10) + "/analytics",
 		Destination:         link.URL,
 		Description:         link.Description,
 		Category:            link.Category,
@@ -1371,7 +1368,6 @@ func (s *Server) handleOverviewAnalyticsUI(w http.ResponseWriter, r *http.Reques
 		Referrers:           data.Referrers,
 		TrafficSourcesLabel: trafficSourcesLabel,
 		TrafficSourcesEmpty: trafficSourcesEmpty,
-		AnalyticsURL:        "/" + s.cfg.AdminPath + "/analytics",
 		DateSelected:        dateLabel != "",
 	})
 }
