@@ -2,7 +2,7 @@
 
 Self-hosted and production-ready.
 
-Self-hosted personal link shortener. No prefix, no bloat — `yourdomain.com/my-link` goes straight to the destination.
+Self-hosted link shortener that can stay minimal or grow into a public catalog and bio-link page. No prefix, no bloat — `yourdomain.com/my-link` goes straight to the destination.
 
 ```
 yourdomain.com/shopee-referral  →  https://shopee.com/...?ref=xxx
@@ -16,22 +16,29 @@ yourdomain.com/tokopedia-promo  →  https://tokopedia.com/...
   referrer breakdowns
 - Strategy analytics — compare clicks by provider, channel, campaign, or slug
   with period filters, share charts, and provider ranking
-- Offers — manage one public product or promotion card with multiple
-  channel-specific tracking slugs, grouped and filterable by channel or campaign
+- Offers — one public card per product, promotion, service, article, or project,
+  with multiple channel-specific tracking slugs grouped and filterable by channel
+  or campaign
 - Offer lifecycle — manage active, paused, and ended programs across all their
   slugs, with shared visitor notices and optional fallback redirects
 - Notice analytics — count notice views separately from redirect clicks
 - Categories — organize links with filterable labels
 - Public catalogs — search and paginate offer cards and standalone resource links
 - Mobile storefront — centered 480px frame, bottom navigation, unified catalog
-  search, services, and browser-local favorites
-- Catalog types — products, referrals, services, and resources
+  search, services, articles, and browser-local favorites
+- Catalog types — products, referrals, services, resources, articles, and projects
+- Project listing — a Portofolio section and `/offers?view=projects`; project cards
+  link straight to their URL, like article cards
+- Feature toggles — Settings → Fitur publik with preset modes (full catalog, bio
+  link, or shortener-only) or per-feature switches; disabled features leave the
+  navigation and their URLs return 404
+- Storefront settings — edit the public name, description, hero and service copy,
+  affiliate disclosure, logo/favicon/avatar, social and support links, SEO and
+  share image, public address, feature toggles, and independent public/admin
+  accent and background colors (stored in SQLite)
 - Item images — upload PNG/JPEG/WebP (max 5 MB, 25 MP) or reference a URL; no
   image shows the built-in mark
 - Featured picks — up to three manually scrollable cards, separate from the grid
-- Storefront settings — edit the public name, description, affiliate disclosure,
-  featured-pick visibility/limit, logo/favicon image URLs, and separate public/admin
-  accent and background colors
 - Channel attribution — each offer slug tracks its own clicks while the public
   card redirects straight to its affiliate destination
 - Dashboard metrics — see link counts and total clicks at a glance
@@ -77,6 +84,13 @@ last-click display. It does not change the Unix timestamps stored in SQLite.
 Values saved later from the admin Settings page are stored in SQLite and take
 precedence for public pages.
 
+The remaining variables are documented in [`.env.example`](.env.example):
+`ADDR` and `DB_PATH` (listener and SQLite path), `ADMIN_PATH` (custom admin
+path), `PUBLIC_URL` (canonical origin fallback), `UPLOADS_DIR` (image storage),
+`APP_ENV` (`production` enables secure cookies), and the opt-in analytics
+variables `ANALYTICS_SCRIPT_URL`, `ANALYTICS_WEBSITE_ID`, and
+`CLOUDFLARE_INSIGHTS`.
+
 ## Security
 
 - **CSRF protection** — double-submit cookie token on all state-changing requests
@@ -92,19 +106,23 @@ precedence for public pages.
 
 ## Public homepage
 
-Plink uses a centered, mobile-width storefront with bottom navigation for
-Beranda, Kategori, Jasa, and Favorit. The public catalog at `/offers` searches
-both available offer cards and standalone resources. Category and provider
-filters persist during search and pagination. `/links` remains the resource
-catalog. Favorites are stored in the visitor's browser without login; unavailable
-items are omitted from the favorites page.
+Plink uses a centered, mobile-width storefront with a bottom navigation that
+adapts to the enabled features: Beranda, Kategori, and Favorit, plus Proyek and
+Jasa when those features are on (see **Fitur publik** below). The public catalog
+at `/offers` searches both available offer cards and standalone resources.
+Category and provider filters persist during search and pagination. `/links`
+remains the resource catalog. Favorites are stored in the visitor's browser
+without login; unavailable items are omitted from the favorites page. Articles
+render in a Bacaan section (`/offers?view=articles`) and projects in a Portofolio
+section (`/offers?view=projects`); their cards link straight to the destination URL.
 
 Admin uses Tautan, Katalog, Statistik, and Pengaturan as its bottom navigation.
 Panduan is available from the header and Settings. Catalog items have an explicit
-product, referral, service, or resource type; services appear in the Jasa tab.
-Legacy standalone links categorized as Service, Services, or Jasa also appear
-there. Existing offers default to referral during migration; review their types
-before publishing. Item type is separate from category and program status.
+product, referral, service, resource, article, or project type; services appear in
+the Jasa tab and articles in the Bacaan section. Legacy standalone links categorized
+as Service, Services, or Jasa also appear in the Jasa tab. Existing offers default
+to referral during migration; review their types before publishing. Item type is
+separate from category and program status.
 
 Settings controls the public name, description, referral disclosure, featured
 pick visibility/limit, and independent public/admin accent and background colors.
@@ -169,26 +187,11 @@ The dashboard includes click-share charts, hover details, provider ranking with
 average clicks per slug, and comparison with the previous period when a bounded
 date range is selected.
 
-![Illustrative srmdn.com analytics dashboard showing a click-share pie chart and provider statistics](docs/assets/analytics-overview.webp)
+![Illustrative Plink analytics dashboard with KPI cards and a click-share donut chart, using sample data](docs/assets/analytics-overview.webp)
 
-*Illustrative preview with sample data; it is not a production snapshot.*
+*Illustrative preview with generic sample data; it is not a production snapshot.*
 
-## Build
-
-```bash
-go build -o plink ./cmd
-./plink
-```
-
-## Contributing
-
-See [CONTRIBUTING.md](CONTRIBUTING.md).
-
-## License
-
-MIT
-
-### SEO and social sharing
+## SEO and social sharing
 
 Public home, catalog, services, and resources render descriptions, canonical URLs,
 Open Graph metadata, and Twitter card tags on the server. Configure the homepage
@@ -208,7 +211,7 @@ public item detail page is required. Verify real social previews after deploymen
 at the public URL, since crawlers cannot reach localhost and may cache old cards.
 Schema v11 adds three optional SEO settings and preserves existing values.
 
-### Public address and editable copy
+## Public address and editable copy
 
 Settings → SEO & berbagi includes **Alamat publik**. A saved origin overrides
 `PUBLIC_URL`; clearing it restores the environment fallback, then the request
@@ -225,7 +228,7 @@ logos have time, byte, pixel, redirect, and public-network limits. Unsupported S
 or unreachable logos use the default mark; a custom share image is available for
 full art direction. Generated card variants are cached in memory.
 
-### Automatic catalog item previews
+## Automatic catalog item previews
 
 Settings → SEO & berbagi includes **Preview otomatis per item Katalog**, enabled
 by default (schema v13). All active channel slugs inherit the attached item's title,
@@ -248,3 +251,18 @@ cached previews; test the actual public slug on the platforms you use after
 deployment. Generated images have a bounded 16-variant in-memory cache, short
 HTTP cache lifetime and metadata-versioned URLs. No remote destination scraping,
 new mandatory fields, or per-item OG overrides are introduced.
+
+## Build
+
+```bash
+go build -o plink ./cmd
+./plink
+```
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md).
+
+## License
+
+MIT
