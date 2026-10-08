@@ -25,7 +25,7 @@
 <nav class="bottom-nav" aria-label="Navigasi utama">
 <a href="/" {{if eq .View "home"}}aria-current="page"{{end}}>{{template "nav-icon" "home"}}Beranda</a>
 {{if .Settings.CatalogEnabled}}<a href="/offers?view=categories" {{if eq .View "categories"}}aria-current="page"{{end}}>{{template "nav-icon" "grid"}}Kategori</a>{{end}}
-{{if .Settings.ProjectsEnabled}}<a href="/offers?view=projects" {{if eq .View "projects"}}aria-current="page"{{end}}>{{template "nav-icon" "grid"}}Proyek</a>{{end}}
+{{if .Settings.ProjectsEnabled}}<a href="/offers?view=projects" {{if eq .View "projects"}}aria-current="page"{{end}}>{{template "nav-icon" "folder"}}Proyek</a>{{end}}
 {{if .Settings.ServicesEnabled}}<a href="/offers?view=services" {{if eq .View "services"}}aria-current="page"{{end}}>{{template "nav-icon" "service"}}Jasa</a>{{end}}
 {{if and .Settings.CatalogEnabled .Settings.FavoritesEnabled}}<a href="/offers?view=favorites" {{if eq .View "favorites"}}aria-current="page"{{end}}>{{template "nav-icon" "heart"}}Favorit <small data-favorite-count></small></a>{{end}}
 </nav>

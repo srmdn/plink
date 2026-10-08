@@ -16,6 +16,8 @@ func TestUnifiedCatalogServicesFiltersAndUnavailableFavorites(t *testing.T) {
 		{Title: "Setup VPS", ItemType: "service", Category: "Website", Active: true},
 		{Title: "Hosting referral", ItemType: "referral", Category: "Website", Active: true},
 		{Title: "Ended program", ItemType: "referral", Category: "Website", Active: true, ProgramStatus: "ended"},
+		{Title: "Reading pick", ItemType: "article", Category: "Blog", Active: true},
+		{Title: "Portfolio pick", ItemType: "project", Category: "Go", Active: true},
 	} {
 		slug := strings.ReplaceAll(strings.ToLower(input.Title), " ", "-")
 		if _, err := database.CreateOfferWithHomepageLink(input, slug, "https://example.com"); err != nil {
@@ -48,6 +50,9 @@ func TestUnifiedCatalogServicesFiltersAndUnavailableFavorites(t *testing.T) {
 	favorites := get("/offers?view=favorites")
 	if !strings.Contains(favorites, `data-favorite-card="setup-vps"`) || strings.Contains(favorites, `data-favorite-card="ended-program"`) {
 		t.Fatal("favorites contain unavailable items")
+	}
+	if strings.Contains(favorites, "offer-card--article") || strings.Contains(favorites, "offer-card--project") {
+		t.Fatal("favorites contain non-favoritable article/project cards")
 	}
 	var clicks, notices int
 	if err := database.QueryRow("SELECT COUNT(*) FROM clicks").Scan(&clicks); err != nil {

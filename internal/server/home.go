@@ -344,10 +344,13 @@ func (s *Server) handleBrowse(w http.ResponseWriter, r *http.Request, resourcesO
 		if view == "services" && card.ItemType != "service" || view == "resources" && card.ItemType != "resource" || view == "articles" && card.ItemType != "article" || view == "projects" && card.ItemType != "project" {
 			continue
 		}
-		// Articles and projects live in their own section and view; keep them
-		// out of the general catalog grid unless the visitor is searching.
-		if view == "categories" && (card.ItemType == "article" || card.ItemType == "project") && query == "" {
-			continue
+		// Articles and projects live in their own section and view. Keep them
+		// out of the general catalog grid unless the visitor is searching, and
+		// out of favorites entirely because their cards have no favorite action.
+		if card.ItemType == "article" || card.ItemType == "project" {
+			if view == "favorites" || (view == "categories" && query == "") {
+				continue
+			}
 		}
 		if card.Category != "" && !seenCategory[card.Category] {
 			categories = append(categories, card.Category)
