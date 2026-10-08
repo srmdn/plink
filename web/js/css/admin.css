@@ -815,3 +815,24 @@
 .combo-option { padding:8px 10px; border-radius:8px; font-size:13px; color:var(--text); cursor:pointer; }
 .combo-option:hover,.combo-option.is-active { background:var(--surface2); }
 .combo-empty { padding:8px 10px; font-size:12px; color:var(--muted); }
+
+/* Detail analytics: separate the KPI cards from the white panel and add a light accent cue. */
+.admin-page .analytics-detail-kpis .stat-card {
+  background:var(--surface2);
+  border:1px solid var(--border);
+}
+.admin-page .analytics-detail-heading {
+  position:relative;
+  padding-bottom:14px;
+  border-bottom:1px solid var(--border);
+}
+.admin-page .analytics-detail-heading::after {
+  content:"";
+  position:absolute;
+  left:0;
+  bottom:-1px;
+  width:44px;
+  height:2px;
+  background:var(--accent);
+  border-radius:2px;
+}
