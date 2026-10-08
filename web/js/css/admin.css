@@ -836,3 +836,19 @@
   background:var(--accent);
   border-radius:2px;
 }
+/* Nested subsections inside the detail panel get the same accent cue. */
+.admin-page .analytics-detail-panel .analytics-detail-panel .analytics-page-panel-heading {
+  position:relative;
+  padding-bottom:12px;
+  border-bottom:1px solid var(--border);
+}
+.admin-page .analytics-detail-panel .analytics-detail-panel .analytics-page-panel-heading::after {
+  content:"";
+  position:absolute;
+  left:0;
+  bottom:-1px;
+  width:36px;
+  height:2px;
+  background:var(--accent);
+  border-radius:2px;
+}
