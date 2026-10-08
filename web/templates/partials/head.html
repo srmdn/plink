@@ -291,9 +291,6 @@ try {
   }
 
   /* ── Analytics ── */
-  .analytics-modal { max-width: 560px; padding: 0; overflow: hidden; display: flex; flex-direction: column; }
-  .analytics-modal > .modal-header { flex-shrink: 0; margin-bottom: 18px; padding: 22px 22px 0; background: var(--surface); }
-  .analytics-modal > #analytics-body { min-height: 0; overflow-y: auto; padding: 0 22px 22px; }
   .analytics-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px; }
   .analytics-grid-compact { grid-template-columns: repeat(2, 1fr); }
   .analytics-linkbar { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; padding-bottom: 14px; margin-bottom: 14px; border-bottom: 1px solid var(--border); }
@@ -347,10 +344,6 @@ try {
   .analytics-page-heading p { color: var(--muted); font-size: 11px; margin-top: 5px; }
   .analytics-page-meta { color: var(--muted); font-size: 10px; white-space: nowrap; }
   .analytics-page-filters { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin: 20px 0 14px; }
-  .analytics-periods { display: flex; align-items: center; gap: 3px; padding: 3px; background: var(--surface2); border-radius: var(--radius); }
-  .analytics-period { color: var(--muted); font-size: 11px; padding: 6px 10px; border-radius: 4px; text-decoration: none; }
-  .analytics-period:hover { color: var(--text); }
-  .analytics-period.active { background: var(--accent); color: #000; font-weight: 600; }
   .analytics-selects select { background: var(--surface); color: var(--text); border: 1px solid var(--border); border-radius: var(--radius); padding: 7px 28px 7px 10px; font-family: inherit; font-size: 11px; }
   .analytics-page-kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin-bottom: 12px; }
   .analytics-page-kpis .stat-card { min-width: 0; }
@@ -431,8 +424,6 @@ try {
     .analytics-actions { justify-content: flex-start; }
     .analytics-page-heading { align-items: flex-start; flex-direction: column; gap: 4px; }
     .analytics-page-filters { align-items: stretch; }
-    .analytics-periods { justify-content: space-between; }
-    .analytics-period { flex: 1; text-align: center; }
     .analytics-selects, .analytics-selects select { width: 100%; }
     .analytics-page-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .analytics-page-grid { grid-template-columns: 1fr; }
@@ -527,14 +518,8 @@ try {
   .analytics-page-heading { align-items: flex-end; margin-bottom: 0; }
   .analytics-page-heading h1 { margin-top: 4px; font-size: clamp(26px, 3vw, 34px); font-weight: 650; letter-spacing: -.045em; }
   .analytics-page-heading p { margin-top: 8px; font-size: 13px; }
-  .analytics-period-badge { display: inline-flex; align-items: center; gap: 9px; flex: 0 0 auto; padding: 9px 12px; color: #c3cec8; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; font-size: 11px; }
   .analytics-page-meta { font-size: 11px; }
   .analytics-page-filters { margin: 24px 0 18px; }
-  .analytics-periods { gap: 2px; padding: 4px; background: #111a17; border: 1px solid var(--border); border-radius: 10px; }
-  .analytics-period { padding: 8px 13px; color: #94a29b; border-radius: 7px; font-size: 12px; }
-  .analytics-period.active { color: #07130d; background: var(--accent); font-weight: 700; }
-  .analytics-selects { display: flex; align-items: center; gap: 8px; }
-  .analytics-selects select { min-height: 38px; padding: 7px 32px 7px 12px; color: #c6d0ca; background: #111a17; border: 1px solid var(--border); border-radius: 9px; font: inherit; font-size: 12px; color-scheme: dark; }
   .analytics-page-kpis { gap: 14px; margin-bottom: 16px; }
   .analytics-page-kpis .stat-card { min-height: 126px; padding: 16px 18px; background: linear-gradient(145deg, #111b18, #0f1715); border: 1px solid #24312c; border-radius: 14px; transition: border-color .18s, transform .18s; }
   .analytics-page-kpis .stat-card:hover { border-color: #34463e; transform: translateY(-1px); }
@@ -634,8 +619,6 @@ try {
     .admin-home-link { align-self: flex-start; }
     .analytics-page-heading { flex-direction: column; align-items: flex-start; gap: 15px; }
     .analytics-page-filters { align-items: stretch; gap: 10px; margin: 20px 0 14px; }
-    .analytics-periods { width: 100%; justify-content: space-between; }
-    .analytics-period { flex: 1; padding: 8px 7px; text-align: center; }
     .analytics-selects, .analytics-selects select { width: 100%; }
     .analytics-page-kpis { gap: 9px; }
     .analytics-page-kpis .stat-card { min-height: 112px; padding: 13px; }
