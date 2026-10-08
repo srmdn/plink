@@ -7,5 +7,5 @@
 {{if .Cards}}<div class="offer-grid">{{range .Cards}}{{template "offer-card" .}}{{end}}</div>{{else}}<p class="store-empty">Belum ada yang cocok. Coba kata lain atau ubah filternya.</p>{{end}}
 {{if eq .View "favorites"}}<p class="store-empty" data-favorites-empty hidden>Belum ada favorit yang tersedia. Ketuk hati di kartu untuk menyimpannya.</p><noscript><p>Aktifkan JavaScript untuk melihat favorit di browser ini.</p></noscript>{{end}}
 {{if gt (len .Pages) 1}}<nav class="catalog-pagination" aria-label="Halaman katalog">{{range .Pages}}<a href="{{.URL}}" {{if .Current}}aria-current="page"{{end}}>{{.Number}}</a>{{end}}</nav>{{end}}
-{{if .AffiliateDisclosure}}<p class="affiliate-note">{{.AffiliateDisclosure}}</p>{{end}}</main>{{template "public-footer" .}}{{template "public-nav" .View}}</body></html>
+{{if .AffiliateDisclosure}}<p class="affiliate-note">{{.AffiliateDisclosure}}</p>{{end}}</main>{{template "public-footer" .}}{{template "public-nav" .}}</body></html>
 {{end}}

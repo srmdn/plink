@@ -215,6 +215,17 @@ ALTER TABLE site_settings ADD COLUMN service_description TEXT NOT NULL DEFAULT '
 	DROP TABLE offers;
 	ALTER TABLE offers_v16 RENAME TO offers;
 	CREATE INDEX IF NOT EXISTS idx_offers_active_priority ON offers(active, featured, priority);`,
+	// v17: public feature toggles. All default on so existing installs keep
+	// their current storefront until an operator turns something off.
+	`ALTER TABLE site_settings ADD COLUMN feature_storefront INTEGER NOT NULL DEFAULT 1 CHECK (feature_storefront IN (0,1));
+	ALTER TABLE site_settings ADD COLUMN feature_catalog INTEGER NOT NULL DEFAULT 1 CHECK (feature_catalog IN (0,1));
+	ALTER TABLE site_settings ADD COLUMN feature_services INTEGER NOT NULL DEFAULT 1 CHECK (feature_services IN (0,1));
+	ALTER TABLE site_settings ADD COLUMN feature_articles INTEGER NOT NULL DEFAULT 1 CHECK (feature_articles IN (0,1));
+	ALTER TABLE site_settings ADD COLUMN feature_projects INTEGER NOT NULL DEFAULT 1 CHECK (feature_projects IN (0,1));
+	ALTER TABLE site_settings ADD COLUMN feature_resources INTEGER NOT NULL DEFAULT 1 CHECK (feature_resources IN (0,1));
+	ALTER TABLE site_settings ADD COLUMN feature_profile INTEGER NOT NULL DEFAULT 1 CHECK (feature_profile IN (0,1));
+	ALTER TABLE site_settings ADD COLUMN feature_support INTEGER NOT NULL DEFAULT 1 CHECK (feature_support IN (0,1));
+	ALTER TABLE site_settings ADD COLUMN feature_favorites INTEGER NOT NULL DEFAULT 1 CHECK (feature_favorites IN (0,1));`,
 }
 
 func migrate(conn *sql.DB) error {

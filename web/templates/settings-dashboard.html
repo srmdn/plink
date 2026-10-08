@@ -38,6 +38,23 @@
           </div>
         </section>
 
+        <section class="analytics-page-panel settings-panel">
+          <div class="offer-form-heading"><h2>Fitur publik</h2><span>Pilih apa saja yang tampil di halaman publik. Cocok untuk memakai Plink murni sebagai pemendek tautan.</span></div>
+          <div class="field"><label for="feature-mode">Mode tampilan</label><select id="feature-mode" name="feature_mode"><option value="full" {{if eq .Settings.FeatureMode "full"}}selected{{end}}>Katalog penuh (semua fitur)</option><option value="biolink" {{if eq .Settings.FeatureMode "biolink"}}selected{{end}}>Bio link (profil + tautan)</option><option value="shortener" {{if eq .Settings.FeatureMode "shortener"}}selected{{end}}>Hanya pemendek tautan</option><option value="custom" {{if eq .Settings.FeatureMode "custom"}}selected{{end}}>Kustom</option></select><p class="field-help">Mode mengisi centang di bawah. Mengubah centang manual akan memilih Kustom. Mematikan semua fitur tetap menyimpan pengalihan slug pendek.</p></div>
+          <div class="offer-form-options" id="feature-flags">
+            <input type="hidden" name="feature_storefront_present" value="1" /><label class="check-row"><input type="checkbox" name="feature_storefront" value="1" data-feature {{if .Settings.StorefrontEnabled}}checked{{end}} /><span>Halaman beranda publik</span></label>
+            <input type="hidden" name="feature_catalog_present" value="1" /><label class="check-row"><input type="checkbox" name="feature_catalog" value="1" data-feature {{if .Settings.CatalogEnabled}}checked{{end}} /><span>Katalog produk &amp; referral</span></label>
+            <input type="hidden" name="feature_services_present" value="1" /><label class="check-row"><input type="checkbox" name="feature_services" value="1" data-feature {{if .Settings.ServicesEnabled}}checked{{end}} /><span>Jasa</span></label>
+            <input type="hidden" name="feature_articles_present" value="1" /><label class="check-row"><input type="checkbox" name="feature_articles" value="1" data-feature {{if .Settings.ArticlesEnabled}}checked{{end}} /><span>Artikel</span></label>
+            <input type="hidden" name="feature_projects_present" value="1" /><label class="check-row"><input type="checkbox" name="feature_projects" value="1" data-feature {{if .Settings.ProjectsEnabled}}checked{{end}} /><span>Proyek</span></label>
+            <input type="hidden" name="feature_resources_present" value="1" /><label class="check-row"><input type="checkbox" name="feature_resources" value="1" data-feature {{if .Settings.ResourcesEnabled}}checked{{end}} /><span>Resource / tautan (/links)</span></label>
+            <input type="hidden" name="feature_profile_present" value="1" /><label class="check-row"><input type="checkbox" name="feature_profile" value="1" data-feature {{if .Settings.ProfileEnabled}}checked{{end}} /><span>Profil &amp; bio</span></label>
+            <input type="hidden" name="feature_support_present" value="1" /><label class="check-row"><input type="checkbox" name="feature_support" value="1" data-feature {{if .Settings.SupportEnabled}}checked{{end}} /><span>Tombol dukungan</span></label>
+            <input type="hidden" name="feature_favorites_present" value="1" /><label class="check-row"><input type="checkbox" name="feature_favorites" value="1" data-feature {{if .Settings.FavoritesEnabled}}checked{{end}} /><span>Favorit</span></label>
+          </div>
+          <p class="field-help">Fitur yang dimatikan hilang dari navigasi dan tidak dapat diakses lewat URL langsung. Beranda tetap ada sebagai halaman minimal.</p>
+        </section>
+
         <section class="analytics-page-panel settings-panel"><div class="offer-form-heading"><h2>Konten beranda &amp; jasa</h2><span>Sesuaikan teks publik tanpa mengubah kode.</span></div>
 <div class="field"><label for="hero-eyebrow">Label beranda</label><input id="hero-eyebrow" type="text" name="hero_eyebrow" maxlength="80" value="{{.Settings.HeroEyebrow}}" /></div>
 <div class="field"><label for="hero-title">Judul beranda</label><textarea id="hero-title" required name="hero_title" maxlength="160" rows="2">{{.Settings.HeroTitle}}</textarea><p class="field-help">Enter membuat baris baru.</p></div>
@@ -83,6 +100,25 @@
     </main>
   </div>
 </div>
+<script>
+(function () {
+  var mode = document.getElementById('feature-mode');
+  var flags = document.getElementById('feature-flags');
+  if (!mode || !flags) return;
+  var boxes = Array.prototype.slice.call(flags.querySelectorAll('input[data-feature]'));
+  var presets = {
+    full: {feature_storefront: 1, feature_catalog: 1, feature_services: 1, feature_articles: 1, feature_projects: 1, feature_resources: 1, feature_profile: 1, feature_support: 1, feature_favorites: 1},
+    biolink: {feature_storefront: 1, feature_resources: 1, feature_profile: 1, feature_support: 1},
+    shortener: {}
+  };
+  function apply(name) {
+    var preset = presets[name] || {};
+    boxes.forEach(function (box) { box.checked = !!preset[box.name]; });
+  }
+  mode.addEventListener('change', function () { if (mode.value !== 'custom') apply(mode.value); });
+  boxes.forEach(function (box) { box.addEventListener('change', function () { mode.value = 'custom'; }); });
+})();
+</script>
 </body>
 </html>
 {{end}}

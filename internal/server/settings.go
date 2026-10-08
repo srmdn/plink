@@ -90,6 +90,10 @@ func (s *Server) handleSaveSettings(w http.ResponseWriter, r *http.Request) {
 		}
 		settings.ItemPreviews = r.FormValue("item_previews") == "1"
 	}
+	if message := applyFeatureFlags(r, &settings, previous); message != "" {
+		s.renderSettingsDashboard(w, r, settingsDashboardData{Settings: settings, Error: message})
+		return
+	}
 	settings.PublicOrigin, settings.HeroEyebrow, settings.HeroTitle, settings.HeroDescription = previous.PublicOrigin, previous.HeroEyebrow, previous.HeroTitle, previous.HeroDescription
 	settings.ServiceTitle, settings.ServiceDescription = previous.ServiceTitle, previous.ServiceDescription
 	for _, field := range []struct {
@@ -246,6 +250,75 @@ func (s *Server) handleSaveSettings(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	http.Redirect(w, r, "/"+s.cfg.AdminPath+"/settings?saved=1", http.StatusSeeOther)
+}
+
+// applyFeatureFlags resolves the public feature toggles for a settings save.
+// Absent fields keep the previous values so legacy forms stay compatible. The
+// mode select applies a preset; "custom" reads the individual checkboxes.
+func applyFeatureFlags(r *http.Request, settings *db.SiteSettings, previous db.SiteSettings) string {
+	settings.StorefrontEnabled = previous.StorefrontEnabled
+	settings.CatalogEnabled = previous.CatalogEnabled
+	settings.ServicesEnabled = previous.ServicesEnabled
+	settings.ArticlesEnabled = previous.ArticlesEnabled
+	settings.ProjectsEnabled = previous.ProjectsEnabled
+	settings.ResourcesEnabled = previous.ResourcesEnabled
+	settings.ProfileEnabled = previous.ProfileEnabled
+	settings.SupportEnabled = previous.SupportEnabled
+	settings.FavoritesEnabled = previous.FavoritesEnabled
+
+	modes, present := r.PostForm["feature_mode"]
+	if !present {
+		return ""
+	}
+	if len(modes) != 1 {
+		return "Isian fitur publik tidak valid."
+	}
+	setFeatures := func(storefront, catalog, services, articles, projects, resources, profile, support, favorites bool) {
+		settings.StorefrontEnabled = storefront
+		settings.CatalogEnabled = catalog
+		settings.ServicesEnabled = services
+		settings.ArticlesEnabled = articles
+		settings.ProjectsEnabled = projects
+		settings.ResourcesEnabled = resources
+		settings.ProfileEnabled = profile
+		settings.SupportEnabled = support
+		settings.FavoritesEnabled = favorites
+	}
+	switch modes[0] {
+	case "shortener":
+		setFeatures(false, false, false, false, false, false, false, false, false)
+	case "biolink":
+		setFeatures(true, false, false, false, false, true, true, true, false)
+	case "full":
+		setFeatures(true, true, true, true, true, true, true, true, true)
+	case "custom":
+		for _, flag := range []struct {
+			name  string
+			value *bool
+		}{
+			{"feature_storefront", &settings.StorefrontEnabled},
+			{"feature_catalog", &settings.CatalogEnabled},
+			{"feature_services", &settings.ServicesEnabled},
+			{"feature_articles", &settings.ArticlesEnabled},
+			{"feature_projects", &settings.ProjectsEnabled},
+			{"feature_resources", &settings.ResourcesEnabled},
+			{"feature_profile", &settings.ProfileEnabled},
+			{"feature_support", &settings.SupportEnabled},
+			{"feature_favorites", &settings.FavoritesEnabled},
+		} {
+			if _, present := r.PostForm[flag.name+"_present"]; !present {
+				continue
+			}
+			values := r.PostForm[flag.name]
+			if len(values) > 1 || (len(values) == 1 && values[0] != "1") {
+				return "Isian fitur publik tidak valid."
+			}
+			*flag.value = len(values) == 1
+		}
+	default:
+		return "Mode fitur publik tidak dikenal."
+	}
+	return ""
 }
 
 func normalizePalette(settings *db.SiteSettings) {

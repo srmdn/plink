@@ -38,6 +38,7 @@ type homeData struct {
 	IsLoggedIn          bool
 	AdminPath           string
 	Production          bool
+	View                string
 }
 
 type catalogPageLink struct {
@@ -124,6 +125,16 @@ func (s *Server) handleHome(w http.ResponseWriter, r *http.Request) {
 	settings, err := s.currentSiteSettings()
 	if err != nil {
 		http.Error(w, "db error", http.StatusInternalServerError)
+		return
+	}
+	if !settings.StorefrontEnabled {
+		w.Header().Add("Vary", "Cookie")
+		s.renderTemplate(w, "minimal", homeData{
+			SEO:      s.publicSEO(settings, r, ""),
+			Settings: settings,
+			SiteName: settings.SiteName, SiteDesc: settings.SiteDesc,
+			IsLoggedIn: s.isLoggedIn(r), AdminPath: s.cfg.AdminPath, View: "home",
+		})
 		return
 	}
 	all, err := s.db.ListPublicLinks()
@@ -215,6 +226,7 @@ func (s *Server) handleHome(w http.ResponseWriter, r *http.Request) {
 		IsLoggedIn:          loggedIn,
 		AdminPath:           s.cfg.AdminPath,
 		Production:          s.cfg.Production,
+		View:                "home",
 	})
 }
 
@@ -272,6 +284,42 @@ func (s *Server) handleBrowse(w http.ResponseWriter, r *http.Request, resourcesO
 	case "services", "favorites", "resources", "articles", "projects":
 	default:
 		view = "categories"
+	}
+	if !settings.StorefrontEnabled {
+		http.NotFound(w, r)
+		return
+	}
+	switch view {
+	case "services":
+		if !settings.ServicesEnabled {
+			http.NotFound(w, r)
+			return
+		}
+	case "articles":
+		if !settings.ArticlesEnabled {
+			http.NotFound(w, r)
+			return
+		}
+	case "projects":
+		if !settings.ProjectsEnabled {
+			http.NotFound(w, r)
+			return
+		}
+	case "resources":
+		if !settings.ResourcesEnabled {
+			http.NotFound(w, r)
+			return
+		}
+	case "favorites":
+		if !settings.CatalogEnabled || !settings.FavoritesEnabled {
+			http.NotFound(w, r)
+			return
+		}
+	default:
+		if !settings.CatalogEnabled {
+			http.NotFound(w, r)
+			return
+		}
 	}
 	all := []publicCard{}
 	for _, o := range publicOffers(offers, time.Now().In(s.cfg.ReportLocation()).Format(dashboardDateLayout)) {

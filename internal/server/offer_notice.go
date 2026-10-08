@@ -12,6 +12,7 @@ import (
 
 type offerNoticeData struct {
 	SEO         pageSEO
+	Settings    db.SiteSettings
 	SiteName    string
 	SiteDesc    string
 	Offer       *db.Offer
@@ -32,6 +33,7 @@ func (s *Server) renderOfferNotice(w http.ResponseWriter, r *http.Request, offer
 		return false
 	}
 	data := noticeContent(offer, status)
+	data.Settings = settings
 	data.SiteName, data.SiteDesc = settings.SiteName, settings.SiteDesc
 	data.IsLoggedIn, data.AdminPath = s.isLoggedIn(r), s.cfg.AdminPath
 	// The owner chooses a current, non-referral destination; never reuse a stale

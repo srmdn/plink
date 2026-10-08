@@ -114,6 +114,14 @@ background and a contrasting accent. Featured picks scroll manually and are not
 repeated in the homepage grid. Clicking a card still records its homepage slug's
 redirect click. Browsing catalogs and saving favorites do not record clicks.
 
+Settings → **Fitur publik** controls which public surfaces exist. Choose a preset
+(**Katalog penuh**, **Bio link**, or **Hanya pemendek tautan**) or toggle features
+individually: public homepage, catalog, services, articles, projects, resources,
+profile, support buttons, and favorites. Disabled features disappear from the
+navigation and their URLs return 404, while short-link redirects keep working; the
+root becomes a minimal page when the storefront is off. Schema v17 adds these
+flags and defaults them all on, so existing installs are unchanged.
+
 Program status controls every active slug attached to an Offer. Paused,
 upcoming, and ended programs show one shared visitor notice; expired programs
 also show a notice by default. End dates include the whole day in

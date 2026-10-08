@@ -118,7 +118,25 @@ func (s *Server) handleSitemap(w http.ResponseWriter, r *http.Request) {
 		URLs      []entry  `xml:"url"`
 	}{Namespace: "http://www.sitemaps.org/schemas/sitemap/0.9"}
 	base := s.publicURL(r)
-	for _, path := range []string{"/", "/offers", "/offers?view=services", "/offers?view=articles", "/offers?view=projects", "/links"} {
+	paths := []string{"/"}
+	if settings, err := s.currentSiteSettings(); err == nil && settings.StorefrontEnabled {
+		if settings.CatalogEnabled {
+			paths = append(paths, "/offers")
+		}
+		if settings.ServicesEnabled {
+			paths = append(paths, "/offers?view=services")
+		}
+		if settings.ArticlesEnabled {
+			paths = append(paths, "/offers?view=articles")
+		}
+		if settings.ProjectsEnabled {
+			paths = append(paths, "/offers?view=projects")
+		}
+		if settings.ResourcesEnabled {
+			paths = append(paths, "/links")
+		}
+	}
+	for _, path := range paths {
 		body.URLs = append(body.URLs, entry{base + path})
 	}
 	w.Header().Set("Content-Type", "application/xml; charset=utf-8")
