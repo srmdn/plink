@@ -338,6 +338,12 @@
 .admin-page .offer-form-options {
   flex-wrap:wrap
 }
+.admin-page .feature-flags-locked {
+  opacity:.55
+}
+.admin-page .feature-flags-locked .check-row {
+  cursor:not-allowed
+}
 .admin-page .offer-link-filters {
   grid-template-columns:1fr 1fr
 }

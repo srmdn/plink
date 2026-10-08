@@ -40,7 +40,7 @@
 
         <section class="analytics-page-panel settings-panel">
           <div class="offer-form-heading"><h2>Fitur publik</h2><span>Pilih apa saja yang tampil di halaman publik. Cocok untuk memakai Plink murni sebagai pemendek tautan.</span></div>
-          <div class="field"><label for="feature-mode">Mode tampilan</label><select id="feature-mode" name="feature_mode"><option value="full" {{if eq .Settings.FeatureMode "full"}}selected{{end}}>Katalog penuh (semua fitur)</option><option value="biolink" {{if eq .Settings.FeatureMode "biolink"}}selected{{end}}>Bio link (profil + tautan)</option><option value="shortener" {{if eq .Settings.FeatureMode "shortener"}}selected{{end}}>Hanya pemendek tautan</option><option value="custom" {{if eq .Settings.FeatureMode "custom"}}selected{{end}}>Kustom</option></select><p class="field-help">Mode mengisi centang di bawah. Mengubah centang manual akan memilih Kustom. Mematikan semua fitur tetap menyimpan pengalihan slug pendek.</p></div>
+          <div class="field"><label for="feature-mode">Mode tampilan</label><select id="feature-mode" name="feature_mode"><option value="full" {{if eq .Settings.FeatureMode "full"}}selected{{end}}>Katalog penuh (semua fitur)</option><option value="biolink" {{if eq .Settings.FeatureMode "biolink"}}selected{{end}}>Bio link (profil + tautan)</option><option value="shortener" {{if eq .Settings.FeatureMode "shortener"}}selected{{end}}>Hanya pemendek tautan</option><option value="custom" {{if eq .Settings.FeatureMode "custom"}}selected{{end}}>Kustom</option></select><p class="field-help">Mode mengisi centang di bawah. Pilih Kustom untuk mencentang manual; centang terkunci selama mode preset aktif. Mematikan semua fitur tetap menyimpan pengalihan slug pendek.</p></div>
           <div class="offer-form-options" id="feature-flags">
             <input type="hidden" name="feature_storefront_present" value="1" /><label class="check-row"><input type="checkbox" name="feature_storefront" value="1" data-feature {{if .Settings.StorefrontEnabled}}checked{{end}} /><span>Halaman beranda publik</span></label>
             <input type="hidden" name="feature_catalog_present" value="1" /><label class="check-row"><input type="checkbox" name="feature_catalog" value="1" data-feature {{if .Settings.CatalogEnabled}}checked{{end}} /><span>Katalog produk &amp; referral</span></label>
@@ -115,8 +115,19 @@
     var preset = presets[name] || {};
     boxes.forEach(function (box) { box.checked = !!preset[box.name]; });
   }
-  mode.addEventListener('change', function () { if (mode.value !== 'custom') apply(mode.value); });
-  boxes.forEach(function (box) { box.addEventListener('change', function () { mode.value = 'custom'; }); });
+  function syncLock() {
+    var editable = mode.value === 'custom';
+    boxes.forEach(function (box) { box.disabled = !editable; });
+    flags.classList.toggle('feature-flags-locked', !editable);
+  }
+  mode.addEventListener('change', function () {
+    if (mode.value !== 'custom') apply(mode.value);
+    syncLock();
+  });
+  boxes.forEach(function (box) {
+    box.addEventListener('change', function () { mode.value = 'custom'; syncLock(); });
+  });
+  syncLock();
 })();
 </script>
 </body>
