@@ -54,6 +54,12 @@ Schema changes go in `internal/db/db.go` as new entries in the `migrations` slic
 - No external dependencies unless absolutely necessary
 - Keep templates in `web/templates/` as plain HTML — no build step, no npm
 
+## Documentation
+
+The in-app Panduan (`web/templates/guide-dashboard.html`) and `README.md`
+describe the current UI. When you change labels, settings, or a workflow,
+update both in the same change so the guide never drifts from the interface.
+
 ## Reporting security issues
 
 Please do not open a public issue for security vulnerabilities. Use the
