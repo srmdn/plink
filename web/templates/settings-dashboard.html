@@ -39,6 +39,7 @@
           <div class="contact-rows" data-contact-rows>
             {{range .ContactList}}{{$row := .}}
             <div class="contact-row">
+              <div class="contact-row-order"><button type="button" class="contact-order-btn" data-contact-up aria-label="Naikkan kanal">▲</button><button type="button" class="contact-order-btn" data-contact-down aria-label="Turunkan kanal">▼</button></div>
               <select name="contact_platform" aria-label="Ikon kanal">{{range socialPlatforms}}<option value="{{.Key}}" {{if eq .Key $row.Platform}}selected{{end}}>{{.Label}}</option>{{end}}</select>
               <input type="text" name="contact_label" maxlength="40" value="{{$row.Label}}" placeholder="Label (opsional)" aria-label="Label kanal" />
               <input type="text" name="contact_url" maxlength="2048" value="{{$row.URL}}" placeholder="https://… atau email" aria-label="URL kanal" />
@@ -47,7 +48,7 @@
             {{end}}
           </div>
           <div class="contact-add"><button type="button" class="btn btn-ghost btn-sm" data-contact-add>+ Tambah kanal</button></div>
-          <template id="contact-row-template"><select name="contact_platform" aria-label="Ikon kanal">{{range socialPlatforms}}<option value="{{.Key}}">{{.Label}}</option>{{end}}</select><input type="text" name="contact_label" maxlength="40" placeholder="Label (opsional)" aria-label="Label kanal" /><input type="text" name="contact_url" maxlength="2048" placeholder="https://… atau email" aria-label="URL kanal" /><button type="button" class="btn btn-ghost btn-sm" data-contact-remove aria-label="Hapus kanal">Hapus</button></template>
+          <template id="contact-row-template"><div class="contact-row-order"><button type="button" class="contact-order-btn" data-contact-up aria-label="Naikkan kanal">▲</button><button type="button" class="contact-order-btn" data-contact-down aria-label="Turunkan kanal">▼</button></div><select name="contact_platform" aria-label="Ikon kanal">{{range socialPlatforms}}<option value="{{.Key}}">{{.Label}}</option>{{end}}</select><input type="text" name="contact_label" maxlength="40" placeholder="Label (opsional)" aria-label="Label kanal" /><input type="text" name="contact_url" maxlength="2048" placeholder="https://… atau email" aria-label="URL kanal" /><button type="button" class="btn btn-ghost btn-sm" data-contact-remove aria-label="Hapus kanal">Hapus</button></template>
           <p class="field-help">Pilih ikon kanal lalu isi URL (atau alamat email untuk ikon Email). Label opsional untuk mengganti teks tombol. Klik kanal membuka aplikasi atau situsnya. Tombol hanya muncul jika fitur "Tombol kontak mengambang" aktif dan minimal satu kanal diisi.</p>
         </section>
         <section class="analytics-page-panel settings-panel">
@@ -158,6 +159,10 @@
   function wire(row) {
     var remove = row.querySelector('[data-contact-remove]');
     if (remove) remove.addEventListener('click', function () { row.remove(); });
+    var up = row.querySelector('[data-contact-up]');
+    if (up) up.addEventListener('click', function () { var prev = row.previousElementSibling; if (prev) rows.insertBefore(row, prev); });
+    var down = row.querySelector('[data-contact-down]');
+    if (down) down.addEventListener('click', function () { var next = row.nextElementSibling; if (next) rows.insertBefore(next, row); });
   }
   rows.querySelectorAll('.contact-row').forEach(wire);
   add.addEventListener('click', function () {

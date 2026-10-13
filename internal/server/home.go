@@ -97,6 +97,11 @@ func categoriesForOffers(offers []db.Offer) []string {
 	seen := make(map[string]bool)
 	var categories []string
 	for _, offer := range offers {
+		// Article and project cards live in their own sections and are kept out
+		// of the catalog grid, so their categories must not appear as home chips.
+		if offer.ItemType == "article" || offer.ItemType == "project" {
+			continue
+		}
 		category := strings.TrimSpace(offer.Category)
 		if category != "" && !seen[category] {
 			seen[category] = true

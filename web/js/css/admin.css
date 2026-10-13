@@ -860,9 +860,30 @@
 }
 .admin-page .contact-row {
   display:grid;
-  grid-template-columns:150px minmax(0,1fr) minmax(0,1.6fr) auto;
+  grid-template-columns:auto 150px minmax(0,1fr) minmax(0,1.6fr) auto;
   gap:8px;
   align-items:center
+}
+.admin-page .contact-row-order {
+  display:flex;
+  flex-direction:column;
+  gap:2px
+}
+.admin-page .contact-order-btn {
+  width:28px;
+  height:23px;
+  padding:0;
+  border:1px solid var(--border);
+  border-radius:6px;
+  background:var(--surface2);
+  color:var(--text);
+  font-size:9px;
+  line-height:1;
+  cursor:pointer
+}
+.admin-page .contact-order-btn:hover {
+  border-color:var(--accent);
+  color:var(--accent)
 }
 .admin-page .contact-row select,
 .admin-page .contact-row input {
@@ -874,6 +895,9 @@
 @media(max-width:620px) {
   .admin-page .contact-row {
     grid-template-columns:1fr
+  }
+  .admin-page .contact-row-order {
+    flex-direction:row
   }
   .admin-page .contact-row [data-contact-remove] {
     justify-self:start
