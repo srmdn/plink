@@ -31,6 +31,26 @@
           <p class="field-help">Isi hanya tautan yang dipakai. Jika semua kosong, baris ikon sosial tidak muncul di halaman publik.</p>
         </section>
         <section class="analytics-page-panel settings-panel">
+          <div class="offer-form-heading"><h2>Tombol kontak</h2><span>Tombol mengambang di semua halaman publik. Isi minimal satu kanal untuk memunculkannya.</span></div>
+          <div class="form-pair">
+            <div class="field"><label for="settings-contact-title">Judul gelembung</label><input id="settings-contact-title" type="text" name="contact_title" maxlength="60" value="{{.Settings.ContactTitle}}" placeholder="Hubungi saya" /></div>
+            <div class="field"><label for="settings-contact-note">Pesan singkat <span class="field-help">(opsional)</span></label><input id="settings-contact-note" type="text" name="contact_note" maxlength="200" value="{{.Settings.ContactNote}}" placeholder="Ada pertanyaan? Chat saya." /></div>
+          </div>
+          <div class="contact-rows" data-contact-rows>
+            {{range .ContactList}}{{$row := .}}
+            <div class="contact-row">
+              <select name="contact_platform" aria-label="Ikon kanal">{{range socialPlatforms}}<option value="{{.Key}}" {{if eq .Key $row.Platform}}selected{{end}}>{{.Label}}</option>{{end}}</select>
+              <input type="text" name="contact_label" maxlength="40" value="{{$row.Label}}" placeholder="Label (opsional)" aria-label="Label kanal" />
+              <input type="text" name="contact_url" maxlength="2048" value="{{$row.URL}}" placeholder="https://… atau email" aria-label="URL kanal" />
+              <button type="button" class="btn btn-ghost btn-sm" data-contact-remove aria-label="Hapus kanal">Hapus</button>
+            </div>
+            {{end}}
+          </div>
+          <div class="contact-add"><button type="button" class="btn btn-ghost btn-sm" data-contact-add>+ Tambah kanal</button></div>
+          <template id="contact-row-template"><select name="contact_platform" aria-label="Ikon kanal">{{range socialPlatforms}}<option value="{{.Key}}">{{.Label}}</option>{{end}}</select><input type="text" name="contact_label" maxlength="40" placeholder="Label (opsional)" aria-label="Label kanal" /><input type="text" name="contact_url" maxlength="2048" placeholder="https://… atau email" aria-label="URL kanal" /><button type="button" class="btn btn-ghost btn-sm" data-contact-remove aria-label="Hapus kanal">Hapus</button></template>
+          <p class="field-help">Pilih ikon kanal lalu isi URL (atau alamat email untuk ikon Email). Label opsional untuk mengganti teks tombol. Klik kanal membuka aplikasi atau situsnya. Tombol hanya muncul jika fitur "Tombol kontak mengambang" aktif dan minimal satu kanal diisi.</p>
+        </section>
+        <section class="analytics-page-panel settings-panel">
           <div class="offer-form-heading"><h2>Identitas halaman</h2><span>Ditampilkan pada halaman publik.</span></div>
           <div class="form-pair">
             <div class="field"><label for="settings-site-name">Nama halaman</label><input id="settings-site-name" name="site_name" type="text" maxlength="80" required value="{{.Settings.SiteName}}" /></div>
@@ -50,6 +70,7 @@
             <input type="hidden" name="feature_resources_present" value="1" /><label class="check-row"><input type="checkbox" name="feature_resources" value="1" data-feature {{if .Settings.ResourcesEnabled}}checked{{end}} /><span>Resource / tautan (/links)</span></label>
             <input type="hidden" name="feature_profile_present" value="1" /><label class="check-row"><input type="checkbox" name="feature_profile" value="1" data-feature {{if .Settings.ProfileEnabled}}checked{{end}} /><span>Profil &amp; bio</span></label>
             <input type="hidden" name="feature_support_present" value="1" /><label class="check-row"><input type="checkbox" name="feature_support" value="1" data-feature {{if .Settings.SupportEnabled}}checked{{end}} /><span>Tombol dukungan</span></label>
+            <input type="hidden" name="feature_contact_present" value="1" /><label class="check-row"><input type="checkbox" name="feature_contact" value="1" data-feature {{if .Settings.ContactEnabled}}checked{{end}} /><span>Tombol kontak mengambang</span></label>
             <input type="hidden" name="feature_favorites_present" value="1" /><label class="check-row"><input type="checkbox" name="feature_favorites" value="1" data-feature {{if .Settings.FavoritesEnabled}}checked{{end}} /><span>Favorit</span></label>
           </div>
           <p class="field-help">Fitur yang dimatikan hilang dari navigasi dan tidak dapat diakses lewat URL langsung. Beranda tetap ada sebagai halaman minimal.</p>
@@ -107,8 +128,8 @@
   if (!mode || !flags) return;
   var boxes = Array.prototype.slice.call(flags.querySelectorAll('input[data-feature]'));
   var presets = {
-    full: {feature_storefront: 1, feature_catalog: 1, feature_services: 1, feature_articles: 1, feature_projects: 1, feature_resources: 1, feature_profile: 1, feature_support: 1, feature_favorites: 1},
-    biolink: {feature_storefront: 1, feature_resources: 1, feature_profile: 1, feature_support: 1},
+    full: {feature_storefront: 1, feature_catalog: 1, feature_services: 1, feature_articles: 1, feature_projects: 1, feature_resources: 1, feature_profile: 1, feature_support: 1, feature_favorites: 1, feature_contact: 1},
+    biolink: {feature_storefront: 1, feature_resources: 1, feature_profile: 1, feature_support: 1, feature_contact: 1},
     shortener: {}
   };
   function apply(name) {
@@ -128,6 +149,26 @@
     box.addEventListener('change', function () { mode.value = 'custom'; syncLock(); });
   });
   syncLock();
+})();
+(function () {
+  var rows = document.querySelector('[data-contact-rows]');
+  var add = document.querySelector('[data-contact-add]');
+  var template = document.getElementById('contact-row-template');
+  if (!rows || !add || !template) return;
+  function wire(row) {
+    var remove = row.querySelector('[data-contact-remove]');
+    if (remove) remove.addEventListener('click', function () { row.remove(); });
+  }
+  rows.querySelectorAll('.contact-row').forEach(wire);
+  add.addEventListener('click', function () {
+    var row = document.createElement('div');
+    row.className = 'contact-row';
+    row.innerHTML = template.innerHTML;
+    rows.appendChild(row);
+    wire(row);
+    var input = row.querySelector('input[name="contact_url"]');
+    if (input) input.focus();
+  });
 })();
 </script>
 </body>

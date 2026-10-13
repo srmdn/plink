@@ -38,6 +38,7 @@ func (s *Server) renderSettingsDashboard(w http.ResponseWriter, r *http.Request,
 	data.SEO = s.publicSEO(data.Settings, r, "")
 	data.SEO.Title, data.SEO.Description = seoIdentity(data.Settings)
 	data.Social = parseSocialLinks(data.Settings.SocialLinks)
+	data.ContactList = parseContactEntries(data.Settings.ContactLinks)
 	data.AdminPath = s.cfg.AdminPath
 	data.Production = s.cfg.Production
 	s.renderTemplate(w, "settings-dashboard", data)
@@ -125,6 +126,7 @@ func (s *Server) handleSaveSettings(w http.ResponseWriter, r *http.Request) {
 	settings.AdminAccent, settings.AdminBackground = previous.AdminAccent, previous.AdminBackground
 	settings.LogoURL, settings.FaviconURL = previous.LogoURL, previous.FaviconURL
 	settings.AvatarURL, settings.SocialLinks = previous.AvatarURL, previous.SocialLinks
+	settings.ContactLinks, settings.ContactTitle, settings.ContactNote = previous.ContactLinks, previous.ContactTitle, previous.ContactNote
 	settings.SEOTitle, settings.SEODescription, settings.ShareImageURL = previous.SEOTitle, previous.SEODescription, previous.ShareImageURL
 	for _, field := range []struct {
 		name  string
@@ -205,6 +207,49 @@ func (s *Server) handleSaveSettings(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	settings.SocialLinks = encodeSocialLinks(socialValues)
+	platforms := r.PostForm["contact_platform"]
+	labels := r.PostForm["contact_label"]
+	urls := r.PostForm["contact_url"]
+	if len(platforms) != len(labels) || len(platforms) != len(urls) {
+		http.Error(w, "bad request", 400)
+		return
+	}
+	entries := make([]contactStored, 0, len(platforms))
+	for i, platform := range platforms {
+		platform = strings.TrimSpace(platform)
+		label := strings.TrimSpace(labels[i])
+		raw := strings.TrimSpace(urls[i])
+		if raw == "" {
+			continue
+		}
+		if !knownPlatform(platform) || !validSocialURL(platform, raw) {
+			s.renderSettingsDashboard(w, r, settingsDashboardData{Settings: settings, Error: "Kontak tidak valid. Pilih ikon kanal dan isi URL http(s) atau alamat email."})
+			return
+		}
+		if len(label) > 40 {
+			s.renderSettingsDashboard(w, r, settingsDashboardData{Settings: settings, Error: "Label kontak maksimal 40 karakter."})
+			return
+		}
+		if platform == "email" && !strings.HasPrefix(raw, "mailto:") {
+			raw = "mailto:" + raw
+		}
+		entries = append(entries, contactStored{Platform: platform, Label: label, URL: raw})
+	}
+	settings.ContactLinks = encodeContactEntries(entries)
+	if values, present := r.PostForm["contact_title"]; present {
+		if len(values) != 1 || len(strings.TrimSpace(values[0])) > 60 {
+			s.renderSettingsDashboard(w, r, settingsDashboardData{Settings: settings, Error: "Judul kontak maksimal 60 karakter."})
+			return
+		}
+		settings.ContactTitle = strings.TrimSpace(values[0])
+	}
+	if values, present := r.PostForm["contact_note"]; present {
+		if len(values) != 1 || len(strings.TrimSpace(values[0])) > 200 {
+			s.renderSettingsDashboard(w, r, settingsDashboardData{Settings: settings, Error: "Pesan kontak maksimal 200 karakter."})
+			return
+		}
+		settings.ContactNote = strings.TrimSpace(values[0])
+	}
 	for _, color := range []struct {
 		name  string
 		value *string
@@ -265,6 +310,7 @@ func applyFeatureFlags(r *http.Request, settings *db.SiteSettings, previous db.S
 	settings.ProfileEnabled = previous.ProfileEnabled
 	settings.SupportEnabled = previous.SupportEnabled
 	settings.FavoritesEnabled = previous.FavoritesEnabled
+	settings.ContactEnabled = previous.ContactEnabled
 
 	modes, present := r.PostForm["feature_mode"]
 	if !present {
@@ -273,7 +319,7 @@ func applyFeatureFlags(r *http.Request, settings *db.SiteSettings, previous db.S
 	if len(modes) != 1 {
 		return "Isian fitur publik tidak valid."
 	}
-	setFeatures := func(storefront, catalog, services, articles, projects, resources, profile, support, favorites bool) {
+	setFeatures := func(storefront, catalog, services, articles, projects, resources, profile, support, favorites, contact bool) {
 		settings.StorefrontEnabled = storefront
 		settings.CatalogEnabled = catalog
 		settings.ServicesEnabled = services
@@ -283,14 +329,15 @@ func applyFeatureFlags(r *http.Request, settings *db.SiteSettings, previous db.S
 		settings.ProfileEnabled = profile
 		settings.SupportEnabled = support
 		settings.FavoritesEnabled = favorites
+		settings.ContactEnabled = contact
 	}
 	switch modes[0] {
 	case "shortener":
-		setFeatures(false, false, false, false, false, false, false, false, false)
+		setFeatures(false, false, false, false, false, false, false, false, false, false)
 	case "biolink":
-		setFeatures(true, false, false, false, false, true, true, true, false)
+		setFeatures(true, false, false, false, false, true, true, true, false, true)
 	case "full":
-		setFeatures(true, true, true, true, true, true, true, true, true)
+		setFeatures(true, true, true, true, true, true, true, true, true, true)
 	case "custom":
 		for _, flag := range []struct {
 			name  string
@@ -305,6 +352,7 @@ func applyFeatureFlags(r *http.Request, settings *db.SiteSettings, previous db.S
 			{"feature_profile", &settings.ProfileEnabled},
 			{"feature_support", &settings.SupportEnabled},
 			{"feature_favorites", &settings.FavoritesEnabled},
+			{"feature_contact", &settings.ContactEnabled},
 		} {
 			if _, present := r.PostForm[flag.name+"_present"]; !present {
 				continue

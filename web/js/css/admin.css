@@ -852,3 +852,30 @@
   background:var(--accent);
   border-radius:2px;
 }
+
+.admin-page .contact-rows {
+  display:flex;
+  flex-direction:column;
+  gap:10px
+}
+.admin-page .contact-row {
+  display:grid;
+  grid-template-columns:150px minmax(0,1fr) minmax(0,1.6fr) auto;
+  gap:8px;
+  align-items:center
+}
+.admin-page .contact-row select,
+.admin-page .contact-row input {
+  width:100%
+}
+.admin-page .contact-add {
+  margin-top:10px
+}
+@media(max-width:620px) {
+  .admin-page .contact-row {
+    grid-template-columns:1fr
+  }
+  .admin-page .contact-row [data-contact-remove] {
+    justify-self:start
+  }
+}

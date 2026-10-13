@@ -67,6 +67,7 @@ type settingsDashboardData struct {
 	SEO                pageSEO
 	Settings           db.SiteSettings
 	Social             map[string]string
+	ContactList        []contactStored
 	AdminPath          string
 	Production         bool
 	Error              string

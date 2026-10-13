@@ -226,6 +226,13 @@ ALTER TABLE site_settings ADD COLUMN service_description TEXT NOT NULL DEFAULT '
 	ALTER TABLE site_settings ADD COLUMN feature_profile INTEGER NOT NULL DEFAULT 1 CHECK (feature_profile IN (0,1));
 	ALTER TABLE site_settings ADD COLUMN feature_support INTEGER NOT NULL DEFAULT 1 CHECK (feature_support IN (0,1));
 	ALTER TABLE site_settings ADD COLUMN feature_favorites INTEGER NOT NULL DEFAULT 1 CHECK (feature_favorites IN (0,1));`,
+
+	// v18: dedicated contact channels for the public floating contact button.
+	// Empty by default so the bubble only appears once an operator fills one in.
+	`ALTER TABLE site_settings ADD COLUMN contact_links TEXT NOT NULL DEFAULT '';
+	ALTER TABLE site_settings ADD COLUMN contact_title TEXT NOT NULL DEFAULT 'Hubungi saya';
+	ALTER TABLE site_settings ADD COLUMN contact_note TEXT NOT NULL DEFAULT '';
+	ALTER TABLE site_settings ADD COLUMN feature_contact INTEGER NOT NULL DEFAULT 1 CHECK (feature_contact IN (0,1));`,
 }
 
 func migrate(conn *sql.DB) error {

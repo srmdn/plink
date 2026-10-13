@@ -40,7 +40,7 @@ func TestFeatureFlagsMigrationDefaultsOnAndPreserves(t *testing.T) {
 	if settings.SiteName != "Legacy" || settings.FeaturedLimit != 2 {
 		t.Fatal("v17 migration changed existing settings")
 	}
-	if !settings.StorefrontEnabled || !settings.CatalogEnabled || !settings.ServicesEnabled || !settings.ArticlesEnabled || !settings.ProjectsEnabled || !settings.ResourcesEnabled || !settings.ProfileEnabled || !settings.SupportEnabled || !settings.FavoritesEnabled {
+	if !settings.StorefrontEnabled || !settings.CatalogEnabled || !settings.ServicesEnabled || !settings.ArticlesEnabled || !settings.ProjectsEnabled || !settings.ResourcesEnabled || !settings.ProfileEnabled || !settings.SupportEnabled || !settings.FavoritesEnabled || !settings.ContactEnabled {
 		t.Fatal("v17 migration did not default public features on")
 	}
 	if settings.FeatureMode() != "full" {
@@ -56,6 +56,7 @@ func TestFeatureFlagsMigrationDefaultsOnAndPreserves(t *testing.T) {
 	settings.ProfileEnabled = false
 	settings.SupportEnabled = false
 	settings.FavoritesEnabled = false
+	settings.ContactEnabled = false
 	if err := database.SaveSiteSettings(settings); err != nil {
 		t.Fatal(err)
 	}

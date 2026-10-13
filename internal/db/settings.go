@@ -40,6 +40,10 @@ type SiteSettings struct {
 	ProfileEnabled      bool
 	SupportEnabled      bool
 	FavoritesEnabled    bool
+	ContactLinks        string
+	ContactTitle        string
+	ContactNote         string
+	ContactEnabled      bool
 }
 
 func (settings SiteSettings) FeatureMode() string {
@@ -61,12 +65,12 @@ func (settings SiteSettings) FeatureMode() string {
 	}
 	catalog := []bool{settings.CatalogEnabled, settings.ServicesEnabled, settings.ArticlesEnabled, settings.ProjectsEnabled, settings.ResourcesEnabled}
 	switch {
-	case none(settings.StorefrontEnabled, settings.ProfileEnabled, settings.SupportEnabled, settings.FavoritesEnabled) && none(catalog...):
+	case none(settings.StorefrontEnabled, settings.ProfileEnabled, settings.SupportEnabled, settings.FavoritesEnabled, settings.ContactEnabled) && none(catalog...):
 		return "shortener"
-	case settings.StorefrontEnabled && settings.ProfileEnabled && settings.SupportEnabled && settings.ResourcesEnabled &&
+	case settings.StorefrontEnabled && settings.ProfileEnabled && settings.SupportEnabled && settings.ResourcesEnabled && settings.ContactEnabled &&
 		none(settings.CatalogEnabled, settings.ServicesEnabled, settings.ArticlesEnabled, settings.ProjectsEnabled, settings.FavoritesEnabled):
 		return "biolink"
-	case all(settings.StorefrontEnabled, settings.CatalogEnabled, settings.ServicesEnabled, settings.ArticlesEnabled, settings.ProjectsEnabled, settings.ResourcesEnabled, settings.ProfileEnabled, settings.SupportEnabled, settings.FavoritesEnabled):
+	case all(settings.StorefrontEnabled, settings.CatalogEnabled, settings.ServicesEnabled, settings.ArticlesEnabled, settings.ProjectsEnabled, settings.ResourcesEnabled, settings.ProfileEnabled, settings.SupportEnabled, settings.FavoritesEnabled, settings.ContactEnabled):
 		return "full"
 	default:
 		return "custom"
@@ -74,11 +78,11 @@ func (settings SiteSettings) FeatureMode() string {
 }
 
 func (db *DB) GetSiteSettings() (SiteSettings, error) {
-	settings := SiteSettings{ItemPreviews: true, PublicOrigin: "", HeroEyebrow: "Rekomendasi saya", HeroTitle: "Barang bagus,\nuntuk kebutuhan Anda.", HeroDescription: "Kumpulan barang, kelas, dan jasa yang saya pakai dan rekomendasikan.", ServiceTitle: "Jasa", ServiceDescription: "Butuh membuat website, membereskan WordPress, atau mengurus VPS? Ceritakan kebutuhan Anda.", HeroEnabled: true, FeaturedLimit: 3, PublicAccent: "#c43424", PublicBackground: "#f4f1e9", AdminAccent: "#c43424", AdminBackground: "#f4f1e9", StorefrontEnabled: true, CatalogEnabled: true, ServicesEnabled: true, ArticlesEnabled: true, ProjectsEnabled: true, ResourcesEnabled: true, ProfileEnabled: true, SupportEnabled: true, FavoritesEnabled: true}
+	settings := SiteSettings{ItemPreviews: true, PublicOrigin: "", HeroEyebrow: "Rekomendasi saya", HeroTitle: "Barang bagus,\nuntuk kebutuhan Anda.", HeroDescription: "Kumpulan barang, kelas, dan jasa yang saya pakai dan rekomendasikan.", ServiceTitle: "Jasa", ServiceDescription: "Butuh membuat website, membereskan WordPress, atau mengurus VPS? Ceritakan kebutuhan Anda.", HeroEnabled: true, FeaturedLimit: 3, PublicAccent: "#c43424", PublicBackground: "#f4f1e9", AdminAccent: "#c43424", AdminBackground: "#f4f1e9", StorefrontEnabled: true, CatalogEnabled: true, ServicesEnabled: true, ArticlesEnabled: true, ProjectsEnabled: true, ResourcesEnabled: true, ProfileEnabled: true, SupportEnabled: true, FavoritesEnabled: true, ContactTitle: "Hubungi saya", ContactEnabled: true}
 	err := db.QueryRow(`
-		SELECT site_name, site_desc, affiliate_disclosure, hero_enabled, featured_limit, public_accent, public_background, admin_accent, admin_background, logo_url, favicon_url, avatar_url, social_links, seo_title, seo_description, share_image_url, public_origin, hero_eyebrow, hero_title, hero_description, service_title, service_description, item_previews, feature_storefront, feature_catalog, feature_services, feature_articles, feature_projects, feature_resources, feature_profile, feature_support, feature_favorites
+		SELECT site_name, site_desc, affiliate_disclosure, hero_enabled, featured_limit, public_accent, public_background, admin_accent, admin_background, logo_url, favicon_url, avatar_url, social_links, seo_title, seo_description, share_image_url, public_origin, hero_eyebrow, hero_title, hero_description, service_title, service_description, item_previews, feature_storefront, feature_catalog, feature_services, feature_articles, feature_projects, feature_resources, feature_profile, feature_support, feature_favorites, contact_links, contact_title, contact_note, feature_contact
 		FROM site_settings WHERE id = 1
-	`).Scan(&settings.SiteName, &settings.SiteDesc, &settings.AffiliateDisclosure, &settings.HeroEnabled, &settings.FeaturedLimit, &settings.PublicAccent, &settings.PublicBackground, &settings.AdminAccent, &settings.AdminBackground, &settings.LogoURL, &settings.FaviconURL, &settings.AvatarURL, &settings.SocialLinks, &settings.SEOTitle, &settings.SEODescription, &settings.ShareImageURL, &settings.PublicOrigin, &settings.HeroEyebrow, &settings.HeroTitle, &settings.HeroDescription, &settings.ServiceTitle, &settings.ServiceDescription, &settings.ItemPreviews, &settings.StorefrontEnabled, &settings.CatalogEnabled, &settings.ServicesEnabled, &settings.ArticlesEnabled, &settings.ProjectsEnabled, &settings.ResourcesEnabled, &settings.ProfileEnabled, &settings.SupportEnabled, &settings.FavoritesEnabled)
+	`).Scan(&settings.SiteName, &settings.SiteDesc, &settings.AffiliateDisclosure, &settings.HeroEnabled, &settings.FeaturedLimit, &settings.PublicAccent, &settings.PublicBackground, &settings.AdminAccent, &settings.AdminBackground, &settings.LogoURL, &settings.FaviconURL, &settings.AvatarURL, &settings.SocialLinks, &settings.SEOTitle, &settings.SEODescription, &settings.ShareImageURL, &settings.PublicOrigin, &settings.HeroEyebrow, &settings.HeroTitle, &settings.HeroDescription, &settings.ServiceTitle, &settings.ServiceDescription, &settings.ItemPreviews, &settings.StorefrontEnabled, &settings.CatalogEnabled, &settings.ServicesEnabled, &settings.ArticlesEnabled, &settings.ProjectsEnabled, &settings.ResourcesEnabled, &settings.ProfileEnabled, &settings.SupportEnabled, &settings.FavoritesEnabled, &settings.ContactLinks, &settings.ContactTitle, &settings.ContactNote, &settings.ContactEnabled)
 	if errors.Is(err, sql.ErrNoRows) {
 		return settings, nil
 	}
@@ -88,8 +92,8 @@ func (db *DB) GetSiteSettings() (SiteSettings, error) {
 
 func (db *DB) SaveSiteSettings(settings SiteSettings) error {
 	_, err := db.Exec(`
-		INSERT INTO site_settings (id, site_name, site_desc, affiliate_disclosure, hero_enabled, featured_limit, public_accent, public_background, admin_accent, admin_background, logo_url, favicon_url, avatar_url, social_links, seo_title, seo_description, share_image_url, public_origin, hero_eyebrow, hero_title, hero_description, service_title, service_description, item_previews, feature_storefront, feature_catalog, feature_services, feature_articles, feature_projects, feature_resources, feature_profile, feature_support, feature_favorites, updated_at)
-		VALUES (1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+		INSERT INTO site_settings (id, site_name, site_desc, affiliate_disclosure, hero_enabled, featured_limit, public_accent, public_background, admin_accent, admin_background, logo_url, favicon_url, avatar_url, social_links, seo_title, seo_description, share_image_url, public_origin, hero_eyebrow, hero_title, hero_description, service_title, service_description, item_previews, feature_storefront, feature_catalog, feature_services, feature_articles, feature_projects, feature_resources, feature_profile, feature_support, feature_favorites, contact_links, contact_title, contact_note, feature_contact, updated_at)
+		VALUES (1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 		ON CONFLICT(id) DO UPDATE SET
 			site_name = excluded.site_name,
 			site_desc = excluded.site_desc,
@@ -117,7 +121,11 @@ func (db *DB) SaveSiteSettings(settings SiteSettings) error {
 			feature_profile = excluded.feature_profile,
 			feature_support = excluded.feature_support,
 			feature_favorites = excluded.feature_favorites,
+			contact_links = excluded.contact_links,
+			contact_title = excluded.contact_title,
+			contact_note = excluded.contact_note,
+			feature_contact = excluded.feature_contact,
 			updated_at = excluded.updated_at
-	`, settings.SiteName, settings.SiteDesc, settings.AffiliateDisclosure, settings.HeroEnabled, settings.FeaturedLimit, settings.PublicAccent, settings.PublicBackground, settings.AdminAccent, settings.AdminBackground, settings.LogoURL, settings.FaviconURL, settings.AvatarURL, settings.SocialLinks, settings.SEOTitle, settings.SEODescription, settings.ShareImageURL, settings.PublicOrigin, settings.HeroEyebrow, settings.HeroTitle, settings.HeroDescription, settings.ServiceTitle, settings.ServiceDescription, settings.ItemPreviews, settings.StorefrontEnabled, settings.CatalogEnabled, settings.ServicesEnabled, settings.ArticlesEnabled, settings.ProjectsEnabled, settings.ResourcesEnabled, settings.ProfileEnabled, settings.SupportEnabled, settings.FavoritesEnabled, time.Now().Unix())
+	`, settings.SiteName, settings.SiteDesc, settings.AffiliateDisclosure, settings.HeroEnabled, settings.FeaturedLimit, settings.PublicAccent, settings.PublicBackground, settings.AdminAccent, settings.AdminBackground, settings.LogoURL, settings.FaviconURL, settings.AvatarURL, settings.SocialLinks, settings.SEOTitle, settings.SEODescription, settings.ShareImageURL, settings.PublicOrigin, settings.HeroEyebrow, settings.HeroTitle, settings.HeroDescription, settings.ServiceTitle, settings.ServiceDescription, settings.ItemPreviews, settings.StorefrontEnabled, settings.CatalogEnabled, settings.ServicesEnabled, settings.ArticlesEnabled, settings.ProjectsEnabled, settings.ResourcesEnabled, settings.ProfileEnabled, settings.SupportEnabled, settings.FavoritesEnabled, settings.ContactLinks, settings.ContactTitle, settings.ContactNote, settings.ContactEnabled, time.Now().Unix())
 	return err
 }

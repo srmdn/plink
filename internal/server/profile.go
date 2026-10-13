@@ -32,6 +32,71 @@ var socialPlatformList = []socialPlatform{
 	{Key: "buymeacoffee", Label: "Buy Me a Coffee", Support: true},
 }
 
+// contactStored is one configurable contact entry for the public floating
+// contact button. Order and labels are operator-defined.
+type contactStored struct {
+	Platform string `json:"platform"`
+	Label    string `json:"label"`
+	URL      string `json:"url"`
+}
+
+// socialPlatformLabel returns the display label for a known platform key.
+func socialPlatformLabel(key string) string {
+	for _, platform := range socialPlatformList {
+		if platform.Key == key {
+			return platform.Label
+		}
+	}
+	return key
+}
+
+// knownPlatform reports whether key is one of the supported contact icons.
+func knownPlatform(key string) bool {
+	for _, platform := range socialPlatformList {
+		if platform.Key == key {
+			return true
+		}
+	}
+	return false
+}
+
+// parseContactEntries reads ordered contact entries; unknown/empty rows drop.
+func parseContactEntries(raw string) []contactStored {
+	entries := []contactStored{}
+	if strings.TrimSpace(raw) == "" {
+		return entries
+	}
+	var stored []contactStored
+	if err := json.Unmarshal([]byte(raw), &stored); err != nil {
+		return entries
+	}
+	for _, item := range stored {
+		if item.Platform != "" && strings.TrimSpace(item.URL) != "" {
+			entries = append(entries, item)
+		}
+	}
+	return entries
+}
+
+// encodeContactEntries stores non-empty contact rows in submission order.
+func encodeContactEntries(entries []contactStored) string {
+	clean := make([]contactStored, 0, len(entries))
+	for _, item := range entries {
+		if item.Platform == "" || strings.TrimSpace(item.URL) == "" {
+			continue
+		}
+		clean = append(clean, contactStored{Platform: item.Platform, Label: strings.TrimSpace(item.Label), URL: strings.TrimSpace(item.URL)})
+	}
+	if len(clean) == 0 {
+		return ""
+	}
+	encoded, err := json.Marshal(clean)
+	if err != nil {
+		return ""
+	}
+	return string(encoded)
+}
+
 type socialLink struct {
 	Key   string
 	Label string
@@ -42,6 +107,7 @@ type publicProfile struct {
 	AvatarURL string
 	Links     []socialLink
 	Support   []socialLink
+	Contact   []socialLink
 }
 
 // parseSocialLinks reads the stored JSON into a platform -> URL map. Unknown
@@ -105,6 +171,14 @@ func buildPublicProfile(settings db.SiteSettings) publicProfile {
 		} else {
 			profile.Links = append(profile.Links, link)
 		}
+	}
+	contactEntries := parseContactEntries(settings.ContactLinks)
+	for _, entry := range contactEntries {
+		label := strings.TrimSpace(entry.Label)
+		if label == "" {
+			label = socialPlatformLabel(entry.Platform)
+		}
+		profile.Contact = append(profile.Contact, socialLink{Key: entry.Platform, Label: label, URL: entry.URL})
 	}
 	return profile
 }

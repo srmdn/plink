@@ -36,6 +36,21 @@
 <div class="favorite-status ui-toast" role="status" aria-live="polite"></div>
 <script src="/js/storefront.js" defer></script>
 {{end}}
+{{define "contact-fab"}}
+{{$profile := publicProfile}}
+{{if and .Settings.ContactEnabled $profile.Contact}}
+<div class="contact-fab-wrap" data-contact-fab>
+  <div class="contact-bubble" id="contact-bubble" role="dialog" aria-label="{{if .Settings.ContactTitle}}{{.Settings.ContactTitle}}{{else}}Hubungi saya{{end}}">
+    <div class="contact-bubble-head"><strong>{{if .Settings.ContactTitle}}{{.Settings.ContactTitle}}{{else}}Hubungi saya{{end}}</strong>{{if .Settings.ContactNote}}<p>{{.Settings.ContactNote}}</p>{{end}}</div>
+    <div class="contact-bubble-actions">{{range $profile.Contact}}<a class="contact-action" href="{{.URL}}" target="_blank" rel="noopener noreferrer">{{template "social-icon" .Key}}<span>{{.Label}}</span></a>{{end}}</div>
+  </div>
+  <button type="button" class="contact-fab" data-contact-toggle aria-expanded="false" aria-controls="contact-bubble" aria-label="{{if .Settings.ContactTitle}}{{.Settings.ContactTitle}}{{else}}Hubungi saya{{end}}">
+    <span class="contact-fab-icon">{{template "nav-icon" "chat"}}</span>
+    <span class="contact-fab-icon contact-fab-close">{{template "nav-icon" "close"}}</span>
+  </button>
+</div>
+{{end}}
+{{end}}
 {{define "offer-card"}}
 {{$external := or (eq .ItemType "article") (eq .ItemType "project")}}
 <article class="offer-card offer-card--{{.ItemType}}{{if not .ImageURL}} offer-card--no-image{{end}}"{{if not $external}} data-favorite-card="{{.HomeSlug}}"{{end}}>
@@ -66,5 +81,5 @@
 {{if .Settings.ServicesEnabled}}<section class="store-section service-section"><div class="store-section-head"><div><span class="store-eyebrow">Dikerjain langsung</span><h2>{{.Settings.ServiceTitle}}</h2></div><a href="/offers?view=services">Lihat jasa →</a></div><p class="section-note">{{.Settings.ServiceDescription}}</p>{{if .Services}}<div class="offer-grid">{{range .Services}}{{template "offer-card" .}}{{end}}</div>{{end}}{{if .ServiceLinks}}<div class="resource-grid">{{range .ServiceLinks}}{{template "resource-card" .}}{{end}}</div>{{end}}{{if and (not .Services) (not .ServiceLinks)}}<p class="store-empty">Belum ada jasa di sini.</p>{{end}}</section>{{end}}
 {{if and .Settings.ResourcesEnabled (or .Links .ResourceOffers)}}<section class="store-section"><div class="store-section-head"><h2>Resource</h2><a href="/links">Lihat semua →</a></div>{{if .ResourceOffers}}<div class="offer-grid">{{range .ResourceOffers}}{{template "offer-card" .}}{{end}}</div>{{end}}<div class="resource-grid">{{range .Links}}{{template "resource-card" .}}{{end}}</div></section>{{end}}
 {{if and .Settings.CatalogEnabled .AffiliateDisclosure}}<p class="affiliate-note">{{.AffiliateDisclosure}}</p>{{end}}
-</main>{{template "public-footer" .}}{{template "public-nav" .}}</body></html>
+</main>{{template "public-footer" .}}{{template "contact-fab" .}}{{template "public-nav" .}}</body></html>
 {{end}}
