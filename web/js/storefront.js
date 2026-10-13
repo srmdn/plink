@@ -27,3 +27,13 @@
   window.addEventListener('storage', event => { if (event.key === key || event.key === null) { favorites = read(); sync(); } });
   sync();
 })();
+
+(() => {
+  const hero = document.querySelector('.store-header.profile-header');
+  const mini = document.querySelector('[data-profile-mini]');
+  if (!hero || !mini) return;
+  const observer = new IntersectionObserver(entries => {
+    mini.classList.toggle('is-visible', !entries[0].isIntersecting);
+  }, { threshold: 0 });
+  observer.observe(hero);
+})();

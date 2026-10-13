@@ -20,6 +20,7 @@
   <a class="store-brand" href="/">{{template "brand-logo" .}}<span class="store-brand-copy"><strong>{{.SiteName}}</strong>{{if .SiteDesc}}<small>{{.SiteDesc}}</small>{{end}}</span></a>
   {{end}}
 </header>
+{{if .Settings.ProfileEnabled}}<div class="profile-mini" data-profile-mini><a class="profile-mini-home" href="/" aria-label="{{.SiteName}}"><span class="profile-mini-avatar">{{if $profile.AvatarURL}}<img src="{{$profile.AvatarURL}}" alt="" />{{else}}{{template "brand-mark"}}{{end}}</span><strong class="profile-mini-name">{{.SiteName}}</strong></a>{{if .IsLoggedIn}}<a class="store-dashboard profile-mini-manage" href="/{{.AdminPath}}">{{template "nav-icon" "settings"}}<span>Kelola</span></a>{{end}}</div>{{end}}
 {{end}}
 {{define "public-nav"}}
 <nav class="bottom-nav" aria-label="Navigasi utama">
