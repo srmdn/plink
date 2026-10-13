@@ -1,5 +1,5 @@
 {{define "storefront-styles"}}
-<link rel="stylesheet" href="/js/css/storefront.css" />
+<link rel="stylesheet" href="{{asset "/js/css/storefront.css"}}" />
 <link rel="stylesheet" href="/js/theme.css" />
 {{end}}
 {{define "public-header"}}
@@ -34,7 +34,7 @@
 {{define "public-footer"}}
 <footer class="store-footer">Dibikin pakai <a href="https://github.com/srmdn/plink" rel="noopener">Plink</a>.</footer>
 <div class="favorite-status ui-toast" role="status" aria-live="polite"></div>
-<script src="/js/storefront.js" defer></script>
+<script src="{{asset "/js/storefront.js"}}" defer></script>
 {{end}}
 {{define "contact-fab"}}
 {{$profile := publicProfile}}

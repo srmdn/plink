@@ -1,7 +1,9 @@
 package server
 
 import (
+	"crypto/sha256"
 	"embed"
+	"encoding/hex"
 	"html/template"
 	"io/fs"
 	"net/http"
@@ -61,7 +63,31 @@ func (s *Server) securityHeaders(next http.Handler) http.Handler {
 	})
 }
 
+// staticAssets are the cacheable CSS/JS files whose content drives the asset
+// version. The dynamic theme stylesheet is intentionally excluded.
+var staticAssets = []string{
+	"web/js/css/storefront.css",
+	"web/js/css/admin.css",
+	"web/js/storefront.js",
+	"web/js/htmx.min.js",
+}
+
+// computeAssetVersion returns a short hash over the embedded static assets so
+// their URLs change whenever their content does.
+func computeAssetVersion(webFS embed.FS) string {
+	hash := sha256.New()
+	for _, name := range staticAssets {
+		data, err := webFS.ReadFile(name)
+		if err != nil {
+			continue
+		}
+		hash.Write(data)
+	}
+	return hex.EncodeToString(hash.Sum(nil))[:12]
+}
+
 func New(cfg *config.Config, database *db.DB, webFS embed.FS) http.Handler {
+	assetVersion := computeAssetVersion(webFS)
 	tmpl := template.Must(
 		template.New("").Funcs(template.FuncMap{
 			"dict": func(values ...any) map[string]any {
@@ -71,6 +97,9 @@ func New(cfg *config.Config, database *db.DB, webFS embed.FS) http.Handler {
 				}
 				return result
 			},
+			// asset appends a content-derived version so cached CSS/JS URLs
+			// change whenever the asset changes, bypassing edge caches.
+			"asset": func(path string) string { return path + "?v=" + assetVersion },
 			"itemTypeLabel": func(value string) string {
 				return map[string]string{"product": "Produk", "referral": "Referral", "service": "Jasa", "resource": "Resource", "article": "Artikel", "project": "Proyek"}[value]
 			},

@@ -5,7 +5,7 @@
 <title>plink</title>
 <meta name="robots" content="noindex, nofollow" />
 {{template "favicon-link" .}}
-<script src="/js/htmx.min.js"></script>
+<script src="{{asset "/js/htmx.min.js"}}"></script>
 <script>
 try {
   if (localStorage.getItem('plink-admin-sidebar') === 'collapsed') {
@@ -1150,7 +1150,7 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 {{if isGuide .}}{{template "guide-styles" .}}{{end}}
-<link rel="stylesheet" href="/js/css/admin.css" />
+<link rel="stylesheet" href="{{asset "/js/css/admin.css"}}" />
 <link rel="stylesheet" href="/js/theme.css?scope=admin" />
 </head>
 {{end}}
