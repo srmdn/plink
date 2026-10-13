@@ -364,7 +364,7 @@ func (db *DB) ListPublicLinks() ([]PublicLink, error) {
 	rows, err := db.Query(`
 		SELECT id, slug, description, category, featured, priority, provider
 		FROM links
-		WHERE active = 1 AND offer_id IS NULL
+		WHERE active = 1 AND offer_id IS NULL AND LOWER(channel) <> 'contact'
 		ORDER BY featured DESC, priority DESC, category, slug
 	`)
 	if err != nil {
