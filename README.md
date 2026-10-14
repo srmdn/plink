@@ -36,6 +36,10 @@ yourdomain.com/tokopedia-promo  →  https://tokopedia.com/...
   affiliate disclosure, logo/favicon/avatar, social and support links, SEO and
   share image, public address, feature toggles, and independent public/admin
   accent and background colors (stored in SQLite)
+- Contact button — a configurable floating button on all public pages, shown
+  when enabled with at least one channel; reorderable channels (WhatsApp,
+  Telegram, email, or any URL) may use Plink slugs that stay out of public
+  resource listings
 - Item images — upload PNG/JPEG/WebP (max 5 MB, 25 MP) or reference a URL; no
   image shows the built-in mark
 - Featured picks — up to three manually scrollable cards, separate from the grid
@@ -135,10 +139,11 @@ redirect click. Browsing catalogs and saving favorites do not record clicks.
 Settings → **Fitur publik** controls which public surfaces exist. Choose a preset
 (**Katalog penuh**, **Bio link**, or **Hanya pemendek tautan**) or toggle features
 individually: public homepage, catalog, services, articles, projects, resources,
-profile, support buttons, and favorites. Disabled features disappear from the
-navigation and their URLs return 404, while short-link redirects keep working; the
-root becomes a minimal page when the storefront is off. Schema v17 adds these
-flags and defaults them all on, so existing installs are unchanged.
+profile, support buttons, favorites, and the floating contact button. Disabled
+features disappear from the navigation and their URLs return 404, while
+short-link redirects keep working; the root becomes a minimal page when the
+storefront is off. Schema v17 adds these flags and schema v18 adds the contact
+button channels and flag; defaults keep existing installs unchanged.
 
 Program status controls every active slug attached to an Offer. Paused,
 upcoming, and ended programs show one shared visitor notice; expired programs
