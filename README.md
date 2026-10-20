@@ -36,8 +36,8 @@ yourdomain.com/tokopedia-promo  →  https://tokopedia.com/...
   affiliate disclosure, logo/favicon/avatar, social and support links, SEO and
   share image, public address, feature toggles, and independent public/admin
   accent and background colors (stored in SQLite)
-- Contact button — a configurable floating button on all public pages, shown
-  when enabled with at least one channel; reorderable channels (WhatsApp,
+- Contact button — a configurable floating button on public storefront pages,
+  shown when enabled with at least one channel; reorderable channels (WhatsApp,
   Telegram, email, or any URL) may use Plink slugs that stay out of public
   resource listings
 - Item images — upload PNG/JPEG/WebP (max 5 MB, 25 MP) or reference a URL; no
@@ -67,8 +67,12 @@ cd plink
 cp .env.example .env
 # edit .env — set ADMIN_PASSWORD (required, no default)
 go run ./cmd
-# open the configured admin login path in your browser
+# open the admin login path in your browser
 ```
+
+With the default `ADDR=:8080` and `ADMIN_PATH=admin`, the admin login is at
+`http://localhost:8080/admin/login`; the dashboard is at `/admin`. Set
+`ADMIN_PATH` to use a different path.
 
 ## Configuration
 
@@ -204,8 +208,8 @@ SEO title, description, and optional share-image URL under **Settings → SEO & 
 Empty SEO fields follow the site identity. Empty image settings use a generated
 1200×630 PNG with the public palette; no external image-generation service is required.
 The settings preview displays the saved configuration. Custom images should be
-publicly accessible PNG/JPG files, ideally 1200×630, referenced by HTTPS URL or a
-local site path. Logo and favicon remain separate settings.
+publicly accessible PNG/JPEG/WebP files, ideally 1200×630, referenced by HTTPS URL
+or a local site path. Logo and favicon remain separate settings.
 
 `/robots.txt` and `/sitemap.xml` list the public sections. Admin/API responses,
 favorites, search/filter results, and program notices are marked `noindex`.

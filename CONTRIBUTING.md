@@ -29,7 +29,7 @@ cp .env.example .env
 go run ./cmd
 ```
 
-Open the configured admin login path in a local browser and sign in with the password you set in `.env`.
+Open `http://localhost:8080/admin/login` in a local browser (the default; adjust if you changed `ADDR` or `ADMIN_PATH`) and sign in with the password you set in `.env`.
 
 ## Project structure
 

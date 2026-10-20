@@ -8,7 +8,7 @@ provider, dan pembacaan performa berdasarkan slug.
 
 - [x] **Trend yang kontekstual** — kolom Trend disembunyikan ketika filter
   periode berada di `all`, karena tidak ada periode pembanding yang bermakna.
-  Sudah diterapkan di redesign lokal; belum dirilis.
+  Dirilis di v1.3.0.
 - [ ] **Bulk edit metadata** — ubah provider, channel, campaign, atau kategori
    untuk beberapa link sekaligus.
 - [ ] **Status strategi promosi** — tambahkan status manual `push`, `observe`, dan
@@ -16,5 +16,5 @@ provider, dan pembacaan performa berdasarkan slug.
 - [ ] **Conversion dan revenue tracking** — hubungkan klik dengan conversion,
    komisi, dan revenue supaya ranking tidak hanya berdasarkan traffic.
 
-Belum ada perubahan backlog ini yang masuk ke production. Tiga item tersisa
-perlu dievaluasi setelah dashboard dipakai dengan data produksi.
+Trend kontekstual sudah dirilis di v1.3.0. Tiga item tersisa belum dikerjakan
+dan perlu dievaluasi setelah dashboard dipakai dengan data produksi.
