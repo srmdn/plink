@@ -72,6 +72,7 @@ func (s *sessionStore) cleanup() {
 
 func (s *Server) requireAuth(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Cache-Control", "no-store")
 		cookie, err := r.Cookie(cookieName)
 		if err != nil || !s.sessions.valid(cookie.Value) {
 			if strings.HasPrefix(r.URL.Path, "/api/") {
@@ -118,7 +119,6 @@ func (s *Server) handleLogin(w http.ResponseWriter, r *http.Request) {
 	s.setCSRFCookie(w)
 	http.Redirect(w, r, "/"+s.cfg.AdminPath, http.StatusFound)
 }
-
 
 func (s *Server) handleLogout(w http.ResponseWriter, r *http.Request) {
 	if cookie, err := r.Cookie(cookieName); err == nil {

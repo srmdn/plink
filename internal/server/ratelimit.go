@@ -1,6 +1,7 @@
 package server
 
 import (
+	"net"
 	"net/http"
 	"strings"
 	"sync"
@@ -68,16 +69,28 @@ func (l *loginLimiter) cleanup() {
 	}
 }
 
+func remoteIP(r *http.Request) string {
+	if host, _, err := net.SplitHostPort(r.RemoteAddr); err == nil {
+		return host
+	}
+	return strings.Trim(r.RemoteAddr, "[]")
+}
+
+func isLoopbackRemote(r *http.Request) bool {
+	ip := net.ParseIP(remoteIP(r))
+	return ip != nil && ip.IsLoopback()
+}
+
 func clientIP(r *http.Request) string {
-	if ip := r.Header.Get("X-Real-IP"); ip != "" {
-		return ip
+	if isLoopbackRemote(r) {
+		if ip := strings.TrimSpace(r.Header.Get("X-Real-IP")); ip != "" {
+			return ip
+		}
+		if fwd := r.Header.Get("X-Forwarded-For"); fwd != "" {
+			if first := strings.TrimSpace(strings.Split(fwd, ",")[0]); first != "" {
+				return first
+			}
+		}
 	}
-	if fwd := r.Header.Get("X-Forwarded-For"); fwd != "" {
-		return strings.Split(fwd, ",")[0]
-	}
-	addr := r.RemoteAddr
-	if i := strings.LastIndex(addr, ":"); i != -1 {
-		return addr[:i]
-	}
-	return addr
+	return remoteIP(r)
 }

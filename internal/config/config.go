@@ -37,6 +37,9 @@ func Load() *Config {
 	if password == "" {
 		log.Fatal("ADMIN_PASSWORD must be set in .env or environment")
 	}
+	if len(password) < 12 {
+		log.Printf("plink: warning: ADMIN_PASSWORD is shorter than 12 characters")
+	}
 
 	timezone := getEnv("APP_TIMEZONE", "UTC")
 	reportLocation, err := time.LoadLocation(timezone)

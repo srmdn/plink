@@ -4,6 +4,20 @@ All notable changes to Plink are documented in this file.
 
 ## Unreleased
 
+### Security
+
+- Upgraded `golang.org/x/image` to remove reachable decoder vulnerabilities.
+- Admin and API responses now use `Cache-Control: no-store`.
+- Bounded stored referrer and user-agent values, and added HTTP server timeouts.
+- Proxy headers are trusted only from loopback, and short admin passwords now
+  produce a startup warning.
+- Removed the admin path from `robots.txt` and ignored the default `uploads/`
+  directory in Git.
+
+### Changed
+
+- Updated the vendored htmx runtime from 2.0.4 to 2.0.8.
+
 ## v1.3.0
 
 ### Added

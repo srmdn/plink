@@ -57,7 +57,8 @@ func TestPublicSEOAndShareImage(t *testing.T) {
 	if err != nil || decoded.Bounds().Dx() != 1200 || decoded.Bounds().Dy() != 630 {
 		t.Fatal("invalid OG PNG")
 	}
-	if strings.Contains(get("/robots.txt").Body.String(), "Disallow: /\n") || !strings.Contains(get("/robots.txt").Body.String(), "Disallow: /admin") {
+	robots := get("/robots.txt").Body.String()
+	if strings.Contains(robots, "Disallow: /\n") || !strings.Contains(robots, "Disallow: /api/") || strings.Contains(robots, "Disallow: /admin") {
 		t.Fatal("robots incorrect")
 	}
 	sitemap := get("/sitemap.xml")

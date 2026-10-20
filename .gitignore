@@ -24,6 +24,9 @@ data/
 # Binary
 plink
 
+# Uploaded media
+uploads/
+
 # Runtime
 *.log
 *.pid

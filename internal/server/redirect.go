@@ -4,8 +4,21 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"strings"
 	"time"
 )
+
+const (
+	maxStoredReferrer  = 2048
+	maxStoredUserAgent = 512
+)
+
+func truncateHeader(value string, limit int) string {
+	if len(value) <= limit {
+		return value
+	}
+	return strings.ToValidUTF8(value[:limit], "")
+}
 
 func isAllowedURL(rawURL string) bool {
 	u, err := url.Parse(rawURL)
@@ -18,11 +31,15 @@ func isAllowedURL(rawURL string) bool {
 func sanitizeReferrer(ref string) string {
 	u, err := url.Parse(ref)
 	if err != nil || u.Scheme == "" {
-		return ref
+		return truncateHeader(ref, maxStoredReferrer)
 	}
 	u.RawQuery = ""
 	u.Fragment = ""
-	return u.String()
+	return truncateHeader(u.String(), maxStoredReferrer)
+}
+
+func sanitizeUserAgent(value string) string {
+	return truncateHeader(value, maxStoredUserAgent)
 }
 
 func (s *Server) handleRedirect(w http.ResponseWriter, r *http.Request) {
@@ -66,7 +83,7 @@ func (s *Server) handleRedirect(w http.ResponseWriter, r *http.Request) {
 				destination = offer.FallbackURL
 			} else {
 				if s.renderOfferNotice(w, r, offer, status) && r.Method == http.MethodGet && !previewBot {
-					if err := s.db.RecordNoticeView(link.ID, status, sanitizeReferrer(r.Referer()), r.UserAgent(), time.Now().Unix()); err != nil {
+					if err := s.db.RecordNoticeView(link.ID, status, sanitizeReferrer(r.Referer()), sanitizeUserAgent(r.UserAgent()), time.Now().Unix()); err != nil {
 						log.Printf("record notice view: %v", err)
 					}
 				}
@@ -80,7 +97,7 @@ func (s *Server) handleRedirect(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if r.Method == http.MethodGet && !previewBot {
-		go s.db.RecordClick(link.ID, sanitizeReferrer(r.Referer()), r.UserAgent())
+		go s.db.RecordClick(link.ID, sanitizeReferrer(r.Referer()), sanitizeUserAgent(r.UserAgent()))
 	}
 
 	http.Redirect(w, r, destination, http.StatusFound)

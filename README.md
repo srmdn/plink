@@ -74,6 +74,13 @@ With the default `ADDR=:8080` and `ADMIN_PATH=admin`, the admin login is at
 `http://localhost:8080/admin/login`; the dashboard is at `/admin`. Set
 `ADMIN_PATH` to use a different path.
 
+The default listener binds all interfaces on port 8080. Set
+`ADDR=127.0.0.1:8080` for local-only access. Reverse-proxy headers
+(`X-Real-IP`, `X-Forwarded-For`, and `X-Forwarded-Proto`) are trusted only when
+the request arrives over loopback. Run the proxy on the same host for client-IP
+forwarding; when it runs elsewhere, set `PUBLIC_URL` so canonical URLs stay
+correct.
+
 ## Configuration
 
 Plink reads configuration from `.env` when it starts. Set `APP_TIMEZONE` to an
@@ -101,8 +108,11 @@ variables `ANALYTICS_SCRIPT_URL`, `ANALYTICS_WEBSITE_ID`, and
 
 ## Security
 
-- **CSRF protection** — double-submit cookie token on all state-changing requests
+- **CSRF protection** — double-submit cookie token on all authenticated
+  state-changing requests
 - **Rate limiting** — login attempts capped at 5 per IP per 15 minutes
+- **Admin password** — required; use at least 12 characters (Plink warns if
+  shorter)
 - **Secure cookies** — set `APP_ENV=production` to enable `Secure` flag (HTTPS only)
 - **Security headers** — CSP, HSTS, X-Frame-Options, and more applied automatically
 - **URL validation** — only `http`/`https` redirect targets accepted

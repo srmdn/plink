@@ -106,7 +106,7 @@ func (s *Server) publicSEO(settings db.SiteSettings, r *http.Request, view strin
 
 func (s *Server) handleRobots(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
-	fmt.Fprintf(w, "User-agent: *\nDisallow: /%s\nDisallow: /api/\nSitemap: %s/sitemap.xml\n", s.cfg.AdminPath, s.publicURL(r))
+	fmt.Fprintf(w, "User-agent: *\nDisallow: /api/\nSitemap: %s/sitemap.xml\n", s.publicURL(r))
 }
 func (s *Server) handleSitemap(w http.ResponseWriter, r *http.Request) {
 	type entry struct {

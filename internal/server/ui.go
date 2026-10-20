@@ -575,7 +575,7 @@ func buildChartSVGWithMode(daily []dailyFill, interactive bool) template.HTML {
 
 func baseURL(r *http.Request) string {
 	scheme := "http"
-	if r.TLS != nil || r.Header.Get("X-Forwarded-Proto") == "https" {
+	if r.TLS != nil || (isLoopbackRemote(r) && r.Header.Get("X-Forwarded-Proto") == "https") {
 		scheme = "https"
 	}
 	return scheme + "://" + r.Host
@@ -911,6 +911,7 @@ func dashboardLocation(location *time.Location) *time.Location {
 // ── Page handlers ────────────────────────────────────────────────────────────
 
 func (s *Server) handleLoginPage(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Cache-Control", "no-store")
 	if cookie, err := r.Cookie(cookieName); err == nil && s.sessions.valid(cookie.Value) {
 		http.Redirect(w, r, "/"+s.cfg.AdminPath, http.StatusFound)
 		return
