@@ -8,7 +8,8 @@ All notable changes to Plink are documented in this file.
 
 - Upgraded `golang.org/x/image` to remove reachable decoder vulnerabilities.
 - Admin and API responses now use `Cache-Control: no-store`.
-- Bounded stored referrer and user-agent values, and added HTTP server timeouts.
+- Bounded stored referrer and user-agent values, and added HTTP server timeouts
+  and a 64 KiB header cap.
 - Proxy headers are trusted only from loopback, and short admin passwords now
   produce a startup warning.
 - Removed the admin path from `robots.txt` and ignored the default `uploads/`

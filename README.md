@@ -79,7 +79,9 @@ The default listener binds all interfaces on port 8080. Set
 (`X-Real-IP`, `X-Forwarded-For`, and `X-Forwarded-Proto`) are trusted only when
 the request arrives over loopback. Run the proxy on the same host for client-IP
 forwarding; when it runs elsewhere, set `PUBLIC_URL` so canonical URLs stay
-correct.
+correct. When a proxy or CDN fronts the app, bind the listener to loopback and
+restrict the origin to that proxy's egress ranges; restore the client IP at the
+proxy so per-IP limits and logs stay accurate.
 
 ## Configuration
 
@@ -115,6 +117,7 @@ variables `ANALYTICS_SCRIPT_URL`, `ANALYTICS_WEBSITE_ID`, and
   shorter)
 - **Secure cookies** — set `APP_ENV=production` to enable `Secure` flag (HTTPS only)
 - **Security headers** — CSP, HSTS, X-Frame-Options, and more applied automatically
+- **Cache safety** — authenticated admin and API responses use `Cache-Control: no-store`
 - **URL validation** — only `http`/`https` redirect targets accepted
 - **No third-party tracking by default** — the binary ships with no analytics or
   external scripts. Operators who want visitor analytics on the public pages can
