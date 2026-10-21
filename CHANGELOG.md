@@ -18,6 +18,8 @@ All notable changes to Plink are documented in this file.
 ### Changed
 
 - Updated the vendored htmx runtime from 2.0.4 to 2.0.8.
+- Updated the vendored htmx runtime from 2.0.8 to 4.0.0, including the renamed
+  events, error-response swap behavior, and pending-state handling.
 
 ## v1.3.0
 
