@@ -340,9 +340,10 @@ function initStickySave() {
     var visible = function(el) { var r = el.getBoundingClientRect(); return r.top < window.innerHeight - 110 && r.bottom > 0; };
     var mainVisible = visible(main);
     var scopeVisible = !scope || visible(scope);
-    var update = function() { bar.classList.toggle('is-visible', !mainVisible && scopeVisible); };
+    var update = function() { bar.classList.toggle('is-visible', !mainVisible && scopeVisible && window.scrollY > 120); };
     new IntersectionObserver(function(entries) { mainVisible = entries[0].isIntersecting; update(); }, { rootMargin: '0px 0px -110px 0px', threshold: 0 }).observe(main);
     if (scope) new IntersectionObserver(function(entries) { scopeVisible = entries[0].isIntersecting; update(); }, { rootMargin: '0px 0px -110px 0px', threshold: 0 }).observe(scope);
+    window.addEventListener('scroll', update, { passive: true });
     update();
   });
 }
