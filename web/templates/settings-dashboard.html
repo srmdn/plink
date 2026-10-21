@@ -18,7 +18,7 @@
       {{if .Error}}<div class="offer-error" role="alert">{{uiText .Error}}</div>{{end}}
       {{if .Saved}}<div class="settings-saved" role="status">Pengaturan disimpan.</div>{{end}}
 
-      <form method="POST" enctype="multipart/form-data" action="/{{.AdminPath}}/settings">
+      <form method="POST" enctype="multipart/form-data" action="/{{.AdminPath}}/settings" id="settings-form">
         <section class="analytics-page-panel settings-panel"><div class="offer-form-heading"><h2>Logo &amp; favicon</h2><span>Logo dipakai pada header publik dan admin.</span></div><div class="field"><label for="settings-logo">URL logo</label><input id="settings-logo" type="text" name="logo_url" maxlength="2048" value="{{.Settings.LogoURL}}" placeholder="https://domain-lo.com/logo.png" /><input type="file" id="settings-logo-file" name="logo_file" accept="image/png,image/jpeg,image/webp" /><p class="field-help">Unggah PNG/JPEG/WebP maks 5 MB, atau isi URL/path (termasuk SVG). Unggahan menimpa URL. Kosongkan untuk memakai logo bawaan.</p></div><div class="field"><label for="settings-favicon">URL favicon</label><input id="settings-favicon" type="text" name="favicon_url" maxlength="2048" value="{{.Settings.FaviconURL}}" placeholder="https://domain-lo.com/favicon.png" /><input type="file" id="settings-favicon-file" name="favicon_file" accept="image/png,image/jpeg,image/webp" /><p class="field-help">Opsional. Jika kosong, favicon memakai logo lo; tanpa logo khusus, favicon mengikuti warna aksen publik. Unggah PNG/JPEG/WebP atau isi URL HTTPS/path lokal.</p></div><div class="brand-preview">{{template "brand-logo" .}}<span>Logo yang sedang digunakan</span></div></section>
         <section class="analytics-page-panel settings-panel">
           <div class="offer-form-heading"><h2>Profil &amp; tautan sosial</h2><span>Bagian atas halaman publik. Tautan sosial opsional.</span></div>
@@ -117,7 +117,8 @@
 <div class="form-pair"><div class="field"><label for="admin-accent">Aksen admin</label><input id="admin-accent" type="color" name="admin_accent" value="{{.Settings.AdminAccent}}" /></div><div class="field"><label for="admin-background">Latar admin</label><input id="admin-background" type="color" name="admin_background" value="{{.Settings.AdminBackground}}" /></div></div><p class="field-help">Pilih latar terang dan aksen yang kontras agar teks mudah dibaca.</p></section>
 <section class="analytics-page-panel settings-panel"><h2>Butuh bantuan?</h2><p class="field-help">Alur tautan, katalog, status program, dan statistik dijelaskan di panduan.</p><a class="btn btn-ghost" href="/{{.AdminPath}}/guide">Buka panduan →</a></section>
 
-        <div class="modal-footer settings-actions"><a href="/{{.AdminPath}}" class="btn btn-ghost">Batal</a><button type="submit" class="btn btn-primary">Simpan pengaturan</button></div>
+        <div class="modal-footer settings-actions" data-main-save><a href="/{{.AdminPath}}" class="btn btn-ghost">Batal</a><button type="submit" class="btn btn-primary">Simpan pengaturan</button></div>
+        <div class="sticky-save" data-sticky-save data-form="settings-form"><button type="submit" class="btn btn-primary">Simpan pengaturan</button></div>
       </form>
     </main>
   </div>

@@ -18,8 +18,8 @@
       {{if .Saved}}<div class="settings-saved" role="status">Item disimpan.</div>{{end}}
       {{if .Error}}<div class="offer-error" role="alert">{{uiText .Error}}</div>{{end}}
 
-      <section class="analytics-page-panel offer-editor-panel">
-        <form method="POST" enctype="multipart/form-data" action="{{if .IsNew}}/{{.AdminPath}}/offers{{else}}/{{.AdminPath}}/offers/{{.Offer.ID}}{{end}}">
+      <section class="analytics-page-panel offer-editor-panel" id="offer-form-panel">
+        <form method="POST" enctype="multipart/form-data" action="{{if .IsNew}}/{{.AdminPath}}/offers{{else}}/{{.AdminPath}}/offers/{{.Offer.ID}}{{end}}" id="offer-form">
           <div class="form-section"><div class="offer-form-heading"><h2>Informasi item</h2><span>Satu kartu pada halaman publik</span></div>
           <div class="field"><label for="offer-item-type">Jenis item</label><select id="offer-item-type" name="item_type"><option value="referral" {{if eq .Offer.ItemType "referral"}}selected{{end}}>Referral</option><option value="product" {{if eq .Offer.ItemType "product"}}selected{{end}}>Produk</option><option value="service" {{if eq .Offer.ItemType "service"}}selected{{end}}>Jasa</option><option value="resource" {{if eq .Offer.ItemType "resource"}}selected{{end}}>Resource</option><option value="article" {{if eq .Offer.ItemType "article"}}selected{{end}}>Artikel</option><option value="project" {{if eq .Offer.ItemType "project"}}selected{{end}}>Proyek</option></select><p class="field-help">Jasa muncul di tab Jasa. Artikel tampil di section Bacaan dan klik langsung ke URL tujuannya. Proyek tampil di section Portofolio dan klik langsung ke URL tujuannya. Jenis item terpisah dari kategori dan status program.</p></div>
           <div class="form-pair">
@@ -78,7 +78,8 @@
           </div>
           <div class="field-help">Visibilitas katalog mengatur kartu publik. Status program berlaku pada semua slug aktif. Tautan yang dinonaktifkan tetap menghasilkan 404. Tanggal akhir berlaku sampai akhir hari menurut zona waktu laporan.</div>
           </div>
-          <div class="modal-footer"><a href="/{{.AdminPath}}/offers" class="btn btn-ghost">Batal</a><button type="submit" class="btn btn-primary">Simpan item</button></div>
+          <div class="modal-footer" data-main-save><a href="/{{.AdminPath}}/offers" class="btn btn-ghost">Batal</a><button type="submit" class="btn btn-primary">Simpan item</button></div>
+          <div class="sticky-save" data-sticky-save data-form="offer-form" data-scope="#offer-form-panel"><button type="submit" class="btn btn-primary">Simpan item</button></div>
         </form>
       </section>
 
