@@ -2,7 +2,7 @@
 
 All notable changes to Plink are documented in this file.
 
-## Unreleased
+## v1.4.0
 
 ### Security
 
@@ -17,9 +17,26 @@ All notable changes to Plink are documented in this file.
 
 ### Changed
 
-- Updated the vendored htmx runtime from 2.0.4 to 2.0.8.
-- Updated the vendored htmx runtime from 2.0.8 to 4.0.0, including the renamed
+- Updated the vendored htmx runtime from 2.0.4 to 4.0.0, including the renamed
   events, error-response swap behavior, and pending-state handling.
+- Moved the base admin styles into the versioned stylesheet, cutting the admin
+  document size and removing dead dark-theme rules.
+- Improved mobile ergonomics: larger touch targets, section-specific empty
+  states, and an edge fade on the featured scroller.
+- Added sticky save actions to Settings and the offer editor, and replaced
+  native file inputs with a styled picker.
+- The floating contact button now hides while scrolling down and returns on
+  scroll up; the guide table of contents moved into the guide header.
+- Clarified admin counts and table labels, and styled color inputs as swatches.
+- The public affiliate fallback now uses the formal register.
+
+### Fixed
+
+- Create-link validation errors stay in create mode instead of switching to an
+  edit form.
+- Direct visits to analytics fragment endpoints redirect to the dashboard.
+- The guide TOC no longer overlaps cards, and offer notice pages now load the
+  contact-button script.
 
 ## v1.3.0
 
