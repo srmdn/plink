@@ -8,6 +8,7 @@
   {{if .Link}}hx-put="/{{.AdminPath}}/links/{{.Link.ID}}"{{else}}hx-post="/{{.AdminPath}}/links"{{end}}
   hx-target="#links-section"
   hx-swap="innerHTML"
+  hx-disable="find button[type='submit']"
 >
   <input type="hidden" name="filter_q" value="{{.Query}}" />
   <input type="hidden" name="filter_category" value="{{.CategoryFilter}}" />

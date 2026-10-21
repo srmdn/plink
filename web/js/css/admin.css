@@ -111,6 +111,11 @@
   font-size:11px;
   min-height:34px
 }
+.admin-page .btn:disabled {
+  opacity:.55;
+  cursor:not-allowed;
+  transform:none
+}
 .admin-page .dashboard-stats {
   display:grid;
   grid-template-columns:repeat(3,minmax(0,1fr));

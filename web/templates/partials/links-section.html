@@ -87,6 +87,7 @@
                   hx-get="/{{$.AdminPath}}/links/{{.ID}}/edit"
                   hx-target="#modal-body"
                   hx-swap="innerHTML"
+                  hx-disable="this"
                   hx-include="#search, select[name='category'], select[name='status'], #date-filter"
                 >/{{.Slug}}</button>
                 {{if .Featured}}<span class="cat-badge featured-badge">Unggulan</span>{{end}}
@@ -121,6 +122,7 @@
                   hx-patch="/{{$.AdminPath}}/links/{{.ID}}/toggle"
                   hx-target="#links-section"
                   hx-swap="innerHTML"
+                  hx-disable="this"
                   hx-include="#search, select[name='category'], select[name='status'], #date-filter"
                 >{{if .Active}}Nonaktifkan{{else}}Aktifkan{{end}}</button>
                 <button
@@ -128,6 +130,7 @@
                   hx-delete="/{{$.AdminPath}}/links/{{.ID}}"
                   hx-target="#links-section"
                   hx-swap="innerHTML"
+                  hx-disable="this"
                   hx-confirm="delete /{{.Slug}}? this cannot be undone"
                   hx-include="#search, select[name='category'], select[name='status'], #date-filter"
                 >Hapus</button>

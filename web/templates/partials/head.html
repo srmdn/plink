@@ -5,6 +5,7 @@
 <title>plink</title>
 <meta name="robots" content="noindex, nofollow" />
 {{template "favicon-link" .}}
+<meta name="htmx-config" content='{"noSwap":[204,304,"4xx","5xx"]}' />
 <script src="{{asset "/js/htmx.min.js"}}"></script>
 <script>
 try {
@@ -925,8 +926,8 @@ function adminFeedback(message, isError) {
   status.classList.toggle('is-error', !!isError); status.classList.add('is-visible');
   status._timer = setTimeout(function() { status.classList.remove('is-visible'); }, 3000);
 }
-document.addEventListener('htmx:responseError', function() { adminFeedback('Perubahan belum tersimpan. Coba lagi.', true); });
-document.addEventListener('htmx:sendError', function() { adminFeedback('Koneksi terputus. Coba lagi.', true); });
+document.addEventListener('htmx:response:error', function() { adminFeedback('Perubahan belum tersimpan. Coba lagi.', true); });
+document.addEventListener('htmx:error', function() { adminFeedback('Koneksi terputus. Coba lagi.', true); });
 document.addEventListener('closeModal', function() { adminFeedback('Tautan disimpan.'); });
 document.addEventListener('submit', function(event) {
   var form = event.target;
@@ -1121,8 +1122,10 @@ function enhanceComboInputs(root) {
 }
 document.addEventListener('DOMContentLoaded', function() { enhanceComboInputs(document); });
 // Open modals when htmx swaps content into them
-document.addEventListener('htmx:afterSwap', function(e) {
-  if (e.detail.target.id === 'modal-body') { openModal(); enhanceComboInputs(e.detail.target); }
+document.addEventListener('htmx:after:swap', function(e) {
+  var ctx = e.detail && e.detail.ctx;
+  var target = ctx && ctx.target;
+  if (target && target.id === 'modal-body') { openModal(); enhanceComboInputs(target); }
 });
 // Close modal after successful form save (triggered by HX-Trigger: closeModal)
 document.addEventListener('closeModal', closeModal);
@@ -1131,9 +1134,10 @@ function getCsrfToken() {
   var m = document.cookie.match(/(?:^|;\s*)plink_csrf=([^;]*)/);
   return m ? m[1] : '';
 }
-document.addEventListener('htmx:configRequest', function(e) {
+document.addEventListener('htmx:config:request', function(e) {
+  var ctx = e.detail && e.detail.ctx;
   var token = getCsrfToken();
-  if (token) e.detail.headers['X-CSRF-Token'] = token;
+  if (ctx && ctx.request && ctx.request.headers && token) ctx.request.headers['X-CSRF-Token'] = token;
 });
 // CSRF: protect traditional mutation forms without adding tokens to search URLs.
 document.addEventListener('DOMContentLoaded', function() {
