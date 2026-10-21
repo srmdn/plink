@@ -2,6 +2,13 @@
 
 All notable changes to Plink are documented in this file.
 
+## v1.4.1
+
+### Security
+
+- Rebuilt with Go 1.27.3 to address GO-2026-6809 in `crypto/x509`
+  (distrust compromised intermediate certificates).
+
 ## v1.4.0
 
 ### Security
