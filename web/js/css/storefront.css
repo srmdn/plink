@@ -878,3 +878,57 @@ body[data-favorites-page] [data-favorite-card].is-favorite {
 @media(prefers-reduced-motion:reduce) {
   .contact-bubble,.contact-fab,.contact-fab-icon,.contact-fab-wrap { transition:none; }
 }
+
+/* Touch targets and scroller affordance. */
+.favorite-button::before {
+  content:"";
+  position:absolute;
+  inset:-5px;
+  border-radius:50%
+}
+.store-chip {
+  display:inline-flex;
+  align-items:center;
+  min-height:40px
+}
+.catalog-filters button {
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-height:44px
+}
+.catalog-pagination a {
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-height:40px
+}
+.store-section-head>a {
+  position:relative
+}
+.store-section-head>a::before {
+  content:"";
+  position:absolute;
+  inset:-10px -6px
+}
+.featured-scroller {
+  position:relative
+}
+.featured-scroller::after {
+  content:"";
+  position:absolute;
+  top:0;
+  right:0;
+  bottom:8px;
+  width:36px;
+  pointer-events:none;
+  background:linear-gradient(to right,rgba(255,255,255,0),#fff);
+  opacity:0;
+  transition:opacity .18s
+}
+.featured-scroller.is-scrollable:not(.is-end)::after {
+  opacity:1
+}
+@media(prefers-reduced-motion:reduce) {
+  .featured-scroller::after { transition:none; }
+}

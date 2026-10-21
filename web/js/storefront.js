@@ -79,3 +79,19 @@
     window.requestAnimationFrame(updateVisibility);
   }, { passive: true });
 })();
+
+(() => {
+  document.querySelectorAll('[data-featured-track]').forEach(track => {
+    const wrap = track.closest('.featured-scroller');
+    if (!wrap) return;
+    const update = () => {
+      const scrollable = track.scrollWidth > track.clientWidth + 2;
+      const atEnd = track.scrollLeft + track.clientWidth >= track.scrollWidth - 2;
+      wrap.classList.toggle('is-scrollable', scrollable);
+      wrap.classList.toggle('is-end', atEnd);
+    };
+    track.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', update);
+    update();
+  });
+})();
