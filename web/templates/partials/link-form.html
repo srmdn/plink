@@ -1,11 +1,11 @@
 {{define "link-form"}}
 <div class="modal-header">
-  <span class="modal-title">{{if .Link}}Edit tautan{{else}}Tambah tautan{{end}}</span>
+  <span class="modal-title">{{if .Editing}}Edit tautan{{else}}Tambah tautan{{end}}</span>
   <button type="button" class="btn btn-ghost btn-sm" onclick="closeModal()">✕</button>
 </div>
 {{if .Error}}<div class="modal-error">{{uiText .Error}}</div>{{end}}
 <form
-  {{if .Link}}hx-put="/{{.AdminPath}}/links/{{.Link.ID}}"{{else}}hx-post="/{{.AdminPath}}/links"{{end}}
+  {{if .Editing}}hx-put="/{{.AdminPath}}/links/{{.Link.ID}}"{{else}}hx-post="/{{.AdminPath}}/links"{{end}}
   hx-target="#links-section"
   hx-swap="innerHTML"
   hx-disable="find button[type='submit']"

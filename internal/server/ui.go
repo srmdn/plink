@@ -99,6 +99,7 @@ type dashboardData struct {
 
 type linkFormData struct {
 	Link           *db.Link
+	Editing        bool
 	Categories     []string
 	Error          string
 	Query          string
@@ -1053,7 +1054,7 @@ func (s *Server) handleEditLinkForm(w http.ResponseWriter, r *http.Request) {
 	q, cat, status := dashboardFilters(r)
 	date := dashboardDateFilter(r)
 	s.renderTemplate(w, "link-form", linkFormData{
-		Link: link, Categories: cats, Query: q, CategoryFilter: cat, StatusFilter: status, DateFilter: date,
+		Link: link, Editing: true, Categories: cats, Query: q, CategoryFilter: cat, StatusFilter: status, DateFilter: date,
 		AdminPath: s.cfg.AdminPath,
 	})
 }
@@ -1177,6 +1178,7 @@ func (s *Server) handleUpdateLinkUI(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("HX-Reswap", "innerHTML")
 		s.renderTemplate(w, "link-form", linkFormData{
 			Link:       &db.Link{ID: id, Slug: slug, URL: url, Description: desc, Category: cat, Provider: options.Provider, Channel: options.Channel, Campaign: options.Campaign, Featured: options.Featured, Priority: options.Priority},
+			Editing:    true,
 			Categories: cats, Error: msg, Query: q, CategoryFilter: filterCat,
 			StatusFilter: filterStatus, DateFilter: date, AdminPath: s.cfg.AdminPath,
 		})
