@@ -2,6 +2,15 @@
 
 All notable changes to Plink are documented in this file.
 
+## v1.4.2
+
+### Changed
+
+- Updated `modernc.org/sqlite` from 1.50.1 to 1.60.1, with
+  `modernc.org/libc` 1.72.3 → 1.77.1 and `modernc.org/memory` 1.11.0 → 1.12.1.
+  This includes WAL shared-memory fault handling, VFS/page-cache safety fixes,
+  and faster multi-row parameter binding. No database schema change.
+
 ## v1.4.1
 
 ### Security
