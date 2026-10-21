@@ -44,9 +44,11 @@
   const button = wrap.querySelector('[data-contact-toggle]');
   if (!button) return;
   const isOpen = () => wrap.classList.contains('is-open');
+  const setHidden = hidden => wrap.classList.toggle('is-hidden', hidden);
   const setOpen = open => {
     wrap.classList.toggle('is-open', open);
     button.setAttribute('aria-expanded', String(open));
+    if (open) setHidden(false);
   };
   button.addEventListener('click', event => {
     event.stopPropagation();
@@ -58,4 +60,22 @@
   document.addEventListener('keydown', event => {
     if (event.key === 'Escape' && isOpen()) { setOpen(false); button.focus(); }
   });
+
+  let lastY = window.scrollY;
+  let ticking = false;
+  const updateVisibility = () => {
+    ticking = false;
+    if (isOpen()) { setHidden(false); lastY = window.scrollY; return; }
+    const y = window.scrollY;
+    const delta = y - lastY;
+    if (y < 120) setHidden(false);
+    else if (delta > 6) setHidden(true);
+    else if (delta < -6) setHidden(false);
+    lastY = y;
+  };
+  window.addEventListener('scroll', () => {
+    if (ticking) return;
+    ticking = true;
+    window.requestAnimationFrame(updateVisibility);
+  }, { passive: true });
 })();

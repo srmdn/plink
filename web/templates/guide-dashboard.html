@@ -2,9 +2,9 @@
 <style>
   .guide-page { max-width: 1240px; }
   .guide-page .admin-page-heading p { max-width: 760px; line-height: 1.7; }
-  .guide-toc-fab { position: fixed; right: 16px; bottom: calc(84px + env(safe-area-inset-bottom)); z-index: 70; display: inline-flex; align-items: center; gap: 8px; padding: 10px 14px; border: 0; border-radius: 999px; background: var(--accent); color: #fff; font: inherit; font-size: 12px; font-weight: 650; box-shadow: 0 8px 24px #15191826; cursor: pointer; }
-  .guide-toc-fab:hover { filter: brightness(1.06); }
-  .guide-toc-menu { position: fixed; right: 16px; bottom: calc(136px + env(safe-area-inset-bottom)); z-index: 70; width: min(300px, calc(100vw - 32px)); max-height: min(62vh, 430px); overflow-y: auto; padding: 8px; background: var(--surface); border: 1px solid var(--border); border-radius: 14px; box-shadow: 0 14px 36px #15191826; }
+  .guide-page .admin-page-heading { position: relative; }
+  .guide-toc-wrap { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .guide-toc-menu { position: absolute; top: calc(100% + 8px); right: 0; z-index: 70; width: min(300px, calc(100vw - 32px)); max-height: min(62vh, 430px); overflow-y: auto; padding: 8px; background: var(--surface); border: 1px solid var(--border); border-radius: 14px; box-shadow: 0 14px 36px #15191826; }
   .guide-toc-menu[hidden] { display: none; }
   .guide-toc-menu nav { display: grid; gap: 2px; }
   .guide-toc-menu a { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 10px; color: var(--text); text-decoration: none; font-size: 13px; }
@@ -45,7 +45,7 @@
   .guide-end { padding-bottom: 12px; }
   .guide-page b { font-weight: 600; }
   @media (max-width: 620px) { .guide-module-grid, .guide-definition-grid { grid-template-columns: minmax(0, 1fr); } .guide-heading h2 { font-size: 18px; } .guide-heading { gap: 10px; } .guide-table th, .guide-table td { padding: 10px; } .guide-table th:first-child { width: 36%; } }
-  @media (max-width: 350px) { .guide-toc-fab { right: 12px; } .guide-toc-menu { right: 12px; width: min(300px, calc(100vw - 24px)); } }
+  @media (max-width: 350px) { .guide-toc-menu { width: min(300px, calc(100vw - 24px)); } }
 </style>
 {{end}}
 {{define "guide-dashboard"}}
@@ -62,17 +62,18 @@
     <main class="admin-main guide-page">
       <div class="admin-page-heading">
         <div><div class="admin-eyebrow">Panduan penggunaan</div><h1>Mulai dari kebutuhan lo</h1><p>Tautan menyimpan tautan. Katalog mengelola programnya. Statistik membaca hasilnya. Pengaturan mengatur tampilan situs.</p></div>
-        <a href="/" class="btn btn-ghost btn-sm admin-home-link">Lihat situs publik ↗</a>
-      </div>
-
-      <button class="guide-toc-fab" type="button" id="guide-toc-toggle" aria-expanded="false" aria-controls="guide-toc-menu" aria-label="Daftar bagian panduan">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true" focusable="false"><path d="M4 6h16M4 12h16M4 18h16" /></svg>
-        <span>Isi</span>
-      </button>
-      <div class="guide-toc-menu" id="guide-toc-menu" hidden>
-        <nav aria-label="Bagian panduan">
-          <a href="#hubungan-modul"><span class="guide-toc-num">01</span><span>Hubungan modul</span></a><a href="#link-biasa"><span class="guide-toc-num">02</span><span>Tautan biasa</span></a><a href="#program"><span class="guide-toc-num">03</span><span>Program &amp; channel</span></a><a href="#link-lama"><span class="guide-toc-num">04</span><span>Tautan sudah tersebar</span></a><a href="#program-berakhir"><span class="guide-toc-num">05</span><span>Program berakhir</span></a><a href="#statistik"><span class="guide-toc-num">06</span><span>Statistik</span></a><a href="#homepage"><span class="guide-toc-num">07</span><span>Situs &amp; beranda</span></a><a href="#tanya-jawab"><span class="guide-toc-num">08</span><span>Tanya jawab</span></a>
-        </nav>
+        <div class="guide-toc-wrap">
+          <button class="btn btn-ghost btn-sm" type="button" id="guide-toc-toggle" aria-expanded="false" aria-controls="guide-toc-menu" aria-label="Daftar bagian panduan">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true" focusable="false"><path d="M4 6h16M4 12h16M4 18h16" /></svg>
+            <span>Isi</span>
+          </button>
+          <a href="/" class="btn btn-ghost btn-sm admin-home-link">Lihat situs publik ↗</a>
+          <div class="guide-toc-menu" id="guide-toc-menu" hidden>
+            <nav aria-label="Bagian panduan">
+              <a href="#hubungan-modul"><span class="guide-toc-num">01</span><span>Hubungan modul</span></a><a href="#link-biasa"><span class="guide-toc-num">02</span><span>Tautan biasa</span></a><a href="#program"><span class="guide-toc-num">03</span><span>Program &amp; channel</span></a><a href="#link-lama"><span class="guide-toc-num">04</span><span>Tautan sudah tersebar</span></a><a href="#program-berakhir"><span class="guide-toc-num">05</span><span>Program berakhir</span></a><a href="#statistik"><span class="guide-toc-num">06</span><span>Statistik</span></a><a href="#homepage"><span class="guide-toc-num">07</span><span>Situs &amp; beranda</span></a><a href="#tanya-jawab"><span class="guide-toc-num">08</span><span>Tanya jawab</span></a>
+            </nav>
+          </div>
+        </div>
       </div>
       <script>
       (function () {

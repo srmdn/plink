@@ -808,6 +808,17 @@ body[data-favorites-page] [data-favorite-card].is-favorite {
   gap:10px;
   pointer-events:none;
   z-index:58;
+  transition:opacity .2s ease,transform .2s ease,visibility .2s;
+}
+.contact-fab-wrap.is-hidden {
+  opacity:0;
+  visibility:hidden;
+  transform:translateY(12px);
+}
+.contact-fab-wrap.is-open {
+  opacity:1;
+  visibility:visible;
+  transform:none;
 }
 .contact-bubble {
   pointer-events:auto;
@@ -865,5 +876,5 @@ body[data-favorites-page] [data-favorite-card].is-favorite {
 .contact-fab[aria-expanded="true"] .contact-fab-icon:not(.contact-fab-close) { opacity:0; transform:rotate(90deg) scale(.7); }
 .contact-fab[aria-expanded="true"] .contact-fab-close { opacity:1; transform:none; }
 @media(prefers-reduced-motion:reduce) {
-  .contact-bubble,.contact-fab,.contact-fab-icon { transition:none; }
+  .contact-bubble,.contact-fab,.contact-fab-icon,.contact-fab-wrap { transition:none; }
 }
