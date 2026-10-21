@@ -1324,6 +1324,10 @@ func (s *Server) handleAnalyticsUI(w http.ResponseWriter, r *http.Request) {
 		http.NotFound(w, r)
 		return
 	}
+	if r.Header.Get("HX-Request") != "true" {
+		http.Redirect(w, r, "/"+s.cfg.AdminPath+"/analytics/dashboard?link="+strconv.FormatInt(id, 10), http.StatusFound)
+		return
+	}
 	data, err := s.analyticsDataForLink(r, link, true)
 	if err != nil {
 		http.Error(w, "db error", http.StatusInternalServerError)
@@ -1333,6 +1337,14 @@ func (s *Server) handleAnalyticsUI(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) handleOverviewAnalyticsUI(w http.ResponseWriter, r *http.Request) {
+	if r.Header.Get("HX-Request") != "true" {
+		target := "/" + s.cfg.AdminPath + "/analytics/dashboard"
+		if r.URL.RawQuery != "" {
+			target += "?" + r.URL.RawQuery
+		}
+		http.Redirect(w, r, target, http.StatusFound)
+		return
+	}
 	data, err := s.db.GetOverviewAnalyticsInLocation(s.cfg.ReportLocation())
 	if err != nil {
 		http.Error(w, "db error", http.StatusInternalServerError)

@@ -66,8 +66,8 @@
     <thead>
       <tr>
         <th>Link</th>
-        <th class="destination">Destination</th>
-        <th>{{if .Date}}Clicks · {{.DateLabel}}{{else}}Clicks{{end}}</th>
+        <th class="destination">Tujuan</th>
+        <th>{{if .Date}}Klik · {{.DateLabel}}{{else}}Klik{{end}}</th>
         {{if ne .Status "active"}}<th>Status</th>{{end}}
         <th><span class="sr-only">Tindakan</span></th>
       </tr>
@@ -108,7 +108,7 @@
         <td class="destination">
           <a class="link-destination" href="{{.URL}}" title="{{.URL}}" target="_blank" rel="noopener">{{.URL}}</a>
         </td>
-        <td class="clicks-cell">{{.Clicks}}</td>
+        <td class="clicks-cell">{{.Clicks}}<span class="clicks-unit">klik</span></td>
         {{if ne $.Status "active"}}<td class="status-cell"><span class="status {{if .Active}}on{{else}}off{{end}}">{{if .Active}}Aktif{{else}}Nonaktif{{end}}</span></td>{{end}}
         <td class="actions-cell">
           <div class="row-actions">
