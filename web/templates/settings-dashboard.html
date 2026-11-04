@@ -74,7 +74,7 @@
             <input type="hidden" name="feature_contact_present" value="1" /><label class="check-row"><input type="checkbox" name="feature_contact" value="1" data-feature {{if .Settings.ContactEnabled}}checked{{end}} /><span>Tombol kontak mengambang</span></label>
             <input type="hidden" name="feature_favorites_present" value="1" /><label class="check-row"><input type="checkbox" name="feature_favorites" value="1" data-feature {{if .Settings.FavoritesEnabled}}checked{{end}} /><span>Favorit</span></label>
           </div>
-          <p class="field-help">Fitur yang dimatikan hilang dari navigasi dan tidak dapat diakses lewat URL langsung. Beranda tetap ada sebagai halaman minimal.</p>
+          <p class="field-help">Fitur yang dimatikan hilang dari navigasi dan tidak dapat diakses lewat URL langsung. Beranda tetap ada sebagai halaman minimal. Halaman katalog, jasa, proyek, artikel, resource, dan detail produk membutuhkan beranda publik aktif. Detail produk dan tombol WhatsApp juga membutuhkan katalog aktif. Pengaturan dan konten tetap tersimpan; slug pendek aktif tetap mengarah ke tujuannya.</p>
         </section>
 
         <section class="analytics-page-panel settings-panel"><div class="offer-form-heading"><h2>Konten beranda &amp; jasa</h2><span>Sesuaikan teks publik tanpa mengubah kode.</span></div>

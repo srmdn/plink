@@ -117,6 +117,60 @@ func TestWhatsAppStatisticsUsesPeriodAndCategory(t *testing.T) {
 	}
 }
 
+func TestProductWhatsAppPublicFeatureSwitchesPreserveSettings(t *testing.T) {
+	database, handler, _ := lifecycleTestServer(t)
+	input := db.OfferInput{Title: "Produk", ItemType: "product", Active: true, Product: &db.ProductDetails{Enabled: true, Currency: "IDR", WhatsApp: &db.ProductWhatsApp{Enabled: true, Number: "628123456789", Message: "Halo"}}}
+	product, err := database.CreateOfferWithHomepageLink(input, "produk-switch", "https://example.com/original")
+	if err != nil {
+		t.Fatal(err)
+	}
+	settings, err := database.GetSiteSettings()
+	if err != nil {
+		t.Fatal(err)
+	}
+	path := "/offers/item/" + strconv.FormatInt(product.ID, 10)
+	request := func(target string) int {
+		w := httptest.NewRecorder()
+		handler.ServeHTTP(w, httptest.NewRequest("HEAD", target, nil))
+		return w.Code
+	}
+	for _, tc := range []struct {
+		name       string
+		storefront bool
+		catalog    bool
+		want       int
+	}{
+		{"both enabled", true, true, http.StatusOK},
+		{"catalog disabled", true, false, http.StatusNotFound},
+		{"storefront disabled", false, true, http.StatusNotFound},
+		{"both restored", true, true, http.StatusOK},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			settings.StorefrontEnabled, settings.CatalogEnabled = tc.storefront, tc.catalog
+			if err := database.SaveSiteSettings(settings); err != nil {
+				t.Fatal(err)
+			}
+			if got := request(path); got != tc.want {
+				t.Fatalf("product page = %d, want %d", got, tc.want)
+			}
+			wantWhatsApp := http.StatusNotFound
+			if tc.want == http.StatusOK {
+				wantWhatsApp = http.StatusFound
+			}
+			if got := request(path + "/whatsapp"); got != wantWhatsApp {
+				t.Fatalf("WhatsApp action = %d, want %d", got, wantWhatsApp)
+			}
+			if got := request("/produk-switch"); got != http.StatusFound {
+				t.Fatalf("short link = %d, want redirect", got)
+			}
+		})
+	}
+	stored, err := database.GetOfferByID(product.ID)
+	if err != nil || stored == nil || !stored.ProductPage || !stored.WhatsAppEnabled || stored.WhatsAppNumber != "628123456789" || stored.WhatsAppMessage != "Halo" || stored.HomeURL != "https://example.com/original" {
+		t.Fatalf("feature switches changed product settings: %#v, %v", stored, err)
+	}
+}
+
 func TestProductWhatsAppAdminCreationAndValidation(t *testing.T) {
 	database, handler, cfg := lifecycleTestServer(t)
 	cookies := loginAs(t, handler, cfg)
