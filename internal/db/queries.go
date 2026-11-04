@@ -309,13 +309,6 @@ func (db *DB) UpdateOffer(id int64, input OfferInput) error {
 		input.ItemType, input.ProgramStatus, input.EndedBehavior, input.NoticeMessage, input.NoticeSourceURL, input.StatusChangedOn, input.VerifiedOn, id); err != nil {
 		return err
 	}
-	if _, err := tx.Exec(`
-		UPDATE links
-		SET description = ?, category = ?, provider = ?, updated_at = ?
-		WHERE offer_id = ?
-	`, input.Description, input.Category, input.Provider, now, id); err != nil {
-		return err
-	}
 	return tx.Commit()
 }
 
