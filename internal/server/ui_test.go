@@ -29,6 +29,18 @@ func TestFilterLinksByQueryCategoryAndStatus(t *testing.T) {
 	}
 }
 
+func TestAnalyticsRangeIncludesCurrentSecond(t *testing.T) {
+	now := time.Date(2026, time.November, 4, 12, 0, 0, 500_000_000, time.UTC)
+	start, end, bounded := analyticsRange("30d", now)
+	currentClick := now.Unix()
+	if !bounded || currentClick < start.Unix() || currentClick >= end.Unix() {
+		t.Fatalf("click at current second %d excluded from [%d, %d)", currentClick, start.Unix(), end.Unix())
+	}
+	if end.Unix() != currentClick+1 {
+		t.Fatalf("exclusive end = %d; want %d", end.Unix(), currentClick+1)
+	}
+}
+
 func TestDashboardFiltersPreferFormStateOnLinkSubmit(t *testing.T) {
 	form := url.Values{
 		"q":               {"new-link"},
@@ -280,17 +292,15 @@ func TestBuildAnalyticsSlicesGroupsRemainingLinks(t *testing.T) {
 	if len(slices) != 6 || slices[len(slices)-1].Label != "Other" {
 		t.Fatalf("slices = %#v, want five links plus Other", slices)
 	}
-	var total int64
 	for _, slice := range slices {
-		total += slice.Percent
-	}
-	if total != 100 {
-		t.Fatalf("slice percentages = %d, want 100", total)
+		if want := percentOfLabel(slice.Clicks, 110); slice.Percent != want {
+			t.Errorf("%s share = %q, want ranking label %q", slice.Label, slice.Percent, want)
+		}
 	}
 }
 
 func TestBuildAnalyticsDonutSVGIncludesHoverDetails(t *testing.T) {
-	svg := string(buildAnalyticsDonutSVG([]analyticsSlice{{Label: "GreenCloud", Clicks: 12, Percent: 75, Class: "segment-1"}}, 16))
+	svg := string(buildAnalyticsDonutSVG([]analyticsSlice{{Label: "GreenCloud", Clicks: 12, Percent: "75%", Class: "segment-1"}}, 16))
 	for _, want := range []string{
 		`data-label="GreenCloud"`,
 		`data-clicks="12"`,
@@ -300,6 +310,27 @@ func TestBuildAnalyticsDonutSVGIncludesHoverDetails(t *testing.T) {
 	} {
 		if !strings.Contains(svg, want) {
 			t.Fatalf("donut svg = %s, want %s", svg, want)
+		}
+	}
+}
+
+func TestAnalyticsSlicesMatchRankingForUnevenAndSmallShares(t *testing.T) {
+	for _, tc := range []struct {
+		clicks []analyticsPageLink
+		total  int64
+	}{
+		{[]analyticsPageLink{{Slug: "first", Clicks: 2}, {Slug: "second", Clicks: 1}}, 3},
+		{[]analyticsPageLink{{Slug: "large", Clicks: 999}, {Slug: "small", Clicks: 1}}, 1000},
+	} {
+		slices := buildAnalyticsSlices(tc.clicks, tc.total)
+		for i, slice := range slices {
+			if want := percentOfLabel(tc.clicks[i].Clicks, tc.total); slice.Percent != want {
+				t.Errorf("%s share = %s, ranking = %s", slice.Label, slice.Percent, want)
+			}
+		}
+		svg := string(buildAnalyticsDonutSVG(slices, tc.total))
+		if tc.total == 1000 && !strings.Contains(svg, `data-percent="&lt;1"`) {
+			t.Errorf("small share missing from tooltip: %s", svg)
 		}
 	}
 }

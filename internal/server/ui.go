@@ -165,7 +165,7 @@ type analyticsPageLink struct {
 type analyticsSlice struct {
 	Label   string
 	Clicks  int64
-	Percent int64
+	Percent string
 	Class   string
 }
 
@@ -337,7 +337,9 @@ func analyticsRange(period string, now time.Time) (time.Time, time.Time, bool) {
 	if spec.Days == 0 {
 		return time.Time{}, time.Time{}, false
 	}
-	return now.AddDate(0, 0, -spec.Days), now, true
+	// Click timestamps are stored as whole seconds and the query's end is
+	// exclusive. Include the current second so fresh clicks appear immediately.
+	return now.AddDate(0, 0, -spec.Days), now.Truncate(time.Second).Add(time.Second), true
 }
 
 func parseDashboardDate(value string) (time.Time, bool) {
@@ -848,7 +850,7 @@ func buildAnalyticsSlices(links []analyticsPageLink, total int64) []analyticsSli
 		result = append(result, analyticsSlice{
 			Label:   link.Slug,
 			Clicks:  link.Clicks,
-			Percent: link.Clicks * 100 / total,
+			Percent: percentOfLabel(link.Clicks, total),
 			Class:   fmt.Sprintf("segment-%d", i+1),
 		})
 	}
@@ -856,18 +858,9 @@ func buildAnalyticsSlices(links []analyticsPageLink, total int64) []analyticsSli
 		result = append(result, analyticsSlice{
 			Label:   "Other",
 			Clicks:  total - used,
-			Percent: (total - used) * 100 / total,
+			Percent: percentOfLabel(total-used, total),
 			Class:   "segment-other",
 		})
-	}
-	// Keep the visual mathematically closed after integer rounding.
-	var percent int64
-	for i := range result {
-		if i == len(result)-1 {
-			result[i].Percent = 100 - percent
-		} else {
-			percent += result[i].Percent
-		}
 	}
 	return result
 }
@@ -878,13 +871,15 @@ func buildAnalyticsDonutSVG(slices []analyticsSlice, total int64) template.HTML 
 	}
 	var segments strings.Builder
 	var labels []string
-	var offset int64
+	var offset float64
 	for _, slice := range slices {
-		labels = append(labels, fmt.Sprintf("%s %d percent", slice.Label, slice.Percent))
+		labels = append(labels, fmt.Sprintf("%s %s", slice.Label, slice.Percent))
 		label := html.EscapeString(slice.Label)
-		detail := html.EscapeString(fmt.Sprintf("%s: %d clicks (%d%%)", slice.Label, slice.Clicks, slice.Percent))
-		fmt.Fprintf(&segments, `<circle class="donut-segment %s" cx="60" cy="60" r="44" pathLength="100" stroke-dasharray="%d %d" stroke-dashoffset="-%d" tabindex="0" aria-label="%s" data-label="%s" data-clicks="%d" data-percent="%d"><title>%s</title></circle>`, slice.Class, slice.Percent, 100-slice.Percent, offset, detail, label, slice.Clicks, slice.Percent, detail)
-		offset += slice.Percent
+		detail := html.EscapeString(fmt.Sprintf("%s: %d clicks (%s)", slice.Label, slice.Clicks, slice.Percent))
+		percent := html.EscapeString(strings.TrimSuffix(slice.Percent, "%"))
+		width := float64(slice.Clicks) * 100 / float64(total)
+		fmt.Fprintf(&segments, `<circle class="donut-segment %s" cx="60" cy="60" r="44" pathLength="100" stroke-dasharray="%.6f %.6f" stroke-dashoffset="-%.6f" tabindex="0" aria-label="%s" data-label="%s" data-clicks="%d" data-percent="%s"><title>%s</title></circle>`, slice.Class, width, 100-width, offset, detail, label, slice.Clicks, percent, detail)
+		offset += width
 	}
 	aria := html.EscapeString(fmt.Sprintf("Click share: %s", strings.Join(labels, ", ")))
 	return template.HTML(fmt.Sprintf(`<svg class="analytics-donut" viewBox="0 0 120 120" role="img" aria-label="%s"><circle class="donut-track" cx="60" cy="60" r="44"/>%s</svg>`, aria, segments.String()))
