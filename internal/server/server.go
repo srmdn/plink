@@ -121,12 +121,15 @@ func New(cfg *config.Config, database *db.DB, webFS embed.FS) http.Handler {
 				return val * 100 / total
 			},
 			"percentOfLabel": percentOfLabel,
-			"productPrice":   productPriceLabel,
-			"referrerLabel":  func(value string) string { return uiText(referrerLabel(value)) },
-			"uiText":         uiText,
-			"branding":       func() brandAssets { settings, _ := database.GetSiteSettings(); return brandingAssets(settings) },
-			"offerStatus":    offerStatus,
-			"isGuide":        func(data any) bool { _, ok := data.(guideData); return ok },
+			"devNoAuth": func() bool {
+				return cfg.DevNoAuth && !cfg.Production && config.IsLoopbackListener(cfg.Addr)
+			},
+			"productPrice":  productPriceLabel,
+			"referrerLabel": func(value string) string { return uiText(referrerLabel(value)) },
+			"uiText":        uiText,
+			"branding":      func() brandAssets { settings, _ := database.GetSiteSettings(); return brandingAssets(settings) },
+			"offerStatus":   offerStatus,
+			"isGuide":       func(data any) bool { _, ok := data.(guideData); return ok },
 			"add": func(left, right int) int {
 				return left + right
 			},

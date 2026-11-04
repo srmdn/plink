@@ -2,7 +2,9 @@ package config
 
 import (
 	"bufio"
+	"fmt"
 	"log"
+	"net"
 	"net/url"
 	"os"
 	"path/filepath"
@@ -21,6 +23,7 @@ type Config struct {
 	Timezone           string
 	SecureCookies      bool
 	Production         bool
+	DevNoAuth          bool
 	SiteName           string
 	SiteDesc           string
 	AnalyticsScriptURL string
@@ -32,6 +35,12 @@ type Config struct {
 
 func Load() *Config {
 	loadEnvFile(".env")
+	addr := getEnv("ADDR", ":8080")
+	environment := getEnv("APP_ENV", "development")
+	devNoAuth, err := ValidateDevNoAuth(getEnv("DEV_NO_AUTH", ""), environment, addr)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	password := getEnv("ADMIN_PASSWORD", "")
 	if password == "" {
@@ -74,7 +83,7 @@ func Load() *Config {
 	}
 
 	return &Config{
-		Addr:               getEnv("ADDR", ":8080"),
+		Addr:               addr,
 		DBPath:             dbPath,
 		AdminPassword:      password,
 		AdminPath:          getEnv("ADMIN_PATH", "admin"),
@@ -82,6 +91,7 @@ func Load() *Config {
 		Timezone:           timezone,
 		SecureCookies:      getEnv("APP_ENV", "development") == "production",
 		Production:         getEnv("APP_ENV", "development") == "production",
+		DevNoAuth:          devNoAuth,
 		SiteName:           getEnv("SITE_NAME", "plink"),
 		SiteDesc:           getEnv("SITE_DESC", "personal links"),
 		AnalyticsScriptURL: analyticsURL,
@@ -90,6 +100,30 @@ func Load() *Config {
 		UploadsDir:         uploadsDir,
 		reportLocation:     reportLocation,
 	}
+}
+
+// IsLoopbackListener requires a literal loopback IP, not a wildcard or hostname.
+func IsLoopbackListener(addr string) bool {
+	host, port, err := net.SplitHostPort(addr)
+	if err != nil || port == "" {
+		return false
+	}
+	ip := net.ParseIP(host)
+	return ip != nil && ip.IsLoopback()
+}
+
+// ValidateDevNoAuth rejects accidental use outside explicit local development.
+func ValidateDevNoAuth(value, environment, addr string) (bool, error) {
+	if value == "" || value == "0" {
+		return false, nil
+	}
+	if value != "1" {
+		return false, fmt.Errorf("DEV_NO_AUTH must be 1 or 0")
+	}
+	if environment != "development" || !IsLoopbackListener(addr) {
+		return false, fmt.Errorf("DEV_NO_AUTH requires APP_ENV=development and ADDR bound to a literal loopback IP")
+	}
+	return true, nil
 }
 
 // AnalyticsOrigin returns the scheme and host of the configured analytics

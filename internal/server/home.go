@@ -14,6 +14,9 @@ import (
 // isLoggedIn reports whether the request carries a valid admin session. It is
 // only used to decide whether to show owner-only navigation on public pages.
 func (s *Server) isLoggedIn(r *http.Request) bool {
+	if s.allowLocalNoAuth(r) {
+		return true
+	}
 	cookie, err := r.Cookie(cookieName)
 	return err == nil && s.sessions.valid(cookie.Value)
 }

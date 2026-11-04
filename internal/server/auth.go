@@ -5,10 +5,13 @@ import (
 	"crypto/subtle"
 	"encoding/hex"
 	"log"
+	"net"
 	"net/http"
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/srmdn/plink/internal/config"
 )
 
 const cookieName = "plink_session"
@@ -74,7 +77,7 @@ func (s *Server) requireAuth(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Cache-Control", "no-store")
 		cookie, err := r.Cookie(cookieName)
-		if err != nil || !s.sessions.valid(cookie.Value) {
+		if (err != nil || !s.sessions.valid(cookie.Value)) && !s.allowLocalNoAuth(r) {
 			if strings.HasPrefix(r.URL.Path, "/api/") {
 				w.Header().Set("Content-Type", "application/json")
 				http.Error(w, `{"error":"unauthorized"}`, http.StatusUnauthorized)
@@ -89,6 +92,33 @@ func (s *Server) requireAuth(next http.HandlerFunc) http.HandlerFunc {
 		}
 		next(w, r)
 	}
+}
+
+// A loopback listener can still sit behind a reverse proxy. Reject forwarded
+// requests and non-local Host headers; never trust proxy IP headers here.
+func (s *Server) allowLocalNoAuth(r *http.Request) bool {
+	if s.cfg == nil || !s.cfg.DevNoAuth || s.cfg.Production || !config.IsLoopbackListener(s.cfg.Addr) {
+		return false
+	}
+	host, _, err := net.SplitHostPort(r.RemoteAddr)
+	if err != nil || net.ParseIP(host) == nil || !net.ParseIP(host).IsLoopback() {
+		return false
+	}
+	requestHost := r.Host
+	if parsed, _, err := net.SplitHostPort(requestHost); err == nil {
+		requestHost = parsed
+	}
+	requestHost = strings.Trim(requestHost, "[]")
+	ip := net.ParseIP(requestHost)
+	if !strings.EqualFold(requestHost, "localhost") && (ip == nil || !ip.IsLoopback()) {
+		return false
+	}
+	for _, key := range []string{"Forwarded", "X-Forwarded-For", "X-Forwarded-Host", "X-Forwarded-Proto", "X-Real-IP", "Via"} {
+		if _, present := r.Header[http.CanonicalHeaderKey(key)]; present {
+			return false
+		}
+	}
+	return true
 }
 
 func (s *Server) handleLogin(w http.ResponseWriter, r *http.Request) {

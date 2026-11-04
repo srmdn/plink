@@ -38,3 +38,26 @@ func TestReportLocation(t *testing.T) {
 		t.Fatalf("invalid timezone location = %q, want UTC", got)
 	}
 }
+
+func TestValidateDevNoAuth(t *testing.T) {
+	for _, tc := range []struct {
+		value, environment, address string
+		want, wantErr               bool
+	}{
+		{"", "production", ":8080", false, false},
+		{"0", "production", ":8080", false, false},
+		{"1", "development", "127.0.0.1:8080", true, false},
+		{"1", "development", "[::1]:8080", true, false},
+		{"1", "production", "127.0.0.1:8080", false, true},
+		{"1", "staging", "127.0.0.1:8080", false, true},
+		{"1", "development", ":8080", false, true},
+		{"1", "development", "0.0.0.0:8080", false, true},
+		{"1", "development", "localhost:8080", false, true},
+		{"true", "development", "127.0.0.1:8080", false, true},
+	} {
+		got, err := ValidateDevNoAuth(tc.value, tc.environment, tc.address)
+		if got != tc.want || (err != nil) != tc.wantErr {
+			t.Errorf("ValidateDevNoAuth(%q, %q, %q) = %v, %v", tc.value, tc.environment, tc.address, got, err)
+		}
+	}
+}

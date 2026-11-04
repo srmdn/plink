@@ -1,5 +1,5 @@
 {{define "admin-header"}}
-<header class="admin-topbar"><a class="admin-brand" href="/{{.AdminPath}}">{{template "brand-logo" .}}<span>plink <small>admin</small></span></a><div class="admin-topbar-actions"><a class="btn btn-ghost btn-sm" href="/{{.AdminPath}}/guide">Panduan</a><form method="POST" action="/{{.AdminPath}}/logout"><button type="submit" class="btn btn-ghost btn-sm">Keluar</button></form></div></header>
+<header class="admin-topbar"><a class="admin-brand" href="/{{.AdminPath}}">{{template "brand-logo" .}}<span>plink <small>admin</small></span></a><div class="admin-topbar-actions"><a class="btn btn-ghost btn-sm" href="/{{.AdminPath}}/guide">Panduan</a>{{if devNoAuth}}<span class="field-help">Mode lokal</span>{{else}}<form method="POST" action="/{{.AdminPath}}/logout"><button type="submit" class="btn btn-ghost btn-sm">Keluar</button></form>{{end}}</div></header>
 {{end}}
 {{define "admin-nav"}}
 <nav class="admin-bottom-nav" aria-label="Navigasi admin">

@@ -76,6 +76,14 @@ With the default `ADDR=:8080` and `ADMIN_PATH=admin`, the admin login is at
 `http://localhost:8080/admin/login`; the dashboard is at `/admin`. Set
 `ADMIN_PATH` to use a different path.
 
+For a private local development instance, set `APP_ENV=development`,
+`ADDR=127.0.0.1:8080`, and `DEV_NO_AUTH=1` to open the dashboard without signing
+in. An admin password is still required for normal authentication. This option
+is off by default and refuses to start outside development or on a non-loopback
+listener; forwarded requests and non-local hostnames do not receive the bypass.
+CSRF protection remains enabled. Do not use this mode on shared machines, with
+a reverse proxy, or with production data: other local processes can access it.
+
 The default listener binds all interfaces on port 8080. Set
 `ADDR=127.0.0.1:8080` for local-only access. Reverse-proxy headers
 (`X-Real-IP`, `X-Forwarded-For`, and `X-Forwarded-Proto`) are trusted only when

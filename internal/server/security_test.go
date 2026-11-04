@@ -64,6 +64,82 @@ func TestRequireAuthSetsNoStore(t *testing.T) {
 	}
 }
 
+func TestDevNoAuthRestrictedToDirectLocalRequests(t *testing.T) {
+	cfg := &config.Config{AdminPath: "admin", Addr: "127.0.0.1:8080", DevNoAuth: true}
+	s := &Server{cfg: cfg, sessions: newSessionStore()}
+	handler := s.requireAuth(func(w http.ResponseWriter, r *http.Request) { w.WriteHeader(http.StatusNoContent) })
+	for _, tc := range []struct {
+		name, remote, host, header string
+		production                 bool
+		want                       int
+	}{
+		{"direct localhost", "127.0.0.1:1234", "127.0.0.1:8080", "", false, 204},
+		{"localhost host", "127.0.0.1:1234", "localhost:8080", "", false, 204},
+		{"remote client", "203.0.113.10:1234", "127.0.0.1:8080", "", false, 302},
+		{"public host", "127.0.0.1:1234", "example.com", "", false, 302},
+		{"forwarded", "127.0.0.1:1234", "localhost:8080", "X-Forwarded-For", false, 302},
+		{"proxy", "127.0.0.1:1234", "localhost:8080", "Forwarded", false, 302},
+		{"production", "127.0.0.1:1234", "localhost:8080", "", true, 302},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			cfg.Production = tc.production
+			r := httptest.NewRequest("GET", "http://localhost/admin", nil)
+			r.RemoteAddr, r.Host = tc.remote, tc.host
+			if tc.header != "" {
+				r.Header.Set(tc.header, "198.51.100.1")
+			}
+			w := httptest.NewRecorder()
+			handler(w, r)
+			if w.Code != tc.want {
+				t.Fatalf("status = %d, want %d", w.Code, tc.want)
+			}
+		})
+	}
+	cfg.Production = false
+	cfg.Addr = ":8080"
+	r := httptest.NewRequest("GET", "http://localhost/admin", nil)
+	r.RemoteAddr = "127.0.0.1:1234"
+	w := httptest.NewRecorder()
+	handler(w, r)
+	if w.Code != http.StatusFound {
+		t.Fatal("wildcard listener must not bypass authentication")
+	}
+}
+
+func TestDevNoAuthKeepsCSRFProtection(t *testing.T) {
+	s := &Server{cfg: &config.Config{AdminPath: "admin", Addr: "127.0.0.1:8080", DevNoAuth: true}, sessions: newSessionStore()}
+	handler := s.requireAuth(s.requireCSRF(func(w http.ResponseWriter, r *http.Request) { w.WriteHeader(http.StatusNoContent) }))
+	request := func(method string) *http.Request {
+		r := httptest.NewRequest(method, "http://127.0.0.1:8080/admin", nil)
+		r.RemoteAddr = "127.0.0.1:1234"
+		return r
+	}
+	w := httptest.NewRecorder()
+	handler(w, request("POST"))
+	if w.Code != http.StatusForbidden {
+		t.Fatalf("missing CSRF = %d, want 403", w.Code)
+	}
+	page := httptest.NewRecorder()
+	s.requireAuth(func(w http.ResponseWriter, r *http.Request) {})(page, request("GET"))
+	var csrf *http.Cookie
+	for _, cookie := range page.Result().Cookies() {
+		if cookie.Name == csrfCookieName {
+			csrf = cookie
+		}
+	}
+	if csrf == nil {
+		t.Fatal("dev request did not receive a CSRF cookie")
+	}
+	post := request("POST")
+	post.AddCookie(csrf)
+	post.Header.Set(csrfHeaderName, csrf.Value)
+	w = httptest.NewRecorder()
+	handler(w, post)
+	if w.Code != http.StatusNoContent {
+		t.Fatalf("valid CSRF = %d, want 204", w.Code)
+	}
+}
+
 func TestStoredHeadersAreBounded(t *testing.T) {
 	referrer := "https://example.com/" + strings.Repeat("a", maxStoredReferrer*2) + "?secret=1#fragment"
 	if got := sanitizeReferrer(referrer); len(got) > maxStoredReferrer || strings.Contains(got, "secret") || strings.Contains(got, "#") {

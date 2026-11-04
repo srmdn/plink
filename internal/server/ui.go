@@ -910,7 +910,7 @@ func dashboardLocation(location *time.Location) *time.Location {
 
 func (s *Server) handleLoginPage(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Cache-Control", "no-store")
-	if cookie, err := r.Cookie(cookieName); err == nil && s.sessions.valid(cookie.Value) {
+	if s.isLoggedIn(r) {
 		http.Redirect(w, r, "/"+s.cfg.AdminPath, http.StatusFound)
 		return
 	}

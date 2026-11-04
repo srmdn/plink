@@ -6,6 +6,8 @@ All notable changes to Plink are documented in this file.
 
 ### Added
 
+- Local development can opt out of admin login on a loopback-only listener;
+  normal deployments keep authentication and CSRF protection.
 - Standalone links can be hidden from public listings while remaining active
   and accessible to anyone with the URL.
 - Product cards can opt into a detail page with a structured optional price,
