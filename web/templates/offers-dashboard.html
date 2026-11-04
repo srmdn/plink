@@ -32,7 +32,7 @@
             <div class="field"><label for="offer-image">Gambar</label><input type="url" id="offer-image" name="image_url" value="{{if .Offer}}{{.Offer.ImageURL}}{{end}}" placeholder="https://cdn.example.com/product.webp" /><input type="file" id="offer-image-file" name="image_file" accept="image/png,image/jpeg,image/webp" /><div class="field-help">Unggah PNG/JPEG/WebP maks 5 MB, atau isi URL/path. Rasio ideal ±3:2 atau 4:3, subjek di tengah. Gambar ini juga dipakai saat slug dibagikan; tanpa gambar, mark bawaan ditampilkan.</div></div>
           </div>
           <div class="form-pair">
-            <div class="field"><label for="offer-button">Teks tombol</label><input type="text" id="offer-button" name="button_label" maxlength="48" value="{{if .Offer}}{{.Offer.ButtonLabel}}{{else}}Lihat promo{{end}}" placeholder="Lihat di Shopee" /></div>
+            <div class="field"><label for="offer-button">Teks tombol</label><input type="text" id="offer-button" name="button_label" maxlength="48" value="{{if .Offer}}{{.Offer.ButtonLabel}}{{else}}Lihat promo{{end}}" placeholder="Lihat di Shopee" /><p class="field-help">Tombol WhatsApp pada halaman detail memakai teks “Pesan via WhatsApp”.</p></div>
             <div class="field"><label for="offer-priority">Prioritas tampilan</label><input type="number" id="offer-priority" name="priority" min="0" step="1" value="{{if .Offer}}{{.Offer.Priority}}{{else}}0{{end}}" /><div class="field-help">Angka lebih besar tampil lebih dulu dalam kelompok yang sama.</div></div>
           </div>
 
@@ -68,7 +68,7 @@
           </div>
           {{else}}
           <div class="offer-form-heading"><h2>Tautan kartu</h2><span>Tujuan dan pelacakan kartu publik.</span></div>
-          <div class="offer-home-destination"><span>Slug kartu</span><strong>/{{.Offer.HomeSlug}}</strong><span>Ubah tujuan melalui Tautan. {{if or (eq .Offer.ItemType "project") (eq .Offer.ItemType "article")}}Kartu ini membuka URL tujuan langsung; klik kartu tidak tercatat pada slug.{{else if and (eq .Offer.ItemType "product") .Offer.ProductPage}}Kunjungan ke detail tidak dihitung; klik tombol tujuan melalui slug dicatat.{{else}}Klik kartu dicatat lewat slug ini.{{end}}</span></div>
+          <div class="offer-home-destination"><span>Slug kartu</span><strong>/{{.Offer.HomeSlug}}</strong><span>Ubah tujuan melalui Tautan. {{if or (eq .Offer.ItemType "project") (eq .Offer.ItemType "article")}}Kartu ini membuka URL tujuan langsung; klik kartu tidak tercatat pada slug.{{else if and (eq .Offer.ItemType "product") .Offer.ProductPage}}Kunjungan ke detail tidak dihitung. {{if .Offer.WhatsAppEnabled}}Klik tombol WhatsApp dicatat terpisah dari klik slug.{{else}}Klik tombol tujuan melalui slug dicatat.{{end}}{{else}}Klik kartu dicatat lewat slug ini.{{end}}</span></div>
           {{end}}
 
           </div>
