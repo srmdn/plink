@@ -182,6 +182,7 @@ type analyticsPageData struct {
 	Category            string
 	Categories          []string
 	TotalClicks         int64
+	WhatsAppClicks      int64
 	ActiveLinks         int
 	TotalLinks          int
 	DirectTraffic       string
@@ -976,6 +977,11 @@ func (s *Server) handleAnalyticsDashboard(w http.ResponseWriter, r *http.Request
 	}
 
 	data := buildAnalyticsPageDataWithPrevious(links, clickCounts, previousClickCounts, overview, period, category, group)
+	data.WhatsAppClicks, err = s.db.CountProductWhatsAppClicks(startUnix, endUnix, category)
+	if err != nil {
+		http.Error(w, "db error", http.StatusInternalServerError)
+		return
+	}
 	data.AdminPath = s.cfg.AdminPath
 	data.Production = s.cfg.Production
 	if rawID := strings.TrimSpace(r.URL.Query().Get("link")); rawID != "" {
@@ -1566,6 +1572,9 @@ func offerFromInput(input db.OfferInput, id int64, homeSlug, homeURL string, hom
 	if input.Product != nil {
 		offer.ProductPage, offer.ProductKind, offer.PriceMinor = input.Product.Enabled, input.Product.Kind, input.Product.PriceMinor
 		offer.Currency, offer.ProductDetails, offer.Fulfillment = input.Product.Currency, input.Product.Details, input.Product.Fulfillment
+		if input.Product.WhatsApp != nil {
+			offer.WhatsAppEnabled, offer.WhatsAppNumber, offer.WhatsAppMessage = input.Product.WhatsApp.Enabled, input.Product.WhatsApp.Number, input.Product.WhatsApp.Message
+		}
 	}
 	return offer
 }
@@ -1806,6 +1815,10 @@ func (s *Server) handleCreateOffer(w http.ResponseWriter, r *http.Request) {
 	if inputErr == nil {
 		inputErr = validateOfferSlug(slug, s.cfg.AdminPath)
 	}
+	if inputErr == nil && !reuse && urlValue == "" && input.ItemType == "product" && input.Product != nil && input.Product.WhatsApp != nil && input.Product.WhatsApp.Enabled {
+		urlValue = "https://wa.me/" + input.Product.WhatsApp.Number
+		offer.HomeURL = urlValue
+	}
 	if inputErr == nil && !reuse && !validOfferDestination(urlValue) {
 		inputErr = fmt.Errorf("affiliate URL must start with http:// or https://")
 	}
@@ -1862,6 +1875,10 @@ func (s *Server) handleUpdateOffer(w http.ResponseWriter, r *http.Request) {
 	}
 	input, inputErr := parseOfferInput(r)
 	offer := offerFromInput(input, id, current.HomeSlug, current.HomeURL, current.HomeActive)
+	offer.WhatsAppClicks = current.WhatsAppClicks
+	if input.Product == nil || input.Product.WhatsApp == nil {
+		offer.WhatsAppEnabled, offer.WhatsAppNumber, offer.WhatsAppMessage = current.WhatsAppEnabled, current.WhatsAppNumber, current.WhatsAppMessage
+	}
 	if inputErr != nil {
 		links, _ := s.db.ListOfferLinks(id)
 		s.renderOffersDashboard(w, r, offersDashboardData{Offer: offer, Links: links, IsForm: true, Error: inputErr.Error()})

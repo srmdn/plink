@@ -769,6 +769,7 @@ body[data-favorites-page] [data-favorite-card].is-favorite {
 .product-page .product-copy { white-space:pre-line; overflow-wrap:anywhere; margin:8px 0; }
 .product-page .product-section { border-top:1px solid var(--line); margin-top:18px; padding-top:18px; }
 .product-page .product-action { display:block; margin-top:22px; padding:13px 16px; border-radius:10px; background:var(--accent); color:#fff; text-align:center; font-weight:700; }
+.product-page-with-contact .product-action { margin-right:68px; }
 .offer-badge { border:0; background:rgba(255,255,255,.92); bottom:7px; left:7px; }
 .favorite-button { width:34px; height:34px; border:0; box-shadow:0 1px 5px #15191808; transition:color .16s,transform .16s,background .16s; }
 .favorite-button .nav-icon { width:20px; height:20px; }

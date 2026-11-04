@@ -44,11 +44,17 @@
             <p class="field-help">Tautan pendek tetap mengarah ke tujuan. Produk lama tidak berubah sampai halaman detail diaktifkan.</p>
             <div class="form-pair">
               <div class="field"><label for="product-kind">Jenis produk</label><select id="product-kind" name="product_kind"><option value="">Belum ditentukan</option><option value="digital" {{if eq .Offer.ProductKind "digital"}}selected{{end}}>Digital</option><option value="physical" {{if eq .Offer.ProductKind "physical"}}selected{{end}}>Fisik</option></select></div>
-              <div class="field"><label for="product-currency">Mata uang</label><input id="product-currency" name="product_currency" maxlength="3" value="{{if .Offer.Currency}}{{.Offer.Currency}}{{else}}IDR{{end}}" placeholder="IDR" /><div class="field-help">Kode tiga huruf, misalnya IDR atau USD.</div></div>
+              <div class="field"><label for="product-currency">Mata uang</label><input type="text" id="product-currency" name="product_currency" maxlength="3" value="{{if .Offer.Currency}}{{.Offer.Currency}}{{else}}IDR{{end}}" placeholder="IDR" /><div class="field-help">Kode tiga huruf, misalnya IDR atau USD.</div></div>
             </div>
             <div class="field"><label for="product-price">Harga <span class="field-help">(opsional)</span></label><input id="product-price" name="product_price" type="text" inputmode="decimal" value="{{.Offer.PriceInput}}" placeholder="Contoh: 79000 atau 19.99" /><div class="field-help">Kosongkan jika harga belum ditentukan. Gunakan titik atau koma untuk desimal.</div></div>
             <div class="field"><label for="product-details">Informasi produk <span class="field-help">(opsional)</span></label><textarea id="product-details" name="product_details" maxlength="5000" rows="5" placeholder="Jelaskan isi, bahan, ukuran, atau manfaat produk">{{.Offer.ProductDetails}}</textarea></div>
             <div class="field"><label for="product-fulfillment">Pengiriman atau cara menerima <span class="field-help">(opsional)</span></label><textarea id="product-fulfillment" name="product_fulfillment" maxlength="1000" rows="3" placeholder="Contoh: biaya kirim dikonfirmasi melalui chat">{{.Offer.Fulfillment}}</textarea></div>
+            <input type="hidden" name="whatsapp_fields_present" value="1" />
+            <label class="check-row"><input type="checkbox" id="whatsapp-enabled" name="whatsapp_enabled" value="1" {{if .Offer.WhatsAppEnabled}}checked{{end}} /><span>Terima pesanan melalui WhatsApp</span></label>
+            <p class="field-help">Tombol pada halaman detail membuka WhatsApp dengan pesan yang dapat diperiksa dan dikirim oleh pengunjung. Klik dihitung terpisah dari pesanan.</p>
+            <div class="field"><label for="whatsapp-number">Nomor WhatsApp <span class="field-help">(dengan kode negara)</span></label><input type="tel" id="whatsapp-number" name="whatsapp_number" maxlength="40" value="{{.Offer.WhatsAppNumber}}" placeholder="Contoh: 628123456789" autocomplete="off" /><div class="field-help">Contoh Indonesia: mulai dengan 62, bukan 0. Mengubah nomor memperbarui tombol produk; URL tujuan slug yang ada diubah melalui menu Tautan.</div></div>
+            <div class="field"><label for="whatsapp-message">Pesan pembuka <span class="field-help">(opsional)</span></label><textarea id="whatsapp-message" name="whatsapp_message" maxlength="500" rows="3" placeholder="Halo, saya tertarik dengan produk ini.">{{.Offer.WhatsAppMessage}}</textarea><div class="field-help">Nama dan tautan detail produk ditambahkan otomatis.</div></div>
+            {{if .Offer.ID}}<p class="field-help">{{.Offer.WhatsAppClicks}} klik tombol WhatsApp sepanjang waktu. Angka ini bukan jumlah pesanan.</p>{{end}}
           </section>
           <noscript><style>.product-fields[hidden] { display:block !important; }</style></noscript>
           <div class="form-section">
@@ -58,7 +64,7 @@
           <p class="field-help">Slug harus aktif dan belum terhubung ke item lain. Tujuan dan riwayat kliknya tetap tersimpan. Jika memakai tautan yang tidak tercantum, kartu publik dapat mengarahkan pengunjung ke tujuan tersebut saat kartu diizinkan tampil dan tersedia.</p>
           <div class="form-pair">
             <div class="field"><label for="home-slug">Slug kartu</label><input type="text" id="home-slug" name="home_slug" required value="{{if .Offer}}{{.Offer.HomeSlug}}{{end}}" placeholder="greencloud-black-friday" /></div>
-            <div class="field"><label for="home-url">URL tujuan</label><input type="url" id="home-url" name="home_url" value="{{if .Offer}}{{.Offer.HomeURL}}{{end}}" placeholder="https://provider.example/deal?ref=..." /></div>
+            <div class="field"><label for="home-url">URL tujuan</label><input type="url" id="home-url" name="home_url" value="{{if .Offer}}{{.Offer.HomeURL}}{{end}}" placeholder="https://provider.example/deal?ref=..." /><div class="field-help">Untuk produk baru dengan WhatsApp aktif, boleh dikosongkan; slug akan mengarah ke nomor WhatsApp tersebut.</div></div>
           </div>
           {{else}}
           <div class="offer-form-heading"><h2>Tautan kartu</h2><span>Tujuan dan pelacakan kartu publik.</span></div>
@@ -169,7 +175,7 @@
             <tr>
               <td><div class="offer-admin-title">{{if .ImageURL}}<img src="{{.ImageURL}}" alt="" loading="lazy" />{{else}}<span class="offer-admin-placeholder">↗</span>{{end}}<div><strong>{{.Title}}</strong><span class="meta-badge">{{itemTypeLabel .ItemType}}</span><span>{{if .HomeSlug}}/{{.HomeSlug}}{{else}}Butuh tautan kartu{{end}}{{if .Featured}} · unggulan{{end}}</span></div></div></td>
               <td>{{if .Provider}}{{.Provider}}{{else}}—{{end}}</td>
-              <td>{{.LinkCount}}</td><td class="clicks-cell">{{.Clicks}}{{if .NoticeViews}}<div class="field-help">{{.NoticeViews}} tampilan pemberitahuan</div>{{end}}</td>
+              <td>{{.LinkCount}}</td><td class="clicks-cell">{{.Clicks}}{{if .NoticeViews}}<div class="field-help">{{.NoticeViews}} tampilan pemberitahuan</div>{{end}}{{if .WhatsAppClicks}}<div class="field-help">{{.WhatsAppClicks}} klik WhatsApp</div>{{end}}</td>
               <td><span class="status {{if eq (offerStatus . $.Today) "active"}}on{{else}}off{{end}}">{{uiText (offerStatus . $.Today)}}</span><div class="field-help">{{if .Active}}Diizinkan tampil{{else}}Disembunyikan{{end}}</div></td>
               <td><div class="offer-admin-actions"><a class="btn btn-ghost btn-sm" href="/{{$.AdminPath}}/offers/{{.ID}}">Edit / tautan</a><details class="row-menu"><summary class="btn btn-ghost btn-sm" aria-label="Tindakan untuk {{.Title}}">Lainnya</summary><div class="row-menu-panel"><form method="POST" action="/{{$.AdminPath}}/offers/{{.ID}}/toggle"><input type="hidden" name="q" value="{{$.CatalogQuery}}" /><input type="hidden" name="item_type" value="{{$.ItemType}}" /><input type="hidden" name="visibility" value="{{$.Visibility}}" /><button class="row-menu-item" type="submit">{{if .Active}}Sembunyikan{{else}}Tampilkan{{end}}</button></form></div></details></div></td>
             </tr>
@@ -208,11 +214,14 @@
   {{if .IsNew}}
   const reuseExistingSlug = document.getElementById('reuse-home-slug');
   const newHomepageURL = document.getElementById('home-url');
+  const whatsappEnabled = document.getElementById('whatsapp-enabled');
   function updateHomepageURL() {
     newHomepageURL.disabled = reuseExistingSlug.checked;
-    newHomepageURL.required = !reuseExistingSlug.checked;
+    newHomepageURL.required = !reuseExistingSlug.checked && !(itemType.value === 'product' && whatsappEnabled.checked);
   }
   reuseExistingSlug.addEventListener('change', updateHomepageURL);
+  whatsappEnabled.addEventListener('change', updateHomepageURL);
+  itemType.addEventListener('change', updateHomepageURL);
   updateHomepageURL();
   {{end}}
 </script>

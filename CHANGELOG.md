@@ -11,6 +11,9 @@ All notable changes to Plink are documented in this file.
 - Product cards can opt into a detail page with a structured optional price,
   product type, additional description, and delivery information. Existing
   products and short links keep their current redirect behavior.
+- Product detail pages can offer WhatsApp ordering with a prefilled, editable
+  message and a separate click count; existing short-link destinations remain
+  unchanged.
 
 ### Changed
 

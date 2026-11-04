@@ -34,6 +34,10 @@ type Link struct {
 // Offer is one public card or promotion. Its links are independent redirect
 // records so clicks can still be attributed to a particular channel.
 type Offer struct {
+	WhatsAppEnabled bool   `json:"whatsapp_enabled"`
+	WhatsAppNumber  string `json:"whatsapp_number"`
+	WhatsAppMessage string `json:"whatsapp_message"`
+	WhatsAppClicks  int64  `json:"whatsapp_clicks"`
 	PriceInput      string `json:"-"`
 	ProductPage     bool   `json:"product_page"`
 	ProductKind     string `json:"product_kind"`
@@ -101,6 +105,13 @@ type ProductDetails struct {
 	Currency    string
 	Details     string
 	Fulfillment string
+	WhatsApp    *ProductWhatsApp
+}
+
+type ProductWhatsApp struct {
+	Enabled bool
+	Number  string
+	Message string
 }
 
 type DailyClicks struct {
@@ -169,7 +180,9 @@ func (db *DB) ListOffers() ([]Offer, error) {
 		       COUNT(DISTINCT l.id), COUNT(c.id), o.created_at, o.updated_at,
 		       o.item_type, o.program_status, o.ended_behavior, o.notice_message, o.notice_source_url, o.status_changed_on, o.verified_on,
 		       (SELECT COUNT(*) FROM notice_views v JOIN links vl ON vl.id = v.link_id WHERE vl.offer_id = o.id),
-		       COALESCE(p.enabled, 0), COALESCE(p.kind, ''), p.price_minor, COALESCE(p.currency, 'IDR'), COALESCE(p.details, ''), COALESCE(p.fulfillment, '')
+		       COALESCE(p.enabled, 0), COALESCE(p.kind, ''), p.price_minor, COALESCE(p.currency, 'IDR'), COALESCE(p.details, ''), COALESCE(p.fulfillment, ''),
+		       COALESCE(p.whatsapp_enabled, 0), COALESCE(p.whatsapp_number, ''), COALESCE(p.whatsapp_message, ''),
+		       (SELECT COUNT(*) FROM product_whatsapp_clicks wc WHERE wc.offer_id = o.id)
 		FROM offers o
 		LEFT JOIN product_details p ON p.offer_id = o.id
 		LEFT JOIN links l ON l.offer_id = o.id
@@ -191,7 +204,8 @@ func (db *DB) ListOffers() ([]Offer, error) {
 			&offer.Active, &offer.Featured, &offer.Priority, &offer.HomeSlug, &offer.HomeURL, &offer.HomeActive,
 			&offer.LinkCount, &offer.Clicks, &offer.CreatedAt, &offer.UpdatedAt,
 			&offer.ItemType, &offer.ProgramStatus, &offer.EndedBehavior, &offer.NoticeMessage, &offer.NoticeSourceURL, &offer.StatusChangedOn, &offer.VerifiedOn, &offer.NoticeViews,
-			&offer.ProductPage, &offer.ProductKind, &offer.PriceMinor, &offer.Currency, &offer.ProductDetails, &offer.Fulfillment); err != nil {
+			&offer.ProductPage, &offer.ProductKind, &offer.PriceMinor, &offer.Currency, &offer.ProductDetails, &offer.Fulfillment,
+			&offer.WhatsAppEnabled, &offer.WhatsAppNumber, &offer.WhatsAppMessage, &offer.WhatsAppClicks); err != nil {
 			return nil, err
 		}
 		offers = append(offers, offer)
@@ -373,7 +387,26 @@ func saveProductDetails(tx *sql.Tx, offerID int64, product *ProductDetails) erro
 		ON CONFLICT(offer_id) DO UPDATE SET enabled=excluded.enabled, kind=excluded.kind,
 		price_minor=excluded.price_minor, currency=excluded.currency, details=excluded.details, fulfillment=excluded.fulfillment`,
 		offerID, product.Enabled, product.Kind, product.PriceMinor, product.Currency, product.Details, product.Fulfillment)
+	if err != nil || product.WhatsApp == nil {
+		return err
+	}
+	_, err = tx.Exec(`UPDATE product_details SET whatsapp_enabled=?, whatsapp_number=?, whatsapp_message=? WHERE offer_id=?`, product.WhatsApp.Enabled, product.WhatsApp.Number, product.WhatsApp.Message, offerID)
 	return err
+}
+
+func (db *DB) RecordProductWhatsAppClick(offerID, clickedAt int64) error {
+	_, err := db.Exec(`INSERT INTO product_whatsapp_clicks (offer_id, clicked_at) VALUES (?, ?)`, offerID, clickedAt)
+	return err
+}
+
+// CountProductWhatsAppClicks uses the same date and category scope as link analytics.
+func (db *DB) CountProductWhatsAppClicks(start, end *int64, category string) (int64, error) {
+	var total int64
+	err := db.QueryRow(`SELECT COUNT(*) FROM product_whatsapp_clicks wc
+		JOIN links h ON h.offer_id=wc.offer_id AND h.offer_homepage=1 AND h.active=1
+		WHERE (? IS NULL OR wc.clicked_at >= ?) AND (? IS NULL OR wc.clicked_at < ?)
+		AND (? = '' OR h.category = ?)`, start, start, end, end, category, category).Scan(&total)
+	return total, err
 }
 
 func (db *DB) CreateOfferLink(offerID int64, slug, url, channel, campaign string) (*Link, error) {

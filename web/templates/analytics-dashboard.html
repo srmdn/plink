@@ -40,7 +40,7 @@
     <section class="analytics-page-kpis" aria-label="analytics summary">
       <div class="stat-card">
         <div class="stat-card-top"><div class="stat-label">Klik · {{uiText .PeriodLabel}}</div><span class="stat-card-icon" aria-hidden="true"><svg viewBox="0 0 20 20"><path d="m4 2 12 9-5.1.8-2.7 4.7L4 2Z"/></svg></span></div>
-        <div class="stat-value">{{.TotalClicks}}</div><div class="stat-card-foot">Klik pengalihan yang tercatat</div>
+        <div class="stat-value">{{.TotalClicks}}</div><div class="stat-card-foot">Klik tautan pendek yang tercatat</div>
       </div>
       <div class="stat-card">
         <div class="stat-card-top"><div class="stat-label">Tautan aktif</div><span class="stat-card-icon" aria-hidden="true"><svg viewBox="0 0 20 20"><path d="M2 10 10 2h6l2 2v6l-8 8L2 10Z"/><circle cx="14" cy="6" r="1"/></svg></span></div>
@@ -54,6 +54,7 @@
         <div class="stat-card-top"><div class="stat-label">Tautan dalam cakupan</div><span class="stat-card-icon" aria-hidden="true"><svg viewBox="0 0 20 20"><path d="M7.8 12.2 6.4 13.6a3.5 3.5 0 0 1-5-5l3-3a3.5 3.5 0 0 1 5 0M12.2 7.8l1.4-1.4a3.5 3.5 0 0 1 5 5l-3 3a3.5 3.5 0 0 1-5 0M6.8 13.2l6.4-6.4"/></svg></span></div>
         <div class="stat-value">{{.TotalLinks}}</div><div class="stat-card-foot">Termasuk dalam tampilan ini</div>
       </div>
+      <div class="stat-card"><div class="stat-card-top"><div class="stat-label">Klik WhatsApp · {{uiText .PeriodLabel}}</div></div><div class="stat-value">{{.WhatsAppClicks}}</div><div class="stat-card-foot">Tombol produk sesuai kategori; terpisah dari klik tautan dan bukan jumlah pesanan.</div></div>
     </section>
 
     <div class="analytics-page-grid">

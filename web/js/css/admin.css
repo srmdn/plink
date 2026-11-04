@@ -55,7 +55,7 @@
     display: block; font-size: 10px; color: var(--muted);
     margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.08em;
   }
-  input[type="text"], input[type="password"], input[type="url"], input[type="number"] {
+  input[type="text"], input[type="password"], input[type="url"], input[type="number"], input[type="tel"] {
     width: 100%; background: var(--bg); border: 1px solid var(--border);
     border-radius: var(--radius); color: var(--text); font-family: inherit;
     font-size: 13px; padding: 9px 11px; outline: none;

@@ -28,7 +28,7 @@ yourdomain.com/tokopedia-promo  →  https://tokopedia.com/...
   search, services, articles, and browser-local favorites
 - Catalog types — products, referrals, services, resources, articles, and projects
 - Optional product detail pages — add a price, product type, details, and
-  fulfillment information before visitors follow the existing short link
+  fulfillment information, with an optional WhatsApp ordering button
 - Project listing — a Portofolio section and `/offers?view=projects`; project cards
   link straight to their URL, like article cards
 - Feature toggles — Settings → Fitur publik with preset modes (full catalog, bio
@@ -201,9 +201,24 @@ zero. New products have the option selected by default in the dashboard; existin
 products keep their previous card behavior until it is enabled. The existing
 short slug continues to redirect as before, and opening a product page does not
 count as a redirect click. Price, detailed description, and delivery information
-are optional; this does not yet create WhatsApp messages or track orders or sales.
+are optional.
 Older binaries do not render product detail pages or prices and will show cards
 using the prior direct-link behavior; plan and verify rollback accordingly.
+
+Enable **Terima pesanan melalui WhatsApp** on a product detail page and enter a
+number in international format. Visitors open WhatsApp with an editable draft
+containing the product name and detail-page URL; no message is sent automatically.
+For a new product, leaving its short-link destination empty creates a link to
+that WhatsApp number. If a destination is already set, it stays unchanged. Later
+number changes update the product button; edit the short-link destination in
+**Tautan** if it should change too.
+
+WhatsApp button clicks are recorded separately from short-link redirect clicks.
+The product editor shows an all-time count, and Statistik shows the count for
+the selected period and category. These counts do not indicate that a message
+was sent, an order was placed, or a payment was made. Grouped link rankings and
+source charts do not include WhatsApp button clicks. WhatsApp settings and click
+history require schema v21 and are unavailable in older binaries.
 
 Notice views are stored separately and shown per Offer and channel slug. They
 do not inflate redirect-click analytics; the provider-website button is a direct

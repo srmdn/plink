@@ -214,6 +214,7 @@ func New(cfg *config.Config, database *db.DB, webFS embed.FS) http.Handler {
 	// Public homepage
 	mux.HandleFunc("GET /offers", s.handleOfferCatalog)
 	mux.HandleFunc("GET /offers/item/{id}", s.handleProductPage)
+	mux.HandleFunc("GET /offers/item/{id}/whatsapp", s.handleProductWhatsApp)
 	mux.HandleFunc("GET /links", s.handleLinkCatalog)
 	mux.HandleFunc("GET /{$}", s.handleHome)
 

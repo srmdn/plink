@@ -247,6 +247,18 @@ ALTER TABLE site_settings ADD COLUMN service_description TEXT NOT NULL DEFAULT '
 		details TEXT NOT NULL DEFAULT '',
 		fulfillment TEXT NOT NULL DEFAULT ''
 	);`,
+
+	// v21: WhatsApp ordering is opt-in and its clicks are counted separately.
+	`ALTER TABLE product_details ADD COLUMN whatsapp_enabled INTEGER NOT NULL DEFAULT 0 CHECK (whatsapp_enabled IN (0,1));
+	ALTER TABLE product_details ADD COLUMN whatsapp_number TEXT NOT NULL DEFAULT '';
+	ALTER TABLE product_details ADD COLUMN whatsapp_message TEXT NOT NULL DEFAULT '';
+	CREATE TABLE product_whatsapp_clicks (
+		id INTEGER PRIMARY KEY AUTOINCREMENT,
+		offer_id INTEGER NOT NULL REFERENCES offers(id) ON DELETE CASCADE,
+		clicked_at INTEGER NOT NULL
+	);
+	CREATE INDEX idx_product_whatsapp_clicks_offer_time ON product_whatsapp_clicks(offer_id, clicked_at);
+	CREATE INDEX idx_product_whatsapp_clicks_time ON product_whatsapp_clicks(clicked_at);`,
 }
 
 func migrate(conn *sql.DB) error {
