@@ -64,6 +64,7 @@ func (s *Server) handleCreateLink(w http.ResponseWriter, r *http.Request) {
 		Channel     string `json:"channel"`
 		Campaign    string `json:"campaign"`
 		Featured    *bool  `json:"featured"`
+		Unlisted    *bool  `json:"unlisted"`
 		Priority    *int   `json:"priority"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
@@ -93,6 +94,9 @@ func (s *Server) handleCreateLink(w http.ResponseWriter, r *http.Request) {
 	options := db.LinkOptions{Provider: body.Provider, Channel: body.Channel, Campaign: body.Campaign}
 	if body.Featured != nil {
 		options.Featured = *body.Featured
+	}
+	if body.Unlisted != nil {
+		options.Unlisted = *body.Unlisted
 	}
 	if body.Priority != nil {
 		if *body.Priority < 0 {
@@ -131,6 +135,7 @@ func (s *Server) handleUpdateLink(w http.ResponseWriter, r *http.Request) {
 		Channel     *string `json:"channel"`
 		Campaign    *string `json:"campaign"`
 		Featured    *bool   `json:"featured"`
+		Unlisted    *bool   `json:"unlisted"`
 		Priority    *int    `json:"priority"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
@@ -164,16 +169,19 @@ func (s *Server) handleUpdateLink(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var updateErr error
-	if body.Featured == nil && body.Priority == nil && body.Provider == nil && body.Channel == nil && body.Campaign == nil {
+	if body.Featured == nil && body.Unlisted == nil && body.Priority == nil && body.Provider == nil && body.Channel == nil && body.Campaign == nil {
 		// Preserve the legacy API contract: omitted curation fields do not reset metadata.
 		updateErr = s.db.UpdateLink(id, body.Slug, body.URL, body.Description, body.Category)
 	} else {
-		options := db.LinkOptions{Featured: current.Featured, Priority: current.Priority}
+		options := db.LinkOptions{Featured: current.Featured, Unlisted: current.Unlisted, Priority: current.Priority}
 		options.Provider = current.Provider
 		options.Channel = current.Channel
 		options.Campaign = current.Campaign
 		if body.Featured != nil {
 			options.Featured = *body.Featured
+		}
+		if body.Unlisted != nil {
+			options.Unlisted = *body.Unlisted
 		}
 		if body.Priority != nil {
 			options.Priority = *body.Priority
@@ -250,7 +258,7 @@ func (s *Server) handleExport(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/csv")
 		w.Header().Set("Content-Disposition", "attachment; filename=\"plink-export.csv\"")
 		cw := csv.NewWriter(w)
-		cw.Write([]string{"slug", "url", "description", "category", "provider", "channel", "campaign", "active", "featured", "priority", "clicks", "created_at"})
+		cw.Write([]string{"slug", "url", "description", "category", "provider", "channel", "campaign", "active", "featured", "priority", "clicks", "created_at", "unlisted"})
 		for _, l := range links {
 			active := "1"
 			if !l.Active {
@@ -260,7 +268,11 @@ func (s *Server) handleExport(w http.ResponseWriter, r *http.Request) {
 			if l.Featured {
 				featured = "1"
 			}
-			cw.Write([]string{l.Slug, l.URL, l.Description, l.Category, l.Provider, l.Channel, l.Campaign, active, featured, fmt.Sprintf("%d", l.Priority), fmt.Sprintf("%d", l.Clicks), fmt.Sprintf("%d", l.CreatedAt)})
+			unlisted := "0"
+			if l.Unlisted {
+				unlisted = "1"
+			}
+			cw.Write([]string{l.Slug, l.URL, l.Description, l.Category, l.Provider, l.Channel, l.Campaign, active, featured, fmt.Sprintf("%d", l.Priority), fmt.Sprintf("%d", l.Clicks), fmt.Sprintf("%d", l.CreatedAt), unlisted})
 		}
 		cw.Flush()
 		return

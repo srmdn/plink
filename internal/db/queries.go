@@ -23,6 +23,7 @@ type Link struct {
 	Channel     string `json:"channel"`
 	Campaign    string `json:"campaign"`
 	Active      bool   `json:"active"`
+	Unlisted    bool   `json:"unlisted"`
 	Featured    bool   `json:"featured"`
 	Priority    int    `json:"priority"`
 	Clicks      int64  `json:"clicks"`
@@ -123,6 +124,7 @@ type OverviewAnalytics struct {
 
 type LinkOptions struct {
 	Featured  bool
+	Unlisted  bool
 	Priority  int
 	Provider  string
 	Channel   string
@@ -357,7 +359,7 @@ func (db *DB) ListPublicLinks() ([]PublicLink, error) {
 	rows, err := db.Query(`
 		SELECT id, slug, description, category, featured, priority, provider
 		FROM links
-		WHERE active = 1 AND offer_id IS NULL AND LOWER(channel) <> 'contact'
+		WHERE active = 1 AND unlisted = 0 AND offer_id IS NULL AND LOWER(channel) <> 'contact'
 		ORDER BY featured DESC, priority DESC, category, slug
 	`)
 	if err != nil {
@@ -380,7 +382,7 @@ func (db *DB) ListFeaturedLinks(limit int) ([]PublicLink, error) {
 	rows, err := db.Query(`
 		SELECT id, slug, description, category, featured, priority, provider
 		FROM links
-		WHERE active = 1 AND featured = 1 AND offer_id IS NULL
+		WHERE active = 1 AND featured = 1 AND unlisted = 0 AND offer_id IS NULL
 		ORDER BY priority DESC, category, slug
 		LIMIT ?
 	`, limit)
@@ -403,7 +405,7 @@ func (db *DB) ListFeaturedLinks(limit int) ([]PublicLink, error) {
 func (db *DB) ListLinks() ([]Link, error) {
 	rows, err := db.Query(`
 		SELECT l.id, l.slug, l.url, l.description, l.category, l.provider, l.channel, l.campaign,
-		       l.active, l.featured, l.priority,
+		       l.active, l.featured, l.priority, l.unlisted,
 		       l.created_at, l.updated_at, COALESCE(l.offer_id, 0), l.offer_homepage,
 		       COALESCE(o.ends_on, ''), COALESCE(o.fallback_url, ''),
 		       COUNT(c.id) AS clicks
@@ -421,7 +423,7 @@ func (db *DB) ListLinks() ([]Link, error) {
 	var links []Link
 	for rows.Next() {
 		var l Link
-		if err := rows.Scan(&l.ID, &l.Slug, &l.URL, &l.Description, &l.Category, &l.Provider, &l.Channel, &l.Campaign, &l.Active, &l.Featured, &l.Priority, &l.CreatedAt, &l.UpdatedAt, &l.OfferID, &l.OfferHome, &l.OfferEndsOn, &l.FallbackURL, &l.Clicks); err != nil {
+		if err := rows.Scan(&l.ID, &l.Slug, &l.URL, &l.Description, &l.Category, &l.Provider, &l.Channel, &l.Campaign, &l.Active, &l.Featured, &l.Priority, &l.Unlisted, &l.CreatedAt, &l.UpdatedAt, &l.OfferID, &l.OfferHome, &l.OfferEndsOn, &l.FallbackURL, &l.Clicks); err != nil {
 			return nil, err
 		}
 		links = append(links, l)
@@ -477,7 +479,7 @@ func (db *DB) GetLinkByID(id int64) (*Link, error) {
 	var l Link
 	err := db.QueryRow(`
 		SELECT l.id, l.slug, l.url, l.description, l.category, l.provider, l.channel, l.campaign,
-		       l.active, l.featured, l.priority,
+		       l.active, l.featured, l.priority, l.unlisted,
 		       l.created_at, l.updated_at, COALESCE(l.offer_id, 0), l.offer_homepage,
 		       COALESCE(o.ends_on, ''), COALESCE(o.fallback_url, ''), COUNT(c.id) AS clicks
 		FROM links l
@@ -485,7 +487,7 @@ func (db *DB) GetLinkByID(id int64) (*Link, error) {
 		LEFT JOIN clicks c ON c.link_id = l.id
 		WHERE l.id = ?
 		GROUP BY l.id
-	`, id).Scan(&l.ID, &l.Slug, &l.URL, &l.Description, &l.Category, &l.Provider, &l.Channel, &l.Campaign, &l.Active, &l.Featured, &l.Priority, &l.CreatedAt, &l.UpdatedAt, &l.OfferID, &l.OfferHome, &l.OfferEndsOn, &l.FallbackURL, &l.Clicks)
+	`, id).Scan(&l.ID, &l.Slug, &l.URL, &l.Description, &l.Category, &l.Provider, &l.Channel, &l.Campaign, &l.Active, &l.Featured, &l.Priority, &l.Unlisted, &l.CreatedAt, &l.UpdatedAt, &l.OfferID, &l.OfferHome, &l.OfferEndsOn, &l.FallbackURL, &l.Clicks)
 	if err == sql.ErrNoRows {
 		return nil, nil
 	}
@@ -504,9 +506,9 @@ func (db *DB) CreateLink(slug, url, description, category string) (*Link, error)
 func (db *DB) CreateLinkWithOptions(slug, url, description, category string, options LinkOptions) (*Link, error) {
 	now := time.Now().Unix()
 	res, err := db.Exec(
-		`INSERT INTO links (slug, url, description, category, provider, channel, campaign, featured, priority, offer_id, offer_homepage, created_at, updated_at)
-		 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NULLIF(?, 0), ?, ?, ?)`,
-		slug, url, description, category, options.Provider, options.Channel, options.Campaign, options.Featured, options.Priority, options.OfferID, options.OfferHome, now, now,
+		`INSERT INTO links (slug, url, description, category, provider, channel, campaign, featured, priority, offer_id, offer_homepage, unlisted, created_at, updated_at)
+		 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NULLIF(?, 0), ?, ?, ?, ?)`,
+		slug, url, description, category, options.Provider, options.Channel, options.Campaign, options.Featured, options.Priority, options.OfferID, options.OfferHome, options.Unlisted, now, now,
 	)
 	if err != nil {
 		return nil, err
@@ -516,7 +518,7 @@ func (db *DB) CreateLinkWithOptions(slug, url, description, category string, opt
 		ID: id, Slug: slug, URL: url, Description: description, Category: category,
 		Provider: options.Provider, Channel: options.Channel, Campaign: options.Campaign,
 		OfferID: options.OfferID, OfferHome: options.OfferHome,
-		Featured: options.Featured, Priority: options.Priority, CreatedAt: now, UpdatedAt: now,
+		Featured: options.Featured, Unlisted: options.Unlisted, Priority: options.Priority, CreatedAt: now, UpdatedAt: now,
 	}, nil
 }
 
@@ -534,9 +536,9 @@ func (db *DB) UpdateLinkWithOptions(id int64, slug, url, description, category s
 	_, err := db.Exec(
 		`UPDATE links
 		 SET slug = ?, url = ?, description = ?, category = ?, provider = ?, channel = ?, campaign = ?,
-		     featured = ?, priority = ?, updated_at = ?
+		     featured = ?, priority = ?, unlisted = ?, updated_at = ?
 		 WHERE id = ?`,
-		slug, url, description, category, options.Provider, options.Channel, options.Campaign, options.Featured, options.Priority, now, id,
+		slug, url, description, category, options.Provider, options.Channel, options.Campaign, options.Featured, options.Priority, options.Unlisted, now, id,
 	)
 	return err
 }

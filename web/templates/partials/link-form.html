@@ -81,6 +81,13 @@
     <option value="legacy"></option>
   </datalist>
   <h2 class="link-form-section-heading">Penempatan</h2>
+  {{if and .Link .Link.OfferID}}
+  <input type="hidden" name="unlisted" value="{{if .Link.Unlisted}}1{{else}}0{{end}}" />
+  <div class="field-help">Tautan ini terhubung ke item katalog. Atur tampilan kartu melalui item katalog tersebut.</div>
+  {{else}}
+  <label class="check-row" for="f-unlisted"><input type="checkbox" id="f-unlisted" name="unlisted" value="1" {{if and .Link .Link.Unlisted}}checked{{end}} /><span>Sembunyikan dari daftar publik</span></label>
+  <div class="field-help">Tautan aktif tetap dapat dibuka dan dibagikan. Siapa pun yang memiliki alamatnya dapat mengaksesnya. Pengaturan ini juga menyembunyikan tautan unggulan.</div>
+  {{end}}
   <div class="form-pair">
     <div class="field">
       <label for="f-priority">Prioritas beranda</label>

@@ -1076,29 +1076,27 @@ func validateLinkMetadata(provider, channel, campaign string) error {
 }
 
 func parseLinkOptions(r *http.Request) (db.LinkOptions, error) {
+	options := db.LinkOptions{
+		Featured: r.FormValue("featured") == "1" || r.FormValue("featured") == "on" || r.FormValue("featured") == "true",
+		Unlisted: r.FormValue("unlisted") == "1",
+		Provider: strings.TrimSpace(r.FormValue("provider")),
+		Channel:  strings.TrimSpace(r.FormValue("channel")),
+		Campaign: strings.TrimSpace(r.FormValue("campaign")),
+	}
 	priority := 0
 	priorityValue := strings.TrimSpace(r.FormValue("priority"))
 	if priorityValue != "" {
 		parsed, err := strconv.Atoi(priorityValue)
 		if err != nil || parsed < 0 {
-			return db.LinkOptions{}, fmt.Errorf("priority must be a non-negative number")
+			return options, fmt.Errorf("priority must be a non-negative number")
 		}
 		priority = parsed
 	}
-	featured := r.FormValue("featured") == "1" || r.FormValue("featured") == "on" || r.FormValue("featured") == "true"
-	provider := strings.TrimSpace(r.FormValue("provider"))
-	channel := strings.TrimSpace(r.FormValue("channel"))
-	campaign := strings.TrimSpace(r.FormValue("campaign"))
-	if err := validateLinkMetadata(provider, channel, campaign); err != nil {
-		return db.LinkOptions{}, err
+	options.Priority = priority
+	if err := validateLinkMetadata(options.Provider, options.Channel, options.Campaign); err != nil {
+		return options, err
 	}
-	return db.LinkOptions{
-		Featured: featured,
-		Priority: priority,
-		Provider: provider,
-		Channel:  channel,
-		Campaign: campaign,
-	}, nil
+	return options, nil
 }
 
 func (s *Server) handleCreateLinkUI(w http.ResponseWriter, r *http.Request) {
@@ -1127,15 +1125,15 @@ func (s *Server) handleCreateLinkUI(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if slug == "" || url == "" {
-		formErr("slug and url are required", nil)
+		formErr("slug and url are required", &db.Link{Slug: slug, URL: url, Description: desc, Category: cat, Provider: options.Provider, Channel: options.Channel, Campaign: options.Campaign, Featured: options.Featured, Unlisted: options.Unlisted, Priority: options.Priority})
 		return
 	}
 	if isReservedSlug(slug, s.cfg.AdminPath) {
-		formErr("slug is reserved", &db.Link{Slug: slug, URL: url, Description: desc, Category: cat, Provider: options.Provider, Channel: options.Channel, Campaign: options.Campaign, Featured: options.Featured, Priority: options.Priority})
+		formErr("slug is reserved", &db.Link{Slug: slug, URL: url, Description: desc, Category: cat, Provider: options.Provider, Channel: options.Channel, Campaign: options.Campaign, Featured: options.Featured, Unlisted: options.Unlisted, Priority: options.Priority})
 		return
 	}
 	if optionsErr != nil {
-		formErr(optionsErr.Error(), &db.Link{Slug: slug, URL: url, Description: desc, Category: cat, Provider: options.Provider, Channel: options.Channel, Campaign: options.Campaign, Featured: options.Featured, Priority: options.Priority})
+		formErr(optionsErr.Error(), &db.Link{Slug: slug, URL: url, Description: desc, Category: cat, Provider: options.Provider, Channel: options.Channel, Campaign: options.Campaign, Featured: options.Featured, Unlisted: options.Unlisted, Priority: options.Priority})
 		return
 	}
 
@@ -1144,7 +1142,7 @@ func (s *Server) handleCreateLinkUI(w http.ResponseWriter, r *http.Request) {
 		if strings.Contains(err.Error(), "UNIQUE") {
 			msg = "slug already exists"
 		}
-		formErr(msg, &db.Link{Slug: slug, URL: url, Description: desc, Category: cat, Provider: options.Provider, Channel: options.Channel, Campaign: options.Campaign, Featured: options.Featured, Priority: options.Priority})
+		formErr(msg, &db.Link{Slug: slug, URL: url, Description: desc, Category: cat, Provider: options.Provider, Channel: options.Channel, Campaign: options.Campaign, Featured: options.Featured, Unlisted: options.Unlisted, Priority: options.Priority})
 		return
 	}
 
@@ -1176,8 +1174,15 @@ func (s *Server) handleUpdateLinkUI(w http.ResponseWriter, r *http.Request) {
 	formErr := func(msg string) {
 		w.Header().Set("HX-Retarget", "#modal-body")
 		w.Header().Set("HX-Reswap", "innerHTML")
+		link := &db.Link{ID: id, Slug: slug, URL: url, Description: desc, Category: cat, Provider: options.Provider, Channel: options.Channel, Campaign: options.Campaign, Featured: options.Featured, Unlisted: options.Unlisted, Priority: options.Priority}
+		for _, current := range links {
+			if current.ID == id {
+				link.OfferID = current.OfferID
+				break
+			}
+		}
 		s.renderTemplate(w, "link-form", linkFormData{
-			Link:       &db.Link{ID: id, Slug: slug, URL: url, Description: desc, Category: cat, Provider: options.Provider, Channel: options.Channel, Campaign: options.Campaign, Featured: options.Featured, Priority: options.Priority},
+			Link:       link,
 			Editing:    true,
 			Categories: cats, Error: msg, Query: q, CategoryFilter: filterCat,
 			StatusFilter: filterStatus, DateFilter: date, AdminPath: s.cfg.AdminPath,

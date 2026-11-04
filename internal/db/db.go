@@ -233,6 +233,9 @@ ALTER TABLE site_settings ADD COLUMN service_description TEXT NOT NULL DEFAULT '
 	ALTER TABLE site_settings ADD COLUMN contact_title TEXT NOT NULL DEFAULT 'Hubungi saya';
 	ALTER TABLE site_settings ADD COLUMN contact_note TEXT NOT NULL DEFAULT '';
 	ALTER TABLE site_settings ADD COLUMN feature_contact INTEGER NOT NULL DEFAULT 1 CHECK (feature_contact IN (0,1));`,
+
+	// v19: keep existing standalone links visible unless explicitly unlisted.
+	`ALTER TABLE links ADD COLUMN unlisted INTEGER NOT NULL DEFAULT 0 CHECK (unlisted IN (0,1));`,
 }
 
 func migrate(conn *sql.DB) error {

@@ -2,6 +2,7 @@ package server
 
 import (
 	"encoding/csv"
+	"encoding/json"
 	"io"
 	"net/http/httptest"
 	"path/filepath"
@@ -12,6 +13,34 @@ import (
 	"github.com/srmdn/plink/internal/config"
 	"github.com/srmdn/plink/internal/db"
 )
+
+func TestAPIUnlistedPreservedOnUpdates(t *testing.T) {
+	database, err := db.Init(filepath.Join(t.TempDir(), "unlisted.db"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer database.Close()
+	s := &Server{cfg: &config.Config{AdminPath: "admin"}, db: database}
+	created := httptest.NewRecorder()
+	s.handleCreateLink(created, httptest.NewRequest("POST", "/api/links", strings.NewReader(`{"slug":"private-listing","url":"https://example.com","unlisted":true}`)))
+	var link db.Link
+	if created.Code != 201 || json.Unmarshal(created.Body.Bytes(), &link) != nil || !link.Unlisted {
+		t.Fatalf("create = %d %s", created.Code, created.Body.String())
+	}
+	for _, body := range []string{
+		`{"slug":"private-listing","url":"https://example.com"}`,
+		`{"slug":"private-listing","url":"https://example.com","provider":"Updated"}`,
+	} {
+		req := httptest.NewRequest("PUT", "/api/links/1", strings.NewReader(body))
+		req.SetPathValue("id", "1")
+		response := httptest.NewRecorder()
+		s.handleUpdateLink(response, req)
+		stored, err := database.GetLinkByID(1)
+		if response.Code != 200 || err != nil || !stored.Unlisted {
+			t.Fatalf("update lost visibility: %d %#v %v", response.Code, stored, err)
+		}
+	}
+}
 
 func TestDailyExportUsesSelectedDateAndClickOrder(t *testing.T) {
 	database, err := db.Init(filepath.Join(t.TempDir(), "export.db"))

@@ -91,6 +91,7 @@
                   hx-include="#search, select[name='category'], select[name='status'], #date-filter"
                 >/{{.Slug}}</button>
                 {{if .Featured}}<span class="cat-badge featured-badge">Unggulan</span>{{end}}
+                {{if and .Unlisted (not .OfferID)}}<span class="cat-badge">Tidak tercantum</span>{{end}}
                 {{if .Priority}}<span class="priority-badge">p{{.Priority}}</span>{{end}}
                 {{if .Category}}<span class="cat-badge">{{.Category}}</span>{{end}}
               </div>
