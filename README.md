@@ -27,6 +27,8 @@ yourdomain.com/tokopedia-promo  →  https://tokopedia.com/...
 - Mobile storefront — centered 480px frame, bottom navigation, unified catalog
   search, services, articles, and browser-local favorites
 - Catalog types — products, referrals, services, resources, articles, and projects
+- Optional product detail pages — add a price, product type, details, and
+  fulfillment information before visitors follow the existing short link
 - Project listing — a Portofolio section and `/offers?view=projects`; project cards
   link straight to their URL, like article cards
 - Feature toggles — Settings → Fitur publik with preset modes (full catalog, bio
@@ -128,7 +130,7 @@ variables `ANALYTICS_SCRIPT_URL`, `ANALYTICS_WEBSITE_ID`, and
 ## Public homepage
 
 Plink uses a centered, mobile-width storefront with a bottom navigation that
-adapts to the enabled features: Beranda, Kategori, and Favorit, plus Proyek and
+adapts to the enabled features: Beranda, Katalog, and Favorit, plus Proyek and
 Jasa when those features are on (see **Fitur publik** below). The public catalog
 at `/offers` searches both available offer cards and standalone resources.
 Category and provider filters persist during search and pagination. `/links`
@@ -181,12 +183,49 @@ that redirect behavior during migration. With the notice behavior, the same
 URL becomes an optional provider-website button, with no automatic forwarding.
 Catalog visibility is separate from program status; hiding a card does not
 pause its slugs. Disabling an individual Link still returns 404.
+Standalone links can also be hidden from public listings using **Sembunyikan
+dari daftar publik**. The active URL still redirects for anyone who knows it;
+this setting does not provide access control. Featured links remain hidden
+while this option is enabled. For links attached to a catalog item, use that
+item's visibility setting instead.
+Reusing an unlisted slug as a catalog card's link can expose that slug on the
+public card whenever the item is visible and available.
+Editing a catalog item's description, category, or provider does not change
+those fields on existing attached links. Manage each link's metadata in Tautan;
+new channel links inherit the item's category and provider when created.
+
+For a product, enable **Gunakan halaman detail untuk kartu produk** to show a
+local product page before the existing destination. The optional price is stored
+in hundredths of the specified three-letter currency; a blank price differs from
+zero. New products have the option selected by default in the dashboard; existing
+products keep their previous card behavior until it is enabled. The existing
+short slug continues to redirect as before, and opening a product page does not
+count as a redirect click. Price, detailed description, and delivery information
+are optional; this does not yet create WhatsApp messages or track orders or sales.
+Older binaries do not render product detail pages or prices and will show cards
+using the prior direct-link behavior; plan and verify rollback accordingly.
 
 Notice views are stored separately and shown per Offer and channel slug. They
 do not inflate redirect-click analytics; the provider-website button is a direct
 link and is not counted as another redirect click. Public slug responses use
 `Cache-Control: no-store`, and notice pages carry `noindex`. Schema migrations
 run in a transaction per version, preserving existing links and click history.
+
+### Rolling back after using unlisted links
+
+Older Plink versions do not understand the `unlisted` setting and may show
+those standalone links in public listings. Before switching to an older binary,
+take a verified backup of the current database and uploads and record which
+links are unlisted. Prefer rolling back to a build that supports this setting.
+If an older build must be used, disable the public storefront in Settings first
+and verify that the homepage no longer lists links and that public catalog
+pages are unavailable; keep the storefront disabled after rollback. Verify the
+same behavior using the older build before serving public traffic. This also
+hides other storefront content; active short links remain accessible directly.
+Do not assume disabling only the resources page is enough: other catalog views
+may include standalone links. Verify behavior for the specific older version.
+Restoring an older database backup also discards data added after that backup,
+including link edits and analytics, unless separately recovered.
 
 The footer links to Plink's GitHub repository so you can share or self-host
 the project without exposing deployment-specific configuration.

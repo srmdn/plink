@@ -236,6 +236,17 @@ ALTER TABLE site_settings ADD COLUMN service_description TEXT NOT NULL DEFAULT '
 
 	// v19: keep existing standalone links visible unless explicitly unlisted.
 	`ALTER TABLE links ADD COLUMN unlisted INTEGER NOT NULL DEFAULT 0 CHECK (unlisted IN (0,1));`,
+
+	// v20: opt-in product pages; existing cards keep their direct destinations.
+	`CREATE TABLE product_details (
+		offer_id INTEGER PRIMARY KEY REFERENCES offers(id) ON DELETE CASCADE,
+		enabled INTEGER NOT NULL DEFAULT 0 CHECK (enabled IN (0,1)),
+		kind TEXT NOT NULL DEFAULT '' CHECK (kind IN ('', 'digital', 'physical')),
+		price_minor INTEGER CHECK (price_minor IS NULL OR price_minor >= 0),
+		currency TEXT NOT NULL DEFAULT 'IDR',
+		details TEXT NOT NULL DEFAULT '',
+		fulfillment TEXT NOT NULL DEFAULT ''
+	);`,
 }
 
 func migrate(conn *sql.DB) error {

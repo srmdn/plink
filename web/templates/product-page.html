@@ -1,0 +1,16 @@
+{{define "product-page"}}
+<!doctype html><html lang="id"><head><meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />{{template "public-seo" .SEO}}{{template "favicon-link" .}}{{template "storefront-styles" .}}{{template "analytics-tag" .}}</head>
+<body>{{template "public-header" .}}<main class="store-main product-page">
+  <a class="product-back" href="/offers">← Kembali ke katalog</a>
+  {{if .Offer.ImageURL}}<img class="product-image" src="{{.Offer.ImageURL}}" alt="Gambar {{.Offer.Title}}" />{{else}}<div class="product-image product-image-empty" aria-hidden="true">{{template "brand-mark"}}</div>{{end}}
+  {{if .Offer.Category}}<span class="store-eyebrow">{{.Offer.Category}}</span>{{end}}
+  <h1>{{.Offer.Title}}</h1>
+  {{if .Offer.Provider}}<p class="product-provider">{{.Offer.Provider}}</p>{{end}}
+  {{if .Offer.ProductKind}}<p class="product-provider">Produk {{if eq .Offer.ProductKind "digital"}}digital{{else}}fisik{{end}}</p>{{end}}
+  {{if .Offer.PriceMinor}}<p class="product-price">{{productPrice .Offer.PriceMinor .Offer.Currency}}</p>{{end}}
+  {{if .Offer.Description}}<p class="product-copy">{{.Offer.Description}}</p>{{end}}
+  {{if .Offer.ProductDetails}}<section class="product-section"><h2>Informasi produk</h2><p class="product-copy">{{.Offer.ProductDetails}}</p></section>{{end}}
+  {{if .Offer.Fulfillment}}<section class="product-section"><h2>Pengiriman atau cara menerima</h2><p class="product-copy">{{.Offer.Fulfillment}}</p></section>{{end}}
+  <a class="product-action" href="/{{.Offer.HomeSlug}}" target="_blank" rel="noopener">{{.Offer.ButtonLabel}} <span aria-hidden="true">↗</span></a>
+</main>{{template "public-footer" .}}{{template "contact-fab" .}}{{template "public-nav" .}}</body></html>
+{{end}}

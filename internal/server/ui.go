@@ -28,6 +28,7 @@ type offersDashboardData struct {
 	Saved         bool
 	CatalogQuery  string
 	ItemType      string
+	Visibility    string
 	ReuseHomeSlug bool
 	Offers        []db.Offer
 	Offer         *db.Offer
@@ -1466,6 +1467,11 @@ func parseOfferInput(r *http.Request) (db.OfferInput, error) {
 		Active:          r.FormValue("active") == "1" || r.FormValue("active") == "on",
 		Featured:        r.FormValue("featured") == "1" || r.FormValue("featured") == "on",
 	}
+	product, productErr := parseProductDetails(r)
+	input.Product = product
+	if productErr != nil {
+		return input, productErr
+	}
 	if input.ItemType == "" {
 		input.ItemType = "referral"
 	}
@@ -1549,7 +1555,7 @@ func parseOfferInput(r *http.Request) (db.OfferInput, error) {
 }
 
 func offerFromInput(input db.OfferInput, id int64, homeSlug, homeURL string, homeActive bool) *db.Offer {
-	return &db.Offer{
+	offer := &db.Offer{
 		ID: id, ItemType: input.ItemType, Title: input.Title, Provider: input.Provider, Description: input.Description, Category: input.Category,
 		ProgramStatus: input.ProgramStatus, EndedBehavior: input.EndedBehavior, NoticeMessage: input.NoticeMessage,
 		NoticeSourceURL: input.NoticeSourceURL, StatusChangedOn: input.StatusChangedOn, VerifiedOn: input.VerifiedOn,
@@ -1557,6 +1563,11 @@ func offerFromInput(input db.OfferInput, id int64, homeSlug, homeURL string, hom
 		StartsOn: input.StartsOn, EndsOn: input.EndsOn, Active: input.Active, Featured: input.Featured,
 		Priority: input.Priority, HomeSlug: homeSlug, HomeURL: homeURL, HomeActive: homeActive,
 	}
+	if input.Product != nil {
+		offer.ProductPage, offer.ProductKind, offer.PriceMinor = input.Product.Enabled, input.Product.Kind, input.Product.PriceMinor
+		offer.Currency, offer.ProductDetails, offer.Fulfillment = input.Product.Currency, input.Product.Details, input.Product.Fulfillment
+	}
+	return offer
 }
 
 const offerHomepageLinkFilter = "__homepage__"
@@ -1681,6 +1692,13 @@ func (s *Server) renderOffersDashboard(w http.ResponseWriter, r *http.Request, d
 	data.PublicURL = s.publicURL(r)
 	data.Production = s.cfg.Production
 	data.Today = time.Now().In(s.cfg.ReportLocation()).Format(dashboardDateLayout)
+	if data.Offer != nil {
+		if data.Error != "" && r.Method == http.MethodPost {
+			data.Offer.PriceInput = r.FormValue("product_price")
+		} else {
+			data.Offer.PriceInput = productPriceInput(data.Offer.PriceMinor)
+		}
+	}
 	if data.Offer != nil && !data.IsNew {
 		data.LinkQuery = strings.TrimSpace(r.URL.Query().Get("q"))
 		data.LinkChannel = strings.TrimSpace(r.URL.Query().Get("channel"))
@@ -1697,12 +1715,27 @@ func (s *Server) handleOffersDashboard(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	query, kind := strings.TrimSpace(r.URL.Query().Get("q")), r.URL.Query().Get("item_type")
+	visibility := r.URL.Query().Get("visibility")
+	if visibility != "shown" && visibility != "hidden" {
+		visibility = ""
+	}
+	var slugMatches map[int64]bool
+	if query != "" {
+		slugMatches, err = s.db.OfferIDsMatchingSlug(query)
+		if err != nil {
+			http.Error(w, "db error", http.StatusInternalServerError)
+			return
+		}
+	}
 	filtered := make([]db.Offer, 0, len(offers))
 	for _, offer := range offers {
 		if kind != "" && offer.ItemType != kind {
 			continue
 		}
-		if query != "" && !strings.Contains(strings.ToLower(offer.Title+" "+offer.Provider+" "+offer.Category+" "+offer.HomeSlug), strings.ToLower(query)) {
+		if visibility == "shown" && !offer.Active || visibility == "hidden" && offer.Active {
+			continue
+		}
+		if query != "" && !strings.Contains(strings.ToLower(offer.Title+" "+offer.Provider+" "+offer.Category), strings.ToLower(query)) && !slugMatches[offer.ID] {
 			continue
 		}
 		filtered = append(filtered, offer)
@@ -1717,7 +1750,7 @@ func (s *Server) handleOffersDashboard(w http.ResponseWriter, r *http.Request) {
 		}
 		totalClicks += offer.Clicks
 	}
-	s.renderOffersDashboard(w, r, offersDashboardData{Offers: offers, CatalogQuery: query, ItemType: kind, ActiveCount: activeCount, TotalClicks: totalClicks})
+	s.renderOffersDashboard(w, r, offersDashboardData{Offers: offers, CatalogQuery: query, ItemType: kind, Visibility: visibility, ActiveCount: activeCount, TotalClicks: totalClicks})
 }
 
 func (s *Server) handleNewOffer(w http.ResponseWriter, r *http.Request) {
@@ -1921,5 +1954,15 @@ func (s *Server) handleToggleOffer(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "db error", http.StatusInternalServerError)
 		return
 	}
-	http.Redirect(w, r, "/"+s.cfg.AdminPath+"/offers", http.StatusSeeOther)
+	query := url.Values{}
+	for _, key := range []string{"q", "item_type", "visibility"} {
+		if value := strings.TrimSpace(r.FormValue(key)); value != "" {
+			query.Set(key, value)
+		}
+	}
+	target := "/" + s.cfg.AdminPath + "/offers"
+	if len(query) > 0 {
+		target += "?" + query.Encode()
+	}
+	http.Redirect(w, r, target, http.StatusSeeOther)
 }

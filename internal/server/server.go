@@ -121,6 +121,7 @@ func New(cfg *config.Config, database *db.DB, webFS embed.FS) http.Handler {
 				return val * 100 / total
 			},
 			"percentOfLabel": percentOfLabel,
+			"productPrice":   productPriceLabel,
 			"referrerLabel":  func(value string) string { return uiText(referrerLabel(value)) },
 			"uiText":         uiText,
 			"branding":       func() brandAssets { settings, _ := database.GetSiteSettings(); return brandingAssets(settings) },
@@ -212,6 +213,7 @@ func New(cfg *config.Config, database *db.DB, webFS embed.FS) http.Handler {
 
 	// Public homepage
 	mux.HandleFunc("GET /offers", s.handleOfferCatalog)
+	mux.HandleFunc("GET /offers/item/{id}", s.handleProductPage)
 	mux.HandleFunc("GET /links", s.handleLinkCatalog)
 	mux.HandleFunc("GET /{$}", s.handleHome)
 

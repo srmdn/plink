@@ -758,6 +758,17 @@ body[data-favorites-page] [data-favorite-card].is-favorite {
 .offer-provider { color:var(--muted); letter-spacing:.05em; }
 .offer-card p { -webkit-line-clamp:2; margin-bottom:8px; font-size:11px; }
 .offer-card-cta { border:0; padding-top:4px; font-size:11px; }
+.product-card-price { display:block; margin:4px 0; font-size:13px; }
+.product-page .product-back { display:inline-block; margin:4px 0 16px; color:var(--accent); font-weight:600; }
+.product-page .product-image { display:block; width:100%; max-height:420px; object-fit:contain; border-radius:12px; background:var(--soft); margin-bottom:18px; }
+.product-page .product-image-empty { min-height:180px; display:grid; place-items:center; }
+.product-page h1 { font-size:26px; line-height:1.2; margin:8px 0; }
+.product-page h2 { font-size:15px; margin:0 0 6px; }
+.product-page .product-provider { color:var(--muted); margin:0 0 8px; }
+.product-page .product-price { font-size:20px; font-weight:700; margin:10px 0; }
+.product-page .product-copy { white-space:pre-line; overflow-wrap:anywhere; margin:8px 0; }
+.product-page .product-section { border-top:1px solid var(--line); margin-top:18px; padding-top:18px; }
+.product-page .product-action { display:block; margin-top:22px; padding:13px 16px; border-radius:10px; background:var(--accent); color:#fff; text-align:center; font-weight:700; }
 .offer-badge { border:0; background:rgba(255,255,255,.92); bottom:7px; left:7px; }
 .favorite-button { width:34px; height:34px; border:0; box-shadow:0 1px 5px #15191808; transition:color .16s,transform .16s,background .16s; }
 .favorite-button .nav-icon { width:20px; height:20px; }

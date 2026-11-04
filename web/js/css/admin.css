@@ -1449,6 +1449,13 @@
 .admin-page .form-section { background:var(--surface); padding:16px; margin-bottom:12px; border-radius:10px; }
 .admin-page .form-section .offer-form-subheading { border:0; margin-top:0; padding-top:0; }
 .admin-page .form-section .field:last-child { margin-bottom:0; }
+.admin-page .offer-program-settings > summary { cursor:pointer; display:flex; flex-wrap:wrap; align-items:baseline; gap:6px 12px; }
+.admin-page .offer-program-settings > summary::before { content:"+"; color:var(--accent); font-size:16px; }
+.admin-page .offer-program-settings[open] > summary::before { content:"−"; }
+.admin-page .offer-program-settings > summary strong { font-size:14px; }
+.admin-page .offer-program-settings > summary span { color:var(--muted); font-size:11px; }
+.admin-page .offer-program-settings[open] > summary { margin-bottom:16px; }
+.admin-page .offer-program-settings > summary:focus-visible { outline:2px solid var(--accent); outline-offset:4px; }
 .admin-page .offer-home-destination,.admin-page .offer-link-group,.admin-page .offer-link-row,.admin-page .guide-module,.admin-page .guide-example,.admin-page .guide-faq details { border:0; }
 .admin-page .offer-link-group { background:var(--surface2); }
 .admin-page .offer-link-row { background:var(--surface); border-radius:0; margin:4px 0; padding:10px; }

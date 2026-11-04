@@ -252,6 +252,10 @@ func isServiceCategory(category string) bool {
 
 type publicCard struct {
 	Title, Provider, Description, Category, ImageURL, ButtonLabel, HomeSlug, HomeURL, ItemType string
+	ID                                                                                         int64
+	ProductPage                                                                                bool
+	PriceMinor                                                                                 *int64
+	Currency                                                                                   string
 }
 type browseData struct {
 	Settings                                                                        db.SiteSettings
@@ -328,7 +332,7 @@ func (s *Server) handleBrowse(w http.ResponseWriter, r *http.Request, resourcesO
 	}
 	all := []publicCard{}
 	for _, o := range publicOffers(offers, time.Now().In(s.cfg.ReportLocation()).Format(dashboardDateLayout)) {
-		all = append(all, publicCard{o.Title, o.Provider, o.Description, o.Category, o.ImageURL, o.ButtonLabel, o.HomeSlug, o.HomeURL, o.ItemType})
+		all = append(all, publicCard{Title: o.Title, Provider: o.Provider, Description: o.Description, Category: o.Category, ImageURL: o.ImageURL, ButtonLabel: o.ButtonLabel, HomeSlug: o.HomeSlug, HomeURL: o.HomeURL, ItemType: o.ItemType, ID: o.ID, ProductPage: o.ProductPage, PriceMinor: o.PriceMinor, Currency: o.Currency})
 	}
 	for _, l := range links {
 		kind := "resource"
@@ -413,7 +417,7 @@ func (s *Server) handleBrowse(w http.ResponseWriter, r *http.Request, resourcesO
 		}
 		cards = cards[start:end]
 	}
-	title := map[string]string{"categories": "Kategori", "services": settings.ServiceTitle, "favorites": "Favorit", "resources": "Resource", "articles": "Artikel", "projects": "Proyek"}[view]
+	title := map[string]string{"categories": "Katalog", "services": settings.ServiceTitle, "favorites": "Favorit", "resources": "Resource", "articles": "Artikel", "projects": "Proyek"}[view]
 	w.Header().Add("Vary", "Cookie")
 	s.renderTemplate(w, "browse", browseData{Settings: settings, SEO: s.publicSEO(settings, r, view, effectivePage), Cards: cards, Categories: categories, Providers: providers, Category: category, Provider: provider, Query: query, View: view, Title: title, Total: total, Pages: pages, SiteName: settings.SiteName, SiteDesc: settings.SiteDesc, AffiliateDisclosure: settings.AffiliateDisclosure, IsLoggedIn: s.isLoggedIn(r), AdminPath: s.cfg.AdminPath})
 }

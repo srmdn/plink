@@ -34,6 +34,13 @@ type Link struct {
 // Offer is one public card or promotion. Its links are independent redirect
 // records so clicks can still be attributed to a particular channel.
 type Offer struct {
+	PriceInput      string `json:"-"`
+	ProductPage     bool   `json:"product_page"`
+	ProductKind     string `json:"product_kind"`
+	PriceMinor      *int64 `json:"price_minor"`
+	Currency        string `json:"currency"`
+	ProductDetails  string `json:"product_details"`
+	Fulfillment     string `json:"fulfillment"`
 	ItemType        string `json:"item_type"`
 	ProgramStatus   string `json:"program_status"`
 	EndedBehavior   string `json:"ended_behavior"`
@@ -65,6 +72,7 @@ type Offer struct {
 }
 
 type OfferInput struct {
+	Product         *ProductDetails
 	ItemType        string
 	ProgramStatus   string
 	EndedBehavior   string
@@ -84,6 +92,15 @@ type OfferInput struct {
 	Active          bool
 	Featured        bool
 	Priority        int
+}
+
+type ProductDetails struct {
+	Enabled     bool
+	Kind        string
+	PriceMinor  *int64
+	Currency    string
+	Details     string
+	Fulfillment string
 }
 
 type DailyClicks struct {
@@ -151,8 +168,10 @@ func (db *DB) ListOffers() ([]Offer, error) {
 		       COALESCE(h.slug, ''), COALESCE(h.url, ''), COALESCE(h.active, 0),
 		       COUNT(DISTINCT l.id), COUNT(c.id), o.created_at, o.updated_at,
 		       o.item_type, o.program_status, o.ended_behavior, o.notice_message, o.notice_source_url, o.status_changed_on, o.verified_on,
-		       (SELECT COUNT(*) FROM notice_views v JOIN links vl ON vl.id = v.link_id WHERE vl.offer_id = o.id)
+		       (SELECT COUNT(*) FROM notice_views v JOIN links vl ON vl.id = v.link_id WHERE vl.offer_id = o.id),
+		       COALESCE(p.enabled, 0), COALESCE(p.kind, ''), p.price_minor, COALESCE(p.currency, 'IDR'), COALESCE(p.details, ''), COALESCE(p.fulfillment, '')
 		FROM offers o
+		LEFT JOIN product_details p ON p.offer_id = o.id
 		LEFT JOIN links l ON l.offer_id = o.id
 		LEFT JOIN clicks c ON c.link_id = l.id
 		LEFT JOIN links h ON h.offer_id = o.id AND h.offer_homepage = 1
@@ -171,7 +190,8 @@ func (db *DB) ListOffers() ([]Offer, error) {
 			&offer.ButtonLabel, &offer.FallbackURL, &offer.StartsOn, &offer.EndsOn,
 			&offer.Active, &offer.Featured, &offer.Priority, &offer.HomeSlug, &offer.HomeURL, &offer.HomeActive,
 			&offer.LinkCount, &offer.Clicks, &offer.CreatedAt, &offer.UpdatedAt,
-			&offer.ItemType, &offer.ProgramStatus, &offer.EndedBehavior, &offer.NoticeMessage, &offer.NoticeSourceURL, &offer.StatusChangedOn, &offer.VerifiedOn, &offer.NoticeViews); err != nil {
+			&offer.ItemType, &offer.ProgramStatus, &offer.EndedBehavior, &offer.NoticeMessage, &offer.NoticeSourceURL, &offer.StatusChangedOn, &offer.VerifiedOn, &offer.NoticeViews,
+			&offer.ProductPage, &offer.ProductKind, &offer.PriceMinor, &offer.Currency, &offer.ProductDetails, &offer.Fulfillment); err != nil {
 			return nil, err
 		}
 		offers = append(offers, offer)
@@ -223,6 +243,29 @@ func (db *DB) ListOfferLinks(offerID int64) ([]Link, error) {
 	return links, rows.Err()
 }
 
+// OfferIDsMatchingSlug finds catalog items by any attached slug, including
+// channel links and inactive links, without changing their visibility.
+func (db *DB) OfferIDsMatchingSlug(query string) (map[int64]bool, error) {
+	rows, err := db.Query(`SELECT offer_id, slug FROM links WHERE offer_id IS NOT NULL`)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	matches := make(map[int64]bool)
+	query = strings.ToLower(query)
+	for rows.Next() {
+		var id int64
+		var slug string
+		if err := rows.Scan(&id, &slug); err != nil {
+			return nil, err
+		}
+		if strings.Contains(strings.ToLower(slug), query) {
+			matches[id] = true
+		}
+	}
+	return matches, rows.Err()
+}
+
 func (db *DB) CreateOfferWithHomepageLink(input OfferInput, slug, url string) (*Offer, error) {
 	return db.createOfferWithHomepageLink(input, slug, url, false)
 }
@@ -258,6 +301,11 @@ func (db *DB) createOfferWithHomepageLink(input OfferInput, slug, url string, re
 	offerID, err := result.LastInsertId()
 	if err != nil {
 		return nil, err
+	}
+	if input.Product != nil {
+		if err := saveProductDetails(tx, offerID, input.Product); err != nil {
+			return nil, err
+		}
 	}
 	if reuse {
 		result, err := tx.Exec(`UPDATE links SET offer_id = ?, offer_homepage = 1, updated_at = ?
@@ -311,7 +359,21 @@ func (db *DB) UpdateOffer(id int64, input OfferInput) error {
 		input.ItemType, input.ProgramStatus, input.EndedBehavior, input.NoticeMessage, input.NoticeSourceURL, input.StatusChangedOn, input.VerifiedOn, id); err != nil {
 		return err
 	}
+	if input.Product != nil {
+		if err := saveProductDetails(tx, id, input.Product); err != nil {
+			return err
+		}
+	}
 	return tx.Commit()
+}
+
+func saveProductDetails(tx *sql.Tx, offerID int64, product *ProductDetails) error {
+	_, err := tx.Exec(`INSERT INTO product_details (offer_id, enabled, kind, price_minor, currency, details, fulfillment)
+		VALUES (?, ?, ?, ?, ?, ?, ?)
+		ON CONFLICT(offer_id) DO UPDATE SET enabled=excluded.enabled, kind=excluded.kind,
+		price_minor=excluded.price_minor, currency=excluded.currency, details=excluded.details, fulfillment=excluded.fulfillment`,
+		offerID, product.Enabled, product.Kind, product.PriceMinor, product.Currency, product.Details, product.Fulfillment)
+	return err
 }
 
 func (db *DB) CreateOfferLink(offerID int64, slug, url, channel, campaign string) (*Link, error) {

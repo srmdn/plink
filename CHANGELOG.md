@@ -2,6 +2,33 @@
 
 All notable changes to Plink are documented in this file.
 
+## Unreleased
+
+### Added
+
+- Standalone links can be hidden from public listings while remaining active
+  and accessible to anyone with the URL.
+- Product cards can opt into a detail page with a structured optional price,
+  product type, additional description, and delivery information. Existing
+  products and short links keep their current redirect behavior.
+
+### Changed
+
+- The catalog dashboard shows visibility separately from item status, offers a
+  visibility filter, and clarifies that its counts follow the current filters.
+- Catalog search includes channel slugs and retains filters after changing an
+  item's visibility. The editor explains when a hidden slug becomes public.
+- The public navigation calls the item list Katalog, while the admin explains
+  the difference between short links and catalog cards. The item editor shows
+  type-specific guidance and groups program settings for new items.
+
+### Fixed
+
+- Saving a catalog item no longer overwrites the description, category, or
+  provider on its attached links.
+- Period analytics include clicks recorded during the current second.
+- Click-share percentages match between the chart, its tooltips, and rankings.
+
 ## v1.4.2
 
 ### Changed
