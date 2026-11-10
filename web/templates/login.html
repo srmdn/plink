@@ -1,6 +1,6 @@
 {{define "login"}}
 <!DOCTYPE html>
-<html lang="id">
+<html lang="en">
 {{template "head" .}}
 <body class="admin-page">
 <div id="app" class="admin-app">
@@ -9,14 +9,14 @@
   </header>
   <div id="login-view">
     <div class="login-box">
-      <h2>Masuk ke Plink</h2>
-      {{if .Error}}<div class="login-error">Kata sandi salah</div>{{end}}
+      <h2>Sign in to Plink</h2>
+      {{if .Error}}<div class="login-error">Incorrect password</div>{{end}}
       <form method="POST" action="/{{.AdminPath}}/login">
         <div class="field">
-          <label for="password">Kata sandi</label>
+          <label for="password">Password</label>
           <input type="password" id="password" name="password" autofocus autocomplete="current-password" />
         </div>
-        <button type="submit" class="btn btn-primary btn-full">Masuk</button>
+        <button type="submit" class="btn btn-primary btn-full">Sign in</button>
       </form>
     </div>
   </div>
