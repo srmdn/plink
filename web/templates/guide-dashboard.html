@@ -70,7 +70,7 @@
           <a href="/" class="btn btn-ghost btn-sm admin-home-link">View public site ↗</a>
           <div class="guide-toc-menu" id="guide-toc-menu" hidden>
             <nav aria-label="Guide sections">
-              <a href="#hubungan-modul"><span class="guide-toc-num">01</span><span>How modules relate</span></a><a href="#link-biasa"><span class="guide-toc-num">02</span><span>Plain links</span></a><a href="#program"><span class="guide-toc-num">03</span><span>Programs &amp; channels</span></a><a href="#link-lama"><span class="guide-toc-num">04</span><span>Links already shared</span></a><a href="#program-berakhir"><span class="guide-toc-num">05</span><span>Programs that ended</span></a><a href="#statistik"><span class="guide-toc-num">06</span><span>Analytics</span></a><a href="#homepage"><span class="guide-toc-num">07</span><span>Site &amp; home page</span></a><a href="#tanya-jawab"><span class="guide-toc-num">08</span><span>FAQ</span></a>
+              <a href="#hubungan-modul"><span class="guide-toc-num">01</span><span>How modules relate</span></a><a href="#link-biasa"><span class="guide-toc-num">02</span><span>Plain links</span></a><a href="#program"><span class="guide-toc-num">03</span><span>Programs &amp; channels</span></a><a href="#link-lama"><span class="guide-toc-num">04</span><span>Links already shared</span></a><a href="#program-berakhir"><span class="guide-toc-num">05</span><span>Programs that ended</span></a><a href="#statistik"><span class="guide-toc-num">06</span><span>Analytics</span></a><a href="#homepage"><span class="guide-toc-num">07</span><span>Site &amp; home page</span></a><a href="#tanya-jawab"><span class="guide-toc-num">08</span><span>FAQ</span></a><a href="#item-types"><span class="guide-toc-num">09</span><span>Choosing an item type</span></a>
             </nav>
           </div>
         </div>
@@ -215,6 +215,23 @@
         <details><summary>The program is active again. Do I need new links?</summary><p>Set the program status back to Active, check the schedule, then test the old slug. If the end date has passed, update it. Reactivate any links you disabled. Click history is kept.</p></details>
         <details><summary>Can I delete a link I no longer use?</summary><p>For a link you already shared, keep the slug and use the program status or pause the link as needed. Deleting a link also deletes its click history. Changing the slug makes the old address stop working.</p></details>
         <details><summary>Why is the contact button missing from the public page?</summary><p>Make sure the <b>floating contact button</b> feature is enabled in <b>Public features</b> and at least one channel is filled in under <b>Contact button</b> (rows with an empty URL are ignored). For the Email icon, just enter the email address. After CSS or JS changes the asset version changes automatically, so you do not need to clear caches manually.</p></details>
+      </section>
+      <section class="analytics-page-panel guide-section" id="item-types" aria-labelledby="types-title">
+        <div class="guide-heading"><span class="guide-step">09</span><div><h2 id="types-title">Choosing an item type</h2><p>The type decides where a card appears and what a click does. Category is the topic; type is the behavior.</p></div></div>
+        <ol class="guide-steps">
+          <li><b>Did I write it?</b> Use <b>Article</b>, wherever the text is hosted.</li>
+          <li><b>Did I build it?</b> Use <b>Project</b>.</li>
+          <li><b>Am I selling a thing and shipping it?</b> Use <b>Product</b>.</li>
+          <li><b>Am I doing the work myself?</b> Use <b>Service</b>.</li>
+          <li><b>Does someone else sell it?</b> Use <b>Referral</b>. Visitors see the badge <b>Offer</b>.</li>
+          <li><b>Is it someone else's material with nothing to buy?</b> Use <b>Resource</b>.</li>
+        </ol>
+        <div class="guide-definition-grid">
+          <div><strong>Article &amp; Project</strong><p>Open the destination directly and have no favorite button.</p></div>
+          <div><strong>Product</strong><p>Can show a detail page, price, and WhatsApp ordering.</p></div>
+          <div><strong>Referral, Service, Resource</strong><p>Stay on the card grid and can be saved to favorites.</p></div>
+        </div>
+        <p class="guide-note">When a card feels like two types, choose by what the click should achieve. A review you wrote that earns commission is an <b>Article</b> if the goal is reading, and a <b>Referral</b> if the goal is signing up.</p>
       </section>
       <p class="guide-end">Start with <a href="/{{.AdminPath}}">Links</a> for a simple link, or <a href="/{{.AdminPath}}/offers">Catalog</a> for a program that needs to be managed as a whole.</p>
     </main>
