@@ -12,6 +12,6 @@
   {{if .Offer.Description}}<p class="product-copy">{{.Offer.Description}}</p>{{end}}
   {{if .Offer.ProductDetails}}<section class="product-section"><h2>Product information</h2><p class="product-copy">{{.Offer.ProductDetails}}</p></section>{{end}}
   {{if .Offer.Fulfillment}}<section class="product-section"><h2>Delivery or fulfillment</h2><p class="product-copy">{{.Offer.Fulfillment}}</p></section>{{end}}
-  {{if .Offer.WhatsAppEnabled}}<a class="product-action" href="/offers/item/{{.Offer.ID}}/whatsapp" target="_blank" rel="noopener">Order via WhatsApp <span aria-hidden="true">↗</span></a>{{else}}<a class="product-action" href="/{{.Offer.HomeSlug}}" target="_blank" rel="noopener">{{template "public-button-label" .Offer.ButtonLabel}} <span aria-hidden="true">↗</span></a>{{end}}
+  {{if .Offer.WhatsAppEnabled}}<a class="product-action" href="/offers/item/{{.Offer.ID}}/whatsapp" target="_blank" rel="noopener">Order via WhatsApp <span aria-hidden="true">↗</span></a>{{else}}<a class="product-action" href="/{{.Offer.HomeSlug}}" target="_blank" rel="noopener">{{.Offer.ButtonLabel}} <span aria-hidden="true">↗</span></a>{{end}}
 </main>{{template "public-footer" .}}{{template "contact-fab" .}}{{template "public-nav" .}}</body></html>
 {{end}}

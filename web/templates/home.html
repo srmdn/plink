@@ -62,16 +62,15 @@
   </g>
 </svg>
 {{end}}
-{{define "public-button-label"}}{{if eq . "Lihat proyek"}}View project{{else if eq . "Pelajari selengkapnya"}}Learn more{{else if eq . "Lihat promo"}}View offer{{else if eq . "Lihat produk"}}View product{{else if eq . "Lihat jasa"}}View service{{else if eq . "Lihat VPS"}}View VPS{{else if eq . "Baca artikel"}}Read article{{else}}{{.}}{{end}}{{end}}
 {{define "public-item-type"}}{{if eq . "product"}}Product{{else if eq . "referral"}}Offer{{else if eq . "service"}}Service{{else if eq . "resource"}}Resource{{else if eq . "article"}}Article{{else if eq . "project"}}Project{{end}}{{end}}
 {{define "offer-card"}}
 {{$external := or (eq .ItemType "article") (eq .ItemType "project")}}
 {{$productPage := and (eq .ItemType "product") .ProductPage}}
 <article class="offer-card offer-card--{{.ItemType}}{{if not .ImageURL}} offer-card--no-image{{end}}"{{if not $external}} data-favorite-card="{{.HomeSlug}}"{{end}}>
 {{if not $external}}<button class="favorite-button" type="button" data-favorite="{{.HomeSlug}}" aria-label="Save {{.Title}} to favorites" aria-pressed="false">{{template "nav-icon" "heart"}}</button>{{end}}
-<a href="{{if $productPage}}/offers/item/{{.ID}}{{else if $external}}{{.HomeURL}}{{else}}/{{.HomeSlug}}{{end}}" {{if not $productPage}}target="_blank" rel="noopener"{{end}} aria-label="{{.Title}} — {{if $productPage}}View details{{else}}{{template "public-button-label" .ButtonLabel}}{{end}}">
+<a href="{{if $productPage}}/offers/item/{{.ID}}{{else if $external}}{{.HomeURL}}{{else}}/{{.HomeSlug}}{{end}}" {{if not $productPage}}target="_blank" rel="noopener"{{end}} aria-label="{{.Title}} — {{if $productPage}}View details{{else}}{{.ButtonLabel}}{{end}}">
 <div class="offer-image">{{if .ImageURL}}<img src="{{.ImageURL}}" alt="" loading="lazy" />{{else}}<span class="offer-image-placeholder" aria-hidden="true">{{template "item-illustration" .ItemType}}</span>{{end}}<span class="offer-badge">{{template "public-item-type" .ItemType}}</span></div>
-<div class="offer-card-copy"><span class="offer-provider">{{if .Provider}}{{.Provider}}{{else}}{{.Category}}{{end}}</span><h3>{{.Title}}</h3>{{if .Description}}<p>{{.Description}}</p>{{end}}{{if and $productPage .PriceMinor}}<strong class="product-card-price">{{productPrice .PriceMinor .Currency}}</strong>{{end}}<span class="offer-card-cta">{{if $productPage}}View details{{else}}{{template "public-button-label" .ButtonLabel}}{{end}} <span aria-hidden="true">↗</span></span></div>
+<div class="offer-card-copy"><span class="offer-provider">{{if .Provider}}{{.Provider}}{{else}}{{.Category}}{{end}}</span><h3>{{.Title}}</h3>{{if .Description}}<p>{{.Description}}</p>{{end}}{{if and $productPage .PriceMinor}}<strong class="product-card-price">{{productPrice .PriceMinor .Currency}}</strong>{{end}}<span class="offer-card-cta">{{if $productPage}}View details{{else}}{{.ButtonLabel}}{{end}} <span aria-hidden="true">↗</span></span></div>
 </a></article>
 {{end}}
 {{define "resource-card"}}
