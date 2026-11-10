@@ -153,11 +153,11 @@ func TestDashboardCountLabelMatchesFilterSemantics(t *testing.T) {
 		q, category, status string
 		want                string
 	}{
-		{status: "active", want: "active links"},
-		{status: "paused", want: "paused links"},
-		{status: "", want: "visible links"},
-		{q: "active", status: "active", want: "matching links"},
-		{category: "Tools", status: "active", want: "matching links"},
+		{status: "active", want: "Active links"},
+		{status: "paused", want: "Paused links"},
+		{status: "", want: "Visible links"},
+		{q: "active", status: "active", want: "Matching links"},
+		{category: "Tools", status: "active", want: "Matching links"},
 	}
 	for _, test := range tests {
 		data := buildDashboardData(links, test.q, test.category, test.status, "admin", false)
@@ -183,7 +183,7 @@ func TestBuildDashboardDataForDateSortsAndScopesClicks(t *testing.T) {
 	if data.Links[0].Clicks != 5 || data.TotalClicks != 10 {
 		t.Fatalf("daily clicks = %#v, total = %d, want top=5 total=10", data.Links, data.TotalClicks)
 	}
-	if data.CountLabel != "clicked links" || data.ClicksLabel != "clicks · 25 Aug" || data.DateLabel != "25 Aug" {
+	if data.CountLabel != "Clicked links" || data.ClicksLabel != "Clicks · 25 Aug" || data.DateLabel != "25 Aug" {
 		t.Fatalf("daily labels = count %q clicks %q date %q", data.CountLabel, data.ClicksLabel, data.DateLabel)
 	}
 

@@ -61,16 +61,16 @@
 
     <main class="admin-main guide-page">
       <div class="admin-page-heading">
-        <div><div class="admin-eyebrow">Panduan penggunaan</div><h1>Mulai dari kebutuhan lo</h1><p>Tautan menyimpan tautan. Katalog mengelola programnya. Statistik membaca hasilnya. Pengaturan mengatur tampilan situs.</p></div>
+        <div><div class="admin-eyebrow">User guide</div><h1>Start from what you need</h1><p>Links stores links. Catalog manages their programs. Analytics reads the results. Settings controls how the site looks.</p></div>
         <div class="guide-toc-wrap">
-          <button class="btn btn-ghost btn-sm" type="button" id="guide-toc-toggle" aria-expanded="false" aria-controls="guide-toc-menu" aria-label="Daftar bagian panduan">
+          <button class="btn btn-ghost btn-sm" type="button" id="guide-toc-toggle" aria-expanded="false" aria-controls="guide-toc-menu" aria-label="Guide sections">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true" focusable="false"><path d="M4 6h16M4 12h16M4 18h16" /></svg>
-            <span>Isi</span>
+            <span>Contents</span>
           </button>
-          <a href="/" class="btn btn-ghost btn-sm admin-home-link">Lihat situs publik ↗</a>
+          <a href="/" class="btn btn-ghost btn-sm admin-home-link">View public site ↗</a>
           <div class="guide-toc-menu" id="guide-toc-menu" hidden>
-            <nav aria-label="Bagian panduan">
-              <a href="#hubungan-modul"><span class="guide-toc-num">01</span><span>Hubungan modul</span></a><a href="#link-biasa"><span class="guide-toc-num">02</span><span>Tautan biasa</span></a><a href="#program"><span class="guide-toc-num">03</span><span>Program &amp; channel</span></a><a href="#link-lama"><span class="guide-toc-num">04</span><span>Tautan sudah tersebar</span></a><a href="#program-berakhir"><span class="guide-toc-num">05</span><span>Program berakhir</span></a><a href="#statistik"><span class="guide-toc-num">06</span><span>Statistik</span></a><a href="#homepage"><span class="guide-toc-num">07</span><span>Situs &amp; beranda</span></a><a href="#tanya-jawab"><span class="guide-toc-num">08</span><span>Tanya jawab</span></a>
+            <nav aria-label="Guide sections">
+              <a href="#hubungan-modul"><span class="guide-toc-num">01</span><span>How modules relate</span></a><a href="#link-biasa"><span class="guide-toc-num">02</span><span>Plain links</span></a><a href="#program"><span class="guide-toc-num">03</span><span>Programs &amp; channels</span></a><a href="#link-lama"><span class="guide-toc-num">04</span><span>Links already shared</span></a><a href="#program-berakhir"><span class="guide-toc-num">05</span><span>Programs that ended</span></a><a href="#statistik"><span class="guide-toc-num">06</span><span>Analytics</span></a><a href="#homepage"><span class="guide-toc-num">07</span><span>Site &amp; home page</span></a><a href="#tanya-jawab"><span class="guide-toc-num">08</span><span>FAQ</span></a>
             </nav>
           </div>
         </div>
@@ -100,123 +100,123 @@
       </script>
 
       <section class="analytics-page-panel guide-section" id="hubungan-modul" aria-labelledby="modul-title">
-        <div class="guide-heading"><span class="guide-step">01</span><div><h2 id="modul-title">Pilih tempat mengelolanya</h2><p>Tautan bisa berdiri sendiri. Pakai Item ketika beberapa tautan mengikuti program atau promo yang sama.</p></div></div>
+        <div class="guide-heading"><span class="guide-step">01</span><div><h2 id="modul-title">Choose where to manage it</h2><p>A link can stand alone. Use an item when several links belong to the same program or promotion.</p></div></div>
         <div class="guide-module-grid">
-          <a class="guide-module" href="/{{.AdminPath}}"><strong>Tautan</strong><span>Slug, URL tujuan, kategori, penyedia, channel, dan kampanye. Cocok untuk tautan biasa maupun mengedit tujuan tautan milik Item.</span><small>Buka Tautan ↗</small></a>
-          <a class="guide-module" href="/{{.AdminPath}}/offers"><strong>Katalog</strong><span>Satu kartu produk atau program, beberapa slug, tanggal berlaku, dan Status program yang dibagikan ke semua slug terkait.</span><small>Buka Katalog ↗</small></a>
-          <a class="guide-module" href="/{{.AdminPath}}/analytics/dashboard"><strong>Statistik</strong><span>Bandingkan klik pengalihan menurut tautan, penyedia, channel, atau kampanye. Buka satu tautan untuk melihat detailnya.</span><small>Buka Statistik ↗</small></a>
-          <a class="guide-module" href="/{{.AdminPath}}/settings"><strong>Pengaturan</strong><span>Identitas halaman, konten beranda &amp; jasa, profil &amp; tautan sosial, keterangan referral, pilihan utama, SEO &amp; berbagi, serta warna publik/admin. Konten kartu tetap di Katalog.</span><small>Buka Pengaturan ↗</small></a>
+          <a class="guide-module" href="/{{.AdminPath}}"><strong>Links</strong><span>Slug, destination URL, category, provider, channel, and campaign. Works for plain links and for editing the destination of a link owned by an item.</span><small>Open Links ↗</small></a>
+          <a class="guide-module" href="/{{.AdminPath}}/offers"><strong>Catalog</strong><span>One product or program card, several slugs, active dates, and a program status shared by every connected slug.</span><small>Open Catalog ↗</small></a>
+          <a class="guide-module" href="/{{.AdminPath}}/analytics/dashboard"><strong>Analytics</strong><span>Compare redirect clicks by link, provider, channel, or campaign. Open a single link for its details.</span><small>Open Analytics ↗</small></a>
+          <a class="guide-module" href="/{{.AdminPath}}/settings"><strong>Settings</strong><span>Site identity, home and services content, profile and social links, referral disclosure, featured items, SEO and sharing, and public/admin colors. Card content stays in the Catalog.</span><small>Open Settings ↗</small></a>
         </div>
-        <div class="guide-example"><strong>Contoh: satu program promo</strong><p>Item <b>promo-bulanan</b> punya slug <code>/promo-bulanan</code> untuk kartu beranda, <code>/promo-bulanan-threads</code> untuk Threads, dan <code>/promo-bulanan-instagram</code> untuk Instagram. Tiap slug punya statistik sendiri. Status program cukup diubah sekali di Item.</p></div>
+        <div class="guide-example"><strong>Example: one promotion program</strong><p>The item <b>monthly-promo</b> has the slug <code>/monthly-promo</code> for the home card, <code>/monthly-promo-threads</code> for Threads, and <code>/monthly-promo-instagram</code> for Instagram. Each slug has its own analytics. The program status only needs to change once, on the item.</p></div>
       </section>
 
       <section class="analytics-page-panel guide-section" id="link-biasa" aria-labelledby="link-title">
-        <div class="guide-heading"><span class="guide-step">02</span><div><h2 id="link-title">Bikin tautan biasa</h2><p>Untuk resource, artikel, atau tautan yang belum perlu dikelola sebagai satu program.</p></div></div>
+        <div class="guide-heading"><span class="guide-step">02</span><div><h2 id="link-title">Create a plain link</h2><p>For a resource, article, or link that does not need to be managed as a program yet.</p></div></div>
         <ol class="guide-steps">
-          <li>Buka <a href="/{{.AdminPath}}">Tautan</a>, lalu pilih <b>Tambah tautan</b>.</li>
-          <li>Isi <b>slug</b> dan <b>URL tujuan</b>. Contoh slug <code>belajar-go</code> menghasilkan alamat pendek berakhiran <code>/belajar-go</code>.</li>
-          <li>Tambahkan deskripsi dan kategori. Isi <b>Penyedia</b>, <b>Channel</b>, dan <b>Kampanye</b> jika ingin membandingkan sumber promosi.</li>
-          <li>Simpan, lalu salin dan coba tautan pendeknya. Tautan aktif yang belum terhubung ke Item masuk ke katalog tautan publik.</li>
+          <li>Open <a href="/{{.AdminPath}}">Links</a>, then choose <b>Add link</b>.</li>
+          <li>Fill in the <b>slug</b> and <b>destination URL</b>. For example, the slug <code>learn-go</code> produces a short address ending in <code>/learn-go</code>.</li>
+          <li>Add a description and category. Fill in <b>Provider</b>, <b>Channel</b>, and <b>Campaign</b> if you want to compare where traffic comes from.</li>
+          <li>Save, then copy and test the short link. An active link that is not connected to an item appears in the public link catalog.</li>
         </ol>
-        <p class="guide-note">Kalau tujuan berubah, edit URL-nya di Tautan. Pertahankan slug yang sudah dibagikan supaya alamat lama tetap bisa dipakai.</p>
+        <p class="guide-note">If the destination changes, edit the URL in Links. Keep the slug you already shared so the old address keeps working.</p>
       </section>
 
       <section class="analytics-page-panel guide-section" id="program" aria-labelledby="program-title">
-        <div class="guide-heading"><span class="guide-step">03</span><div><h2 id="program-title">Satu program, banyak channel</h2><p>Untuk referral, promo, atau produk yang punya satu kartu publik dan beberapa tautan distribusi.</p></div></div>
+        <div class="guide-heading"><span class="guide-step">03</span><div><h2 id="program-title">One program, many channels</h2><p>For a referral, promotion, or product with one public card and several distribution links.</p></div></div>
         <ol class="guide-steps">
-          <li>Buka <a href="/{{.AdminPath}}/offers/new">Katalog → Tambah item</a>. Pilih jenis Produk, Referral, Jasa, Resource, Artikel, atau Proyek. Isi nama, penyedia, deskripsi, kategori, dan gambar (unggah PNG/JPEG/WebP maks 5 MB, atau isi URL).</li>
-          <li>Isi <b>Slug kartu</b> dan <b>URL tujuan</b>. Slug ini dipakai saat pengunjung mengeklik kartu di beranda atau katalog.</li>
-          <li>Pilih <b>Status program: Aktif</b>. Atur <b>Tanggal mulai</b> dan <b>Tanggal akhir</b> bila ada jadwal. Centang <b>Tampilkan kartu selama program tersedia</b>.</li>
-          <li>Simpan Item, lalu gunakan <b>Tambah tautan channel</b>. Buat slug berbeda untuk tiap channel, misalnya <code>promo-bulanan-threads</code> dengan channel <code>threads</code>.</li>
-          <li>Isi <b>Kampanye</b> bila perlu, misalnya <code>review-oktober</code>. URL channel bisa sama dengan kartu atau memakai URL khusus channel tersebut.</li>
-          <li>Bagikan slug sesuai channel. Gunakan filter channel/kampanye di editor Item untuk menemukan dan membandingkan tautannya.</li>
+          <li>Open <a href="/{{.AdminPath}}/offers/new">Catalog → Add item</a>. Choose the item type: Product, Referral, Service, Resource, Article, or Project. Fill in the name, provider, description, category, and image (upload a PNG/JPEG/WebP up to 5 MB, or enter a URL).</li>
+          <li>Fill in the <b>card slug</b> and <b>destination URL</b>. This slug is used when a visitor selects the card on the home page or in the catalog.</li>
+          <li>Set <b>Program status: Active</b>. Set the <b>start date</b> and <b>end date</b> if there is a schedule. Tick <b>Show the card while the program is available</b>.</li>
+          <li>Save the item, then use <b>Add a channel link</b>. Create a different slug for each channel, for example <code>monthly-promo-threads</code> with the channel <code>threads</code>.</li>
+          <li>Fill in <b>Campaign</b> when useful, for example <code>october-review</code>. A channel URL can match the card or use a URL specific to that channel.</li>
+          <li>Share each slug on its channel. Use the channel and campaign filters in the item editor to find and compare its links.</li>
         </ol>
         <div class="guide-definition-grid">
-          <div><strong>Penyedia</strong><p>Siapa penyedia atau tokonya, misalnya Shopee.</p></div>
-          <div><strong>Channel</strong><p>Di mana tautan disebar, misalnya Threads, blog, atau email.</p></div>
-          <div><strong>Kampanye</strong><p>Promosi atau penempatan tertentu, misalnya review Oktober.</p></div>
+          <div><strong>Provider</strong><p>Who provides or sells it, for example Shopee.</p></div>
+          <div><strong>Channel</strong><p>Where the link is shared, for example Threads, a blog, or email.</p></div>
+          <div><strong>Campaign</strong><p>A specific promotion or placement, for example an October review.</p></div>
         </div>
-        <p class="guide-note">Tombol <b>Gunakan untuk kartu</b> memilih slug yang dipakai kartu publik. Semua slug lain tetap tersedia dan dihitung masing-masing.</p>
+        <p class="guide-note">The <b>Use for card</b> button selects the slug used by the public card. Every other slug stays available and is counted separately.</p>
       </section>
 
       <section class="analytics-page-panel guide-section" id="link-lama" aria-labelledby="lama-title">
-        <div class="guide-heading"><span class="guide-step">04</span><div><h2 id="lama-title">Tautan sudah tersebar? Pakai slug yang sama</h2><p>Pindahkan pengelolaannya ke Item tanpa membuat ulang tautan atau menghapus statistik lama.</p></div></div>
+        <div class="guide-heading"><span class="guide-step">04</span><div><h2 id="lama-title">Already shared the link? Reuse the slug</h2><p>Move its management to an item without recreating the link or losing existing analytics.</p></div></div>
         <ol class="guide-steps">
-          <li>Jika program belum punya Item, buka <a href="/{{.AdminPath}}/offers/new">Tambah item</a> dan centang <b>Gunakan tautan yang sudah ada</b>.</li>
-          <li>Isi <b>Slug kartu</b> dengan slug lama, misalnya <code>promo-bulanan</code>. URL tujuan dan histori kliknya tetap dipakai.</li>
-          <li>Untuk memasang slug lain ke Item yang sudah ada, buka editornya dan isi <b>Hubungkan tautan yang sudah ada</b>, lalu pilih <b>Hubungkan tautan</b>.</li>
-          <li>Cek daftar <b>Tautan pelacakan</b>. Slug yang dipasang mengikuti Status program Item tersebut, termasuk pemberitahuan jika program sudah berakhir.</li>
+          <li>If the program has no item yet, open <a href="/{{.AdminPath}}/offers/new">Add item</a> and tick <b>Use an existing link</b>.</li>
+          <li>Enter the old slug as the <b>card slug</b>, for example <code>monthly-promo</code>. Its destination URL and click history are kept.</li>
+          <li>To attach another slug to an existing item, open its editor, fill in <b>Connect an existing link</b>, then choose <b>Connect link</b>.</li>
+          <li>Check the <b>tracking links</b> list. An attached slug follows that item program status, including the notice when the program has ended.</li>
         </ol>
-        <p class="guide-note">Hanya tautan aktif yang belum dimiliki Item lain yang bisa dipasang. Channel dan kampanye lama tetap terjaga. Setelah terhubung, tautan keluar dari katalog tautan terpisah dan dikelola melalui kartu Item.</p>
+        <p class="guide-note">Only active links that no other item owns can be attached. Existing channel and campaign values are kept. Once connected, the link leaves the separate link catalog and is managed through the item card.</p>
       </section>
 
       <section class="analytics-page-panel guide-section" id="program-berakhir" aria-labelledby="berakhir-title">
-        <div class="guide-heading"><span class="guide-step">05</span><div><h2 id="berakhir-title">Referral atau promo sudah berakhir</h2><p>Alamat pendek tetap berguna untuk menjelaskan perubahan kepada orang yang datang dari posting lama.</p></div></div>
+        <div class="guide-heading"><span class="guide-step">05</span><div><h2 id="berakhir-title">A referral or promotion has ended</h2><p>The short address is still useful for explaining the change to people arriving from an older post.</p></div></div>
         <ol class="guide-steps">
-          <li>Buka Item program tersebut. Pilih <b>Status program: Berakhir</b>; gunakan <b>Dijeda / diperiksa</b> kalau kepastiannya masih diperiksa.</li>
-          <li>Isi <b>Pesan untuk pengunjung</b> dengan manfaat yang sudah tidak berlaku, misalnya kredit referral $5. Tambahkan <b>URL sumber resmi</b> dan tanggal bila diketahui.</li>
-          <li>Pilih <b>Tampilkan pemberitahuan (disarankan)</b>. Isi <b>Website penyedia / URL pengganti</b> bila ingin menyediakan tombol ke website penyedia yang masih relevan.</li>
-          <li>Simpan, lalu coba slug kartu dan satu slug channel. Kartu hilang dari katalog aktif; semua slug aktif terkait menampilkan pemberitahuan yang sama.</li>
-          <li>Perbarui posting lama yang masih bisa diedit. Gunakan jumlah <b>tampilan pemberitahuan</b> untuk melihat channel mana yang masih mendatangkan pengunjung.</li>
+          <li>Open the program item. Set <b>Program status: Ended</b>; use <b>Paused / under review</b> while the outcome is still being checked.</li>
+          <li>Fill in the <b>message for visitors</b> with the benefit that no longer applies, for example a $5 referral credit. Add the <b>official source URL</b> and the date when known.</li>
+          <li>Choose <b>Show a notice (recommended)</b>. Fill in the <b>provider website / fallback URL</b> if you want a button to a provider site that is still relevant.</li>
+          <li>Save, then test the card slug and one channel slug. The card leaves the active catalog; every connected active slug shows the same notice.</li>
+          <li>Update older posts that can still be edited. Use the <b>notice views</b> count to see which channel still brings visitors.</li>
         </ol>
-        <div class="guide-table-wrap" tabindex="0" role="region" aria-label="Tabel perilaku status program">
-          <table class="guide-table"><caption>Apa yang terjadi saat orang membuka slug?</caption><thead><tr><th scope="col">Status program</th><th scope="col">Perilaku tautan aktif</th></tr></thead><tbody>
-            <tr><th scope="row">Aktif</th><td>Mengalihkan ke tujuan masing-masing slug, selama jadwalnya berlaku.</td></tr>
-            <tr><th scope="row">Dijeda / diperiksa</th><td>Pemberitahuan sementara; kartu disembunyikan.</td></tr>
-            <tr><th scope="row">Belum dimulai</th><td>Pemberitahuan belum mulai, sampai Tanggal mulai.</td></tr>
-            <tr><th scope="row">Kedaluwarsa</th><td>Pemberitahuan atau pengalihan yang dipilih, setelah Tanggal akhir lewat.</td></tr>
-            <tr><th scope="row">Berakhir</th><td>Pemberitahuan atau pengalihan yang dipilih, langsung setelah disimpan.</td></tr>
+        <div class="guide-table-wrap" tabindex="0" role="region" aria-label="Program status behavior table">
+          <table class="guide-table"><caption>What happens when someone opens a slug?</caption><thead><tr><th scope="col">Program status</th><th scope="col">Active link behavior</th></tr></thead><tbody>
+            <tr><th scope="row">Active</th><td>Redirects to each slug destination while its schedule is active.</td></tr>
+            <tr><th scope="row">Paused / under review</th><td>Temporary notice; the card is hidden.</td></tr>
+            <tr><th scope="row">Not started</th><td>A not-started notice until the start date.</td></tr>
+            <tr><th scope="row">Expired</th><td>The chosen notice or redirect, after the end date passes.</td></tr>
+            <tr><th scope="row">Ended</th><td>The chosen notice or redirect, immediately after saving.</td></tr>
           </tbody></table>
         </div>
-        <p class="guide-note"><b>Tanggal akhir</b> mencakup seluruh tanggal tersebut menurut zona waktu laporan. <b>Tanggal perubahan status</b> dan <b>Terakhir diperiksa</b> hanya catatan; keduanya tidak menjadwalkan perubahan otomatis. Pemeriksaan program masih dilakukan manual.</p>
-        <p class="guide-note">Pilih pengalihan otomatis hanya kalau URL pengganti memang memenuhi tujuan pengunjung. Program yang dijeda atau belum mulai selalu menampilkan pemberitahuan. Item lama yang sudah memiliki URL pengganti mempertahankan perilaku pengalihan saat diperbarui; cek pilihannya saat mengedit.</p>
+        <p class="guide-note">The <b>end date</b> covers that entire day in the reporting time zone. The <b>status change date</b> and <b>last verified</b> are notes only; neither schedules an automatic change. Program checks are still done manually.</p>
+        <p class="guide-note">Choose automatic redirection only when the fallback URL really serves the visitor purpose. Paused or not-yet-started programs always show a notice. Older items that already have a fallback URL keep the redirect behavior when updated; check the option while editing.</p>
       </section>
 
       <section class="analytics-page-panel guide-section" id="statistik" aria-labelledby="statistik-title">
-        <div class="guide-heading"><span class="guide-step">06</span><div><h2 id="statistik-title">Baca hasil promosi</h2><p>Gunakan label yang konsisten agar perbandingannya jelas.</p></div></div>
+        <div class="guide-heading"><span class="guide-step">06</span><div><h2 id="statistik-title">Read the promotion results</h2><p>Use consistent labels so comparisons stay clear.</p></div></div>
         <ol class="guide-steps">
-          <li>Buka <a href="/{{.AdminPath}}/analytics/dashboard">Statistik</a> dan pilih <b>Periode</b>. Gunakan <b>Kategori</b> untuk mempersempit data.</li>
-          <li>Pilih <b>Rincian</b> menurut Penyedia, Channel, Kampanye, atau tautan untuk menjawab pertanyaan yang berbeda.</li>
-          <li>Buka detail satu tautan untuk melihat klik harian dan Sumber trafik. <b>Langsung / tidak diketahui</b> berarti permintaan tidak membawa informasi sumber.</li>
-          <li>Untuk program yang tidak aktif, cek <b>tampilan pemberitahuan</b> di Katalog. Angka ini terpisah dari klik pengalihan di Statistik.</li>
+          <li>Open <a href="/{{.AdminPath}}/analytics/dashboard">Analytics</a> and choose a <b>period</b>. Use <b>category</b> to narrow the data.</li>
+          <li>Choose a <b>breakdown</b> by provider, channel, campaign, or link to answer different questions.</li>
+          <li>Open a single link details page to see daily clicks and traffic sources. <b>Direct / unknown</b> means the request carried no source information.</li>
+          <li>For an inactive program, check <b>notice views</b> in the Catalog. That number is separate from redirect clicks in Analytics.</li>
         </ol>
-        <p class="guide-note">Klik pengalihan bukan jumlah orang unik, pendaftaran, pembelian, atau kredit referral. Membuka tombol website pada pemberitahuan tidak menambah klik pengalihan. Periode <b>Semua</b> tidak memiliki perbandingan Trend.</p>
-        <p class="guide-note">Menu <b>Ekspor</b> di Tautan menyediakan katalog JSON/CSV dan laporan klik harian. Gunakan laporan harian untuk memeriksa distribusi klik pada tanggal tertentu.</p>
+        <p class="guide-note">Redirect clicks are not unique people, sign-ups, purchases, or referral credit. Opening the website button on a notice does not add a redirect click. The <b>all time</b> period has no trend comparison.</p>
+        <p class="guide-note">The <b>Export</b> menu in Links provides a JSON/CSV catalog and a daily click report. Use the daily report to inspect click distribution on a specific date.</p>
       </section>
 
       <section class="analytics-page-panel guide-section" id="homepage" aria-labelledby="homepage-title">
-        <div class="guide-heading"><span class="guide-step">07</span><div><h2 id="homepage-title">Atur situs dan beranda</h2><p>Pengaturan mengatur tampilan global; Katalog mengatur isi setiap kartu.</p></div></div>
+        <div class="guide-heading"><span class="guide-step">07</span><div><h2 id="homepage-title">Set up the site and home page</h2><p>Settings controls the global appearance; the Catalog controls each card content.</p></div></div>
         <ol class="guide-steps">
-          <li>Buka <a href="/{{.AdminPath}}/settings">Pengaturan</a> → <b>Identitas halaman</b> untuk mengganti nama dan deskripsi situs.</li>
-          <li>Di <b>Konten beranda &amp; jasa</b>, ubah <b>label</b>, <b>judul</b>, dan <b>deskripsi beranda</b>, serta <b>judul</b> dan <b>deskripsi bagian jasa</b>. Teks ini tampil di halaman publik tanpa mengubah kode.</li>
-          <li>Di <b>Fitur publik</b>, pilih mode <b>Katalog penuh</b>, <b>Bio link</b>, atau <b>Hanya pemendek tautan</b>, atau atur centang per fitur: Halaman beranda, Katalog, Jasa, Artikel, Proyek, Resource, Profil, Tombol dukungan, Tombol kontak, dan Favorit. Fitur yang dimatikan hilang dari navigasi dan URL-nya menjadi 404, tetapi pengalihan slug pendek tetap berjalan.</li>
-          <li>Di <b>Logo &amp; favicon</b>, unggah PNG/JPEG/WebP (maks 5 MB) atau isi <b>URL logo</b> dan <b>URL favicon</b> (URL HTTPS atau path lokal; SVG lewat URL). Unggahan menimpa URL. Logo tampil di publik dan admin. Favicon kosong mengikuti logo; tanpa keduanya, ikon bawaan mengikuti aksen publik.</li>
-          <li>Di <b>Profil &amp; tautan sosial</b>, atur <b>avatar</b> (kosong = memakai logo) dan tautan sosial opsional. <b>Deskripsi singkat</b> dipakai sebagai bio. Trakteer, Ko-fi, dan Buy Me a Coffee tampil sebagai tombol Dukungan; tautan lain sebagai ikon. Baris ini tersembunyi jika kosong.</li>
-          <li>Di <b>Tombol kontak</b>, atur tombol mengambang yang muncul di halaman storefront publik. Isi <b>Judul gelembung</b> dan <b>Pesan singkat</b> (opsional), lalu tambah kanal lewat <b>+ Tambah kanal</b>: pilih <b>ikon</b>, isi <b>URL</b> (untuk ikon Email cukup alamat emailnya), dan <b>label</b> opsional. Klik kanal membuka aplikasi atau situsnya. Tombol hanya muncul jika fitur <b>Tombol kontak mengambang</b> aktif dan minimal satu kanal terisi; kosongkan semua kanal untuk menyembunyikannya.</li>
-          <li>Di Katalog, jenis item <b>Artikel</b> menampilkan kartu di section Bacaan beranda dan halaman Artikel; kliknya langsung ke URL tulisan, dan kartu artikel tidak punya tombol favorit.</li>
-          <li>Jenis item <b>Proyek</b> menampilkan kartu di section Portofolio beranda dan halaman Proyek; kliknya langsung ke URL proyek, dan kartu proyek tidak punya tombol favorit.</li>
-          <li>Di <b>Keterangan referral</b>, tulis catatan afiliasi yang tampil di katalog.</li>
-          <li>Di <b>SEO &amp; berbagi</b>, atur <b>Judul SEO</b>, <b>Deskripsi SEO</b>, <b>URL gambar share</b> (atau unggah PNG/JPEG/WebP 1200 × 630), dan <b>Alamat publik</b>. <b>Preview otomatis per Item Katalog</b> membuat kartu share dari judul, deskripsi, dan gambar Item.</li>
-          <li>Di <b>Pilihan utama</b>, aktifkan tampilan pilihan utama di beranda dan pilih jumlah 1–3 kartu.</li>
-          <li>Di masing-masing Item, centang <b>Masukkan ke pilihan utama</b> dan isi <b>Prioritas tampilan</b>; nilai lebih tinggi tampil lebih dahulu.</li>
-          <li>Di <b>Warna tampilan</b>, pilih aksen dan latar publik/admin secara terpisah. Gunakan latar terang dengan aksen yang kontras.</li>
-          <li>Cek beranda publik. Item harus aktif, dalam jadwal, punya tautan kartu aktif, dan diizinkan tampil. Pengunjung bisa menyimpan kartu ke <b>Favorit</b> (tersimpan di browser masing-masing).</li>
+          <li>Open <a href="/{{.AdminPath}}/settings">Settings</a> → <b>Site identity</b> to change the site name and description.</li>
+          <li>In <b>Home &amp; services content</b>, change the home <b>label</b>, <b>title</b>, and <b>description</b>, plus the services section <b>title</b> and <b>description</b>. This text appears on the public page without changing code.</li>
+          <li>In <b>Public features</b>, choose the <b>Full catalog</b>, <b>Bio link</b>, or <b>Link shortener only</b> mode, or tick features individually: home page, catalog, services, articles, projects, resources, profile, support button, contact button, and favorites. A disabled feature leaves the navigation and its URL returns 404, but short slug redirects keep working.</li>
+          <li>In <b>Logo &amp; favicon</b>, upload a PNG/JPEG/WebP (up to 5 MB) or enter the <b>logo URL</b> and <b>favicon URL</b> (an HTTPS URL or local path; SVG through a URL). An upload replaces the URL. The logo appears on the public site and in the admin. An empty favicon follows the logo; without either, the default icon follows the public accent.</li>
+          <li>In <b>Profile &amp; social links</b>, set the <b>avatar</b> (empty uses the logo) and optional social links. The <b>short description</b> is used as the bio. Trakteer, Ko-fi, and Buy Me a Coffee appear as support buttons; other links appear as icons. The row is hidden when empty.</li>
+          <li>In <b>Contact button</b>, configure the floating button that appears on public storefront pages. Set the <b>bubble title</b> and an optional <b>short message</b>, then add channels with <b>+ Add channel</b>: choose an <b>icon</b>, enter the <b>URL</b> (for the Email icon, just the email address), and an optional <b>label</b>. Selecting a channel opens its app or site. The button only appears when the <b>floating contact button</b> feature is enabled and at least one channel is filled in; leave every channel empty to hide it.</li>
+          <li>In the Catalog, the <b>Article</b> item type shows a card in the home Reading section and on the Articles page; the card opens the article URL directly and has no favorite button.</li>
+          <li>The <b>Project</b> item type shows a card in the home Portfolio section and on the Projects page; the card opens the project URL directly and has no favorite button.</li>
+          <li>In <b>Referral disclosure</b>, write the affiliate note that appears in the catalog.</li>
+          <li>In <b>SEO &amp; sharing</b>, set the <b>SEO title</b>, <b>SEO description</b>, <b>share image URL</b> (or upload a 1200 × 630 PNG/JPEG/WebP), and the <b>public address</b>. <b>Automatic preview per Catalog item</b> builds the share card from the item title, description, and image.</li>
+          <li>In <b>Featured items</b>, enable the featured row on the home page and choose 1–3 cards.</li>
+          <li>On each item, tick <b>Add to featured</b> and set the <b>display priority</b>; a higher value appears first.</li>
+          <li>In <b>Display colors</b>, choose public and admin accents and backgrounds separately. Use a light background with a contrasting accent.</li>
+          <li>Check the public home page. The item must be active, within its schedule, have an active card link, and be allowed to appear. Visitors can save cards to <b>Favorites</b> (stored in their own browser).</li>
         </ol>
-        <p class="guide-note">Agar klik kontak ikut terhitung di Statistik dan nomor tidak tampil di halaman, buat tautan di <a href="/{{.AdminPath}}">Tautan</a> (misalnya slug <code>wa</code> ke <code>https://wa.me/62…</code>) dengan <b>Channel: contact</b>, lalu isi URL kanal kontak dengan tautan pendeknya, misalnya <code>https://example.com/wa</code>. Tautan ber-channel <code>contact</code> tidak tampil di katalog tautan publik. Email tidak bisa lewat slug karena tujuan slug harus berupa tautan <code>http(s)</code>.</p>
-        <p class="guide-note">Deretan pilihan utama digeser manual oleh pengunjung dan tidak diulang di grid beranda. Grid beranda menampilkan paling banyak enam kartu dan enam tautan; section Jasa, Artikel, dan Proyek menampilkan kartunya masing-masing dengan tombol Lihat semua. Daftar lengkap ada di katalog dan <a href="/links">katalog tautan</a>. Di katalog publik, pencarian dan filter kategori/penyedia tetap terbawa saat berpindah halaman; kartu yang disimpan muncul di halaman Favorit dan tersimpan di browser pengunjung.</p>
+        <p class="guide-note">So contact clicks count in Analytics and the number stays off the page, create a link in <a href="/{{.AdminPath}}">Links</a> (for example the slug <code>wa</code> to <code>https://wa.me/62…</code>) with <b>Channel: contact</b>, then use its short link as the contact channel URL, for example <code>https://example.com/wa</code>. Links with the <code>contact</code> channel do not appear in the public link catalog. Email cannot go through a slug because a slug destination must be an <code>http(s)</code> link.</p>
+        <p class="guide-note">Visitors scroll the featured row manually and it is not repeated in the home grid. The home grid shows at most six cards and six links; the Services, Articles, and Projects sections show their own cards with a View all button. The full list is in the catalog and the <a href="/links">link catalog</a>. In the public catalog, the search and category/provider filters carry across pages; saved cards appear on the Favorites page and stay in the visitor browser.</p>
       </section>
 
       <section class="analytics-page-panel guide-section guide-faq" id="tanya-jawab" aria-labelledby="faq-title">
-        <div class="guide-heading"><span class="guide-step">08</span><div><h2 id="faq-title">Hal yang sering ketukar</h2><p>Tiga kontrol ini punya pengaruh berbeda.</p></div></div>
-        <details open><summary>Beda Tampilkan kartu, Dijeda, dan nonaktifkan tautan?</summary><p><b>Tampilkan kartu</b> di Katalog hanya menyembunyikan kartu; slug tetap mengikuti Status program. <b>Dijeda</b> pada program menampilkan pemberitahuan di semua slug aktifnya. <b>Nonaktifkan tautan</b> di Tautan mematikan satu slug sehingga pengunjung mendapat 404.</p></details>
-        <details><summary>Kenapa Item gue tidak muncul di beranda?</summary><p>Cek status Aktif, Tanggal mulai/akhir, centang <b>Tampilkan kartu</b>, dan apakah tautan kartu aktif. Kalau semuanya benar, kartu bisa berada di deretan pilihan utama atau di luar enam kartu grid teratas. Buka Katalog untuk melihat daftar lengkap.</p></details>
-        <details><summary>Kalau mau mengganti tujuan satu channel, edit di mana?</summary><p>Edit URL slug tersebut di <a href="/{{.AdminPath}}">Tautan</a>. Mengubah satu URL tidak mengubah tujuan slug lain. Kalau slug itu dipakai sebagai tautan kartu, tujuan kartu publik ikut berubah. Deskripsi, kategori, dan penyedia item juga terpisah dari metadata tautan yang sudah terhubung; edit metadata setiap tautan di menu Tautan.</p></details>
-        <details><summary>Kalau punya ratusan slug, perlu membuat ratusan pemberitahuan?</summary><p>Cukup isi pemberitahuan pada Item induk. Semua slug aktif yang terhubung memakainya. Program berbeda punya data Item masing-masing, dengan template halaman yang sama.</p></details>
-        <details><summary>Programnya aktif lagi, harus bikin tautan baru?</summary><p>Ubah Status program ke Aktif dan periksa jadwalnya, lalu coba slug lama. Jika Tanggal akhir sudah lewat, perbarui tanggalnya. Aktifkan lagi tautan yang sebelumnya dinonaktifkan. Histori klik tetap tersimpan.</p></details>
-        <details><summary>Boleh hapus tautan yang sudah tidak dipakai?</summary><p>Untuk tautan yang sudah tersebar, pertahankan slug dan gunakan Status program atau nonaktifkan tautan sesuai kebutuhan. Menghapus tautan juga menghapus histori kliknya. Mengganti slug membuat alamat lama tidak lagi ditemukan.</p></details>
-        <details><summary>Tombol kontaknya tidak muncul di halaman publik?</summary><p>Pastikan fitur <b>Tombol kontak mengambang</b> aktif di <b>Fitur publik</b> dan minimal satu kanal terisi di <b>Tombol kontak</b> (baris dengan URL kosong diabaikan). Untuk ikon Email, cukup isi alamat emailnya. Setelah mengubah CSS/JS, versi aset berubah otomatis sehingga cache tidak perlu dibereskan manual.</p></details>
+        <div class="guide-heading"><span class="guide-step">08</span><div><h2 id="faq-title">Things that are easy to mix up</h2><p>These three controls do different things.</p></div></div>
+        <details open><summary>How are Show card, Paused, and disabling a link different?</summary><p><b>Show the card</b> in the Catalog only hides the card; the slug still follows the program status. <b>Paused</b> on a program shows a notice on every active slug. <b>Pause</b> on a link in Links disables that single slug, so visitors get a 404.</p></details>
+        <details><summary>Why is my item not on the home page?</summary><p>Check the active status, the start and end dates, the <b>Show the card</b> checkbox, and whether the card link is active. If all of that is correct, the card may be in the featured row or beyond the first six grid cards. Open the Catalog for the full list.</p></details>
+        <details><summary>Where do I change the destination for one channel?</summary><p>Edit that slug URL in <a href="/{{.AdminPath}}">Links</a>. Changing one URL does not change another slug destination. If that slug is used as the card link, the public card destination changes too. An item description, category, and provider are also separate from the metadata of connected links; edit each link metadata from the Links page.</p></details>
+        <details><summary>If I have hundreds of slugs, do I need hundreds of notices?</summary><p>Fill in the notice once on the parent item. Every connected active slug uses it. Different programs have their own item data with the same page template.</p></details>
+        <details><summary>The program is active again. Do I need new links?</summary><p>Set the program status back to Active, check the schedule, then test the old slug. If the end date has passed, update it. Reactivate any links you disabled. Click history is kept.</p></details>
+        <details><summary>Can I delete a link I no longer use?</summary><p>For a link you already shared, keep the slug and use the program status or pause the link as needed. Deleting a link also deletes its click history. Changing the slug makes the old address stop working.</p></details>
+        <details><summary>Why is the contact button missing from the public page?</summary><p>Make sure the <b>floating contact button</b> feature is enabled in <b>Public features</b> and at least one channel is filled in under <b>Contact button</b> (rows with an empty URL are ignored). For the Email icon, just enter the email address. After CSS or JS changes the asset version changes automatically, so you do not need to clear caches manually.</p></details>
       </section>
-      <p class="guide-end">Mulai dari <a href="/{{.AdminPath}}">Tautan</a> untuk tautan sederhana, atau <a href="/{{.AdminPath}}/offers">Katalog</a> untuk program yang perlu dikelola bersama.</p>
+      <p class="guide-end">Start with <a href="/{{.AdminPath}}">Links</a> for a simple link, or <a href="/{{.AdminPath}}/offers">Catalog</a> for a program that needs to be managed as a whole.</p>
     </main>
 
   </div>

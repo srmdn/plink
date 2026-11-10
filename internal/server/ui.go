@@ -426,20 +426,20 @@ func buildDashboardDataForDateIn(links []db.Link, q, cat, status, date string, d
 			pausedCount++
 		}
 	}
-	countLabel := "visible links"
+	countLabel := "Visible links"
 	if q != "" || cat != "" {
-		countLabel = "matching links"
+		countLabel = "Matching links"
 	} else if date != "" {
-		countLabel = "clicked links"
+		countLabel = "Clicked links"
 	} else if status == "active" {
-		countLabel = "active links"
+		countLabel = "Active links"
 	} else if status == "paused" {
-		countLabel = "paused links"
+		countLabel = "Paused links"
 	}
 	dateLabel := dashboardDateLabel(date)
-	clicksLabel := "total clicks"
+	clicksLabel := "Total clicks"
 	if dateLabel != "" {
-		clicksLabel = "clicks · " + dateLabel
+		clicksLabel = "Clicks · " + dateLabel
 	}
 	exportDate := date
 	if exportDate == "" {
@@ -461,7 +461,7 @@ func buildDashboardDataForDateIn(links []db.Link, q, cat, status, date string, d
 		TotalClicks:      totalClicks,
 		ClicksLabel:      clicksLabel,
 		DailyExportDate:  exportDate,
-		DailyExportLabel: "daily clicks · " + dashboardDateLabel(exportDate),
+		DailyExportLabel: "Daily clicks · " + dashboardDateLabel(exportDate),
 		AdminPath:        adminPath,
 		Production:       production,
 	}
