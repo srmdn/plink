@@ -164,7 +164,7 @@ repeated in the homepage grid. Clicking a card still records its homepage slug's
 redirect click. Browsing catalogs and saving favorites do not record clicks.
 
 Settings → **Fitur publik** controls which public surfaces exist. Choose a preset
-(**Katalog penuh**, **Bio link**, or **Hanya pemendek tautan**) or toggle features
+(**Full catalog**, **Bio link**, or **Link shortener only**) or toggle features
 individually: public homepage, catalog, services, articles, projects, resources,
 profile, support buttons, favorites, and the floating contact button. Disabled
 features disappear from the navigation and their URLs return 404, while
@@ -202,7 +202,7 @@ Editing a catalog item's description, category, or provider does not change
 those fields on existing attached links. Manage each link's metadata in Tautan;
 new channel links inherit the item's category and provider when created.
 
-For a product, enable **Gunakan halaman detail untuk kartu produk** to show a
+For a product, enable **Use a detail page for this product card** to show a
 local product page before the existing destination. The optional price is stored
 in hundredths of the specified three-letter currency; a blank price differs from
 zero. New products have the option selected by default in the dashboard; existing
@@ -304,7 +304,7 @@ sitemap, and the generated card domain. It changes generated addresses, not DNS
 or the listening address. Production requires HTTPS and rejects paths, query
 strings, fragments, credentials, and invalid ports. HTTP is supported in development.
 
-Settings → Konten beranda & jasa edits the hero label/title/description and service
+Settings → Home & services content edits the hero label/title/description and service
 section title/description. Schema v12 preserves the previous copy as defaults.
 The program notice shares the public theme and configured logo. Generated OG cards
 can use public HTTPS PNG/JPG/WebP logos or embedded `/js/` raster assets. Remote
