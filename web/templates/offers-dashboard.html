@@ -173,7 +173,7 @@
           <tbody>
             {{range .Offers}}
             <tr>
-              <td><div class="offer-admin-title">{{if .ImageURL}}<img src="{{.ImageURL}}" alt="" loading="lazy" />{{else}}<span class="offer-admin-placeholder">↗</span>{{end}}<div><strong>{{.Title}}</strong><span class="meta-badge">{{itemTypeLabel .ItemType}}</span><span>{{if .HomeSlug}}/{{.HomeSlug}}{{else}}Needs a card link{{end}}{{if .Featured}} · featured{{end}}</span></div></div></td>
+              <td><div class="offer-admin-title">{{if .ImageURL}}<img src="{{.ImageURL}}" alt="" loading="lazy" />{{else}}<span class="offer-admin-placeholder">↗</span>{{end}}<div><strong>{{.Title}}</strong><span class="meta-badge">{{itemTypeLabel .ItemType}}</span><span>{{if .HomeSlug}}/{{.HomeSlug}}{{else}}No card link{{end}}{{if .Featured}} · featured{{end}}</span></div></div></td>
               <td>{{if .Provider}}{{.Provider}}{{else}}—{{end}}</td>
               <td>{{.LinkCount}}</td><td class="clicks-cell">{{.Clicks}}{{if .NoticeViews}}<div class="field-help">{{.NoticeViews}} notice views</div>{{end}}{{if .WhatsAppClicks}}<div class="field-help">{{.WhatsAppClicks}} WhatsApp clicks</div>{{end}}</td>
               <td><span class="status {{if eq (offerStatus . $.Today) "active"}}on{{else}}off{{end}}">{{statusLabel (offerStatus . $.Today)}}</span><div class="field-help">{{if .Active}}Allowed to appear{{else}}Hidden{{end}}</div></td>

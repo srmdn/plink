@@ -1411,7 +1411,9 @@ func statusLabel(value string) string {
 	case "hidden":
 		return "Hidden"
 	case "needs homepage link":
-		return "Needs a card link"
+		return "No card link"
+	case "card link paused":
+		return "Card link paused"
 	}
 	return value
 }
@@ -1429,8 +1431,11 @@ func offerStatus(offer db.Offer, today string) string {
 	if offer.EndsOn != "" && offer.EndsOn < today {
 		return "expired"
 	}
-	if offer.HomeSlug == "" || !offer.HomeActive {
+	if offer.HomeSlug == "" {
 		return "needs homepage link"
+	}
+	if !offer.HomeActive {
+		return "card link paused"
 	}
 	return "active"
 }
