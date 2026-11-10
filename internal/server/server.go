@@ -129,6 +129,7 @@ func New(cfg *config.Config, database *db.DB, webFS embed.FS) http.Handler {
 			"uiText":        uiText,
 			"branding":      func() brandAssets { settings, _ := database.GetSiteSettings(); return brandingAssets(settings) },
 			"offerStatus":   offerStatus,
+			"statusLabel":   statusLabel,
 			"isGuide":       func(data any) bool { _, ok := data.(guideData); return ok },
 			"add": func(left, right int) int {
 				return left + right

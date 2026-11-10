@@ -1395,6 +1395,27 @@ func (s *Server) handleOverviewAnalyticsUI(w http.ResponseWriter, r *http.Reques
 	})
 }
 
+// statusLabel renders lifecycle and visibility states for the admin UI.
+func statusLabel(value string) string {
+	switch value {
+	case "active":
+		return "Active"
+	case "paused":
+		return "Paused"
+	case "ended":
+		return "Ended"
+	case "expired":
+		return "Expired"
+	case "upcoming":
+		return "Upcoming"
+	case "hidden":
+		return "Hidden"
+	case "needs homepage link":
+		return "Needs a card link"
+	}
+	return value
+}
+
 func offerStatus(offer db.Offer, today string) string {
 	if status := offer.LifecycleStatus(today); status != "active" {
 		return status

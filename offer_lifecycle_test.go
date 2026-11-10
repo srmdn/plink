@@ -219,7 +219,7 @@ func TestOfferLifecycleAdminFormAndProtection(t *testing.T) {
 		t.Fatalf("editor = %d: %s", page.Code, page.Body.String())
 	}
 	form.Set("notice_source_url", "javascript:alert(1)")
-	if response := post(true); response.Code != 200 || !strings.Contains(response.Body.String(), "URL sumber harus diawali") {
+	if response := post(true); response.Code != 200 || !strings.Contains(response.Body.String(), "source URL must start with") {
 		t.Fatal("invalid source URL was accepted")
 	}
 	updated, _ = database.GetOfferByID(offer.ID)

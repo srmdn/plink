@@ -47,18 +47,18 @@ func TestCatalogAdminVisibilityFilter(t *testing.T) {
 	if !strings.Contains(hidden, "Hidden ended referral") || strings.Contains(hidden, "Visible referral") || strings.Contains(hidden, "Visible ended referral") {
 		t.Fatal("hidden filter must follow visibility independently of program status")
 	}
-	if !strings.Contains(hidden, "Berakhir") || !strings.Contains(hidden, "Disembunyikan") {
+	if !strings.Contains(hidden, "Ended") || !strings.Contains(hidden, "Hidden") {
 		t.Fatal("hidden ended item must show both program status and visibility")
 	}
 	shown := get("/admin/offers?visibility=shown")
 	if !strings.Contains(shown, "Visible referral") || !strings.Contains(shown, "Visible ended referral") || strings.Contains(shown, "Hidden ended referral") {
 		t.Fatal("shown filter must use the visibility setting, not availability")
 	}
-	if !strings.Contains(shown, "Diizinkan tampil") || !strings.Contains(shown, "Berakhir") {
+	if !strings.Contains(shown, "Allowed to appear") || !strings.Contains(shown, "Ended") {
 		t.Fatal("shown ended item must show visibility and program status separately")
 	}
 	empty := get("/admin/offers?visibility=hidden&q=no-such-item")
-	if !strings.Contains(empty, "Tidak ada item yang cocok") || !strings.Contains(empty, "Hapus filter") || strings.Contains(empty, "Buat item pertama") {
+	if !strings.Contains(empty, "No matching items") || !strings.Contains(empty, "Clear filters") || strings.Contains(empty, "Buat item pertama") {
 		t.Fatal("filtered empty state must offer to clear filters")
 	}
 }
@@ -113,7 +113,7 @@ func TestCatalogSearchChannelSlugAndKeepFilters(t *testing.T) {
 	if err != nil || location.Path != "/admin/offers" || location.Query().Get("q") != "INSTAGRAM" || location.Query().Get("item_type") != "referral" || location.Query().Get("visibility") != "shown" {
 		t.Fatalf("filters lost on redirect: %q", res.Header().Get("Location"))
 	}
-	if body := request("GET", location.RequestURI(), nil).Body.String(); !strings.Contains(body, "Tidak ada item yang cocok") {
+	if body := request("GET", location.RequestURI(), nil).Body.String(); !strings.Contains(body, "No matching items") {
 		t.Fatal("hidden item should leave the shown-filter results after toggle")
 	}
 }
