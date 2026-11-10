@@ -5,7 +5,7 @@
 {{define "public-header"}}
 {{$profile := publicProfile}}
 <header class="store-header profile-header">
-  {{if .IsLoggedIn}}<a class="store-dashboard" href="/{{.AdminPath}}">{{template "nav-icon" "settings"}}<span>Kelola</span></a>{{end}}
+  {{if .IsLoggedIn}}<a class="store-dashboard" href="/{{.AdminPath}}">{{template "nav-icon" "settings"}}<span>Manage</span></a>{{end}}
   {{if or .Settings.ProfileEnabled .Settings.SupportEnabled}}
   <div class="profile-block">
     {{if .Settings.ProfileEnabled}}
@@ -13,26 +13,26 @@
     <strong class="profile-name">{{.SiteName}}</strong>
     {{if .SiteDesc}}<p class="profile-bio">{{.SiteDesc}}</p>{{end}}
     {{end}}
-    {{if and .Settings.SupportEnabled $profile.Support}}<div class="profile-support"><span class="profile-support-label">Dukung saya</span><div class="profile-support-row">{{range $profile.Support}}<a href="{{.URL}}" target="_blank" rel="noopener me">{{template "social-icon" .Key}}<span>{{.Label}}</span></a>{{end}}</div></div>{{end}}
-    {{if and .Settings.ProfileEnabled $profile.Links}}<nav class="profile-social" aria-label="Tautan sosial">{{range $profile.Links}}<a href="{{.URL}}" target="_blank" rel="noopener me" aria-label="{{.Label}}" title="{{.Label}}">{{template "social-icon" .Key}}</a>{{end}}</nav>{{end}}
+    {{if and .Settings.SupportEnabled $profile.Support}}<div class="profile-support"><span class="profile-support-label">Support</span><div class="profile-support-row">{{range $profile.Support}}<a href="{{.URL}}" target="_blank" rel="noopener me">{{template "social-icon" .Key}}<span>{{.Label}}</span></a>{{end}}</div></div>{{end}}
+    {{if and .Settings.ProfileEnabled $profile.Links}}<nav class="profile-social" aria-label="Social links">{{range $profile.Links}}<a href="{{.URL}}" target="_blank" rel="noopener me" aria-label="{{.Label}}" title="{{.Label}}">{{template "social-icon" .Key}}</a>{{end}}</nav>{{end}}
   </div>
   {{else}}
   <a class="store-brand" href="/">{{template "brand-logo" .}}<span class="store-brand-copy"><strong>{{.SiteName}}</strong>{{if .SiteDesc}}<small>{{.SiteDesc}}</small>{{end}}</span></a>
   {{end}}
 </header>
-{{if .Settings.ProfileEnabled}}<div class="profile-mini" data-profile-mini><a class="profile-mini-home" href="/" aria-label="{{.SiteName}}"><span class="profile-mini-avatar">{{if $profile.AvatarURL}}<img src="{{$profile.AvatarURL}}" alt="" />{{else}}{{template "brand-mark"}}{{end}}</span><strong class="profile-mini-name">{{.SiteName}}</strong></a>{{if .IsLoggedIn}}<a class="store-dashboard profile-mini-manage" href="/{{.AdminPath}}">{{template "nav-icon" "settings"}}<span>Kelola</span></a>{{end}}</div>{{end}}
+{{if .Settings.ProfileEnabled}}<div class="profile-mini" data-profile-mini><a class="profile-mini-home" href="/" aria-label="{{.SiteName}}"><span class="profile-mini-avatar">{{if $profile.AvatarURL}}<img src="{{$profile.AvatarURL}}" alt="" />{{else}}{{template "brand-mark"}}{{end}}</span><strong class="profile-mini-name">{{.SiteName}}</strong></a>{{if .IsLoggedIn}}<a class="store-dashboard profile-mini-manage" href="/{{.AdminPath}}">{{template "nav-icon" "settings"}}<span>Manage</span></a>{{end}}</div>{{end}}
 {{end}}
 {{define "public-nav"}}
-<nav class="bottom-nav" aria-label="Navigasi utama">
-<a href="/" {{if eq .View "home"}}aria-current="page"{{end}}>{{template "nav-icon" "home"}}Beranda</a>
-{{if .Settings.CatalogEnabled}}<a href="/offers?view=categories" {{if eq .View "categories"}}aria-current="page"{{end}}>{{template "nav-icon" "grid"}}Katalog</a>{{end}}
-{{if .Settings.ProjectsEnabled}}<a href="/offers?view=projects" {{if eq .View "projects"}}aria-current="page"{{end}}>{{template "nav-icon" "folder"}}Proyek</a>{{end}}
-{{if .Settings.ServicesEnabled}}<a href="/offers?view=services" {{if eq .View "services"}}aria-current="page"{{end}}>{{template "nav-icon" "service"}}Jasa</a>{{end}}
-{{if and .Settings.CatalogEnabled .Settings.FavoritesEnabled}}<a href="/offers?view=favorites" {{if eq .View "favorites"}}aria-current="page"{{end}}>{{template "nav-icon" "heart"}}Favorit <small data-favorite-count></small></a>{{end}}
+<nav class="bottom-nav" aria-label="Main navigation">
+<a href="/" {{if eq .View "home"}}aria-current="page"{{end}}>{{template "nav-icon" "home"}}Home</a>
+{{if .Settings.CatalogEnabled}}<a href="/offers?view=categories" {{if eq .View "categories"}}aria-current="page"{{end}}>{{template "nav-icon" "grid"}}Catalog</a>{{end}}
+{{if .Settings.ProjectsEnabled}}<a href="/offers?view=projects" {{if eq .View "projects"}}aria-current="page"{{end}}>{{template "nav-icon" "folder"}}Projects</a>{{end}}
+{{if .Settings.ServicesEnabled}}<a href="/offers?view=services" {{if eq .View "services"}}aria-current="page"{{end}}>{{template "nav-icon" "service"}}Services</a>{{end}}
+{{if and .Settings.CatalogEnabled .Settings.FavoritesEnabled}}<a href="/offers?view=favorites" {{if eq .View "favorites"}}aria-current="page"{{end}}>{{template "nav-icon" "heart"}}Favorites <small data-favorite-count></small></a>{{end}}
 </nav>
 {{end}}
 {{define "public-footer"}}
-<footer class="store-footer">Dibikin pakai <a href="https://github.com/srmdn/plink" rel="noopener">Plink</a>.</footer>
+<footer class="store-footer">Built with <a href="https://github.com/srmdn/plink" rel="noopener">Plink</a>.</footer>
 <div class="favorite-status ui-toast" role="status" aria-live="polite"></div>
 <script src="{{asset "/js/storefront.js"}}" defer></script>
 {{end}}
@@ -40,47 +40,62 @@
 {{$profile := publicProfile}}
 {{if and .Settings.ContactEnabled $profile.Contact}}
 <div class="contact-fab-wrap" data-contact-fab>
-  <div class="contact-bubble" id="contact-bubble" role="dialog" aria-label="{{if .Settings.ContactTitle}}{{.Settings.ContactTitle}}{{else}}Hubungi saya{{end}}">
-    <div class="contact-bubble-head"><strong>{{if .Settings.ContactTitle}}{{.Settings.ContactTitle}}{{else}}Hubungi saya{{end}}</strong>{{if .Settings.ContactNote}}<p>{{.Settings.ContactNote}}</p>{{end}}</div>
+  <div class="contact-bubble" id="contact-bubble" role="dialog" aria-label="{{if .Settings.ContactTitle}}{{.Settings.ContactTitle}}{{else}}Contact me{{end}}">
+    <div class="contact-bubble-head"><strong>{{if .Settings.ContactTitle}}{{.Settings.ContactTitle}}{{else}}Contact me{{end}}</strong>{{if .Settings.ContactNote}}<p>{{.Settings.ContactNote}}</p>{{end}}</div>
     <div class="contact-bubble-actions">{{range $profile.Contact}}<a class="contact-action" href="{{.URL}}" target="_blank" rel="noopener noreferrer">{{template "social-icon" .Key}}<span>{{.Label}}</span></a>{{end}}</div>
   </div>
-  <button type="button" class="contact-fab" data-contact-toggle aria-expanded="false" aria-controls="contact-bubble" aria-label="{{if .Settings.ContactTitle}}{{.Settings.ContactTitle}}{{else}}Hubungi saya{{end}}">
+  <button type="button" class="contact-fab" data-contact-toggle aria-expanded="false" aria-controls="contact-bubble" aria-label="{{if .Settings.ContactTitle}}{{.Settings.ContactTitle}}{{else}}Contact me{{end}}">
     <span class="contact-fab-icon">{{template "nav-icon" "chat"}}</span>
     <span class="contact-fab-icon contact-fab-close">{{template "nav-icon" "close"}}</span>
   </button>
 </div>
 {{end}}
 {{end}}
+{{define "item-illustration"}}
+<svg class="item-illustration" viewBox="0 0 96 72" fill="none" aria-hidden="true" focusable="false">
+  <g class="illustration-icon" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    {{if eq . "product"}}<path d="M39 31h22l-2 21H41l-2-21Z"/><path d="M44 32v-4a6 6 0 0 1 12 0v4"/>
+    {{else if eq . "service"}}<rect x="36" y="30" width="28" height="22" rx="4"/><path d="M44 30v-3a3 3 0 0 1 3-3h6a3 3 0 0 1 3 3v3M36 39c9 4 19 4 28 0M50 39v4"/>
+    {{else if eq . "project"}}<path d="M36 30a3 3 0 0 1 3-3h7l3 3h12a3 3 0 0 1 3 3v16a3 3 0 0 1-3 3H39a3 3 0 0 1-3-3V30Z"/><path d="m44 42 4-4-4-4M52 43h5"/>
+    {{else if eq . "article"}}<rect x="39" y="24" width="23" height="30" rx="3"/><path d="M44 32h13M44 38h13M44 44h9"/>
+    {{else}}<path d="m45 42 10-10M44 33h-2a7 7 0 0 0 0 14h5M56 47h2a7 7 0 0 0 0-14h-5"/>{{end}}
+  </g>
+</svg>
+{{end}}
+{{define "public-button-label"}}{{if eq . "Lihat proyek"}}View project{{else if eq . "Pelajari selengkapnya"}}Learn more{{else if eq . "Lihat promo"}}View offer{{else if eq . "Lihat produk"}}View product{{else if eq . "Lihat jasa"}}View service{{else if eq . "Lihat VPS"}}View VPS{{else if eq . "Baca artikel"}}Read article{{else}}{{.}}{{end}}{{end}}
+{{define "public-item-type"}}{{if eq . "product"}}Product{{else if eq . "referral"}}Referral{{else if eq . "service"}}Service{{else if eq . "resource"}}Resource{{else if eq . "article"}}Article{{else if eq . "project"}}Project{{end}}{{end}}
 {{define "offer-card"}}
 {{$external := or (eq .ItemType "article") (eq .ItemType "project")}}
 {{$productPage := and (eq .ItemType "product") .ProductPage}}
 <article class="offer-card offer-card--{{.ItemType}}{{if not .ImageURL}} offer-card--no-image{{end}}"{{if not $external}} data-favorite-card="{{.HomeSlug}}"{{end}}>
-{{if not $external}}<button class="favorite-button" type="button" data-favorite="{{.HomeSlug}}" aria-label="Simpan {{.Title}} ke favorit" aria-pressed="false">{{template "nav-icon" "heart"}}</button>{{end}}
-<a href="{{if $productPage}}/offers/item/{{.ID}}{{else if $external}}{{.HomeURL}}{{else}}/{{.HomeSlug}}{{end}}" {{if not $productPage}}target="_blank" rel="noopener"{{end}} aria-label="{{.Title}} — {{if $productPage}}Lihat detail{{else}}{{.ButtonLabel}}{{end}}">
-<div class="offer-image">{{if .ImageURL}}<img src="{{.ImageURL}}" alt="" loading="lazy" />{{else}}<span class="offer-image-placeholder" aria-hidden="true">{{template "brand-mark"}}{{end}}<span class="offer-badge">{{itemTypeLabel .ItemType}}</span></div>
-<div class="offer-card-copy"><span class="offer-provider">{{if .Provider}}{{.Provider}}{{else}}{{.Category}}{{end}}</span><h3>{{.Title}}</h3>{{if .Description}}<p>{{.Description}}</p>{{end}}{{if and $productPage .PriceMinor}}<strong class="product-card-price">{{productPrice .PriceMinor .Currency}}</strong>{{end}}<span class="offer-card-cta">{{if $productPage}}Lihat detail{{else}}{{.ButtonLabel}}{{end}} <span aria-hidden="true">↗</span></span></div>
+{{if not $external}}<button class="favorite-button" type="button" data-favorite="{{.HomeSlug}}" aria-label="Save {{.Title}} to favorites" aria-pressed="false">{{template "nav-icon" "heart"}}</button>{{end}}
+<a href="{{if $productPage}}/offers/item/{{.ID}}{{else if $external}}{{.HomeURL}}{{else}}/{{.HomeSlug}}{{end}}" {{if not $productPage}}target="_blank" rel="noopener"{{end}} aria-label="{{.Title}} — {{if $productPage}}View details{{else}}{{template "public-button-label" .ButtonLabel}}{{end}}">
+<div class="offer-image">{{if .ImageURL}}<img src="{{.ImageURL}}" alt="" loading="lazy" />{{else}}<span class="offer-image-placeholder" aria-hidden="true">{{template "item-illustration" .ItemType}}</span>{{end}}<span class="offer-badge">{{template "public-item-type" .ItemType}}</span></div>
+<div class="offer-card-copy"><span class="offer-provider">{{if .Provider}}{{.Provider}}{{else}}{{.Category}}{{end}}</span><h3>{{.Title}}</h3>{{if .Description}}<p>{{.Description}}</p>{{end}}{{if and $productPage .PriceMinor}}<strong class="product-card-price">{{productPrice .PriceMinor .Currency}}</strong>{{end}}<span class="offer-card-cta">{{if $productPage}}View details{{else}}{{template "public-button-label" .ButtonLabel}}{{end}} <span aria-hidden="true">↗</span></span></div>
 </a></article>
 {{end}}
 {{define "resource-card"}}
-<article class="resource-card" data-favorite-card="{{.Slug}}"><a href="/{{.Slug}}" target="_blank" rel="noopener"><span class="resource-icon" aria-hidden="true">{{template "nav-icon" "link"}}</span><span class="resource-copy"><strong>{{if .Description}}{{.Description}}{{else}}{{.Slug}}{{end}}</strong><small>{{.Category}}</small></span></a><button type="button" class="favorite-button" data-favorite="{{.Slug}}" aria-label="Simpan {{.Slug}} ke favorit" aria-pressed="false">{{template "nav-icon" "heart"}}</button></article>
+<article class="resource-card" data-favorite-card="{{.Slug}}"><a href="/{{.Slug}}" target="_blank" rel="noopener"><span class="resource-icon" aria-hidden="true">{{template "nav-icon" "link"}}</span><span class="resource-copy"><strong>{{if .Description}}{{.Description}}{{else}}{{.Slug}}{{end}}</strong><small>{{.Category}}</small></span></a><button type="button" class="favorite-button" data-favorite="{{.Slug}}" aria-label="Save {{.Slug}} to favorites" aria-pressed="false">{{template "nav-icon" "heart"}}</button></article>
 {{end}}
 {{define "minimal"}}
-<!doctype html><html lang="id"><head><meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />{{template "public-seo" .SEO}}{{template "favicon-link" .}}{{template "storefront-styles" .}}{{template "analytics-tag" .}}</head>
+<!doctype html><html lang="en"><head><meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />{{template "public-seo" .SEO}}{{template "favicon-link" .}}{{template "storefront-styles" .}}{{template "analytics-tag" .}}</head>
 <body>{{template "public-header" .}}<main class="store-main minimal-main"></main>{{template "public-footer" .}}</body></html>
 {{end}}
 {{define "home"}}
-<!doctype html><html lang="id"><head><meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />{{template "public-seo" .SEO}}{{template "favicon-link" .}}{{template "storefront-styles" .}}{{template "analytics-tag" .}}</head>
+<!doctype html><html lang="en"><head><meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />{{template "public-seo" .SEO}}{{template "favicon-link" .}}{{template "storefront-styles" .}}{{template "analytics-tag" .}}</head>
 <body>{{template "public-header" .}}
 <main class="store-main">
 {{if .Settings.CatalogEnabled}}<section class="profile-intro">{{if .Settings.HeroEyebrow}}<span class="store-eyebrow">{{.Settings.HeroEyebrow}}</span>{{end}}<h1 class="hero-title">{{.Settings.HeroTitle}}</h1>{{if .Settings.HeroDescription}}<p>{{.Settings.HeroDescription}}</p>{{end}}</section>
-<form class="store-search" method="get" action="/offers" role="search"><input type="search" name="q" placeholder="Cari barang, jasa, atau tautan…" aria-label="Cari di seluruh katalog" /><button type="submit">Cari</button></form>
-{{if .OfferCategories}}<nav class="store-categories" aria-label="Kategori"><a class="store-chip active" href="/offers">Semua</a>{{range .OfferCategories}}<a class="store-chip" href="/offers?category={{. | urlquery}}">{{.}}</a>{{end}}</nav>{{end}}
-{{if and .HeroEnabled .FeaturedOffers}}<section class="store-section"><div class="store-section-head"><div><span class="store-eyebrow">Coba lihat</span><h2>Pilihan utama</h2></div></div><div class="featured-scroller"><div class="featured-track" data-featured-track>{{range .FeaturedOffers}}{{template "offer-card" .}}{{end}}</div></div></section>{{end}}
-{{if .Offers}}<section class="store-section"><div class="store-section-head"><h2>Produk &amp; referral</h2><a href="/offers">Lihat semua →</a></div><div class="offer-grid">{{range .Offers}}{{template "offer-card" .}}{{end}}</div></section>{{end}}{{end}}
-{{if and .Settings.ProjectsEnabled .Projects}}<section class="store-section"><div class="store-section-head"><div><span class="store-eyebrow">Portofolio</span><h2>Proyek</h2></div><a href="/offers?view=projects">Lihat semua →</a></div><div class="offer-grid">{{range .Projects}}{{template "offer-card" .}}{{end}}</div></section>{{end}}
-{{if and .Settings.ArticlesEnabled .Articles}}<section class="store-section article-section"><div class="store-section-head"><div><span class="store-eyebrow">Bacaan</span><h2>Artikel</h2></div><a href="/offers?view=articles">Lihat semua →</a></div><div class="offer-grid">{{range .Articles}}{{template "offer-card" .}}{{end}}</div></section>{{end}}
-{{if .Settings.ServicesEnabled}}<section class="store-section service-section"><div class="store-section-head"><div><span class="store-eyebrow">Dikerjain langsung</span><h2>{{.Settings.ServiceTitle}}</h2></div><a href="/offers?view=services">Lihat jasa →</a></div><p class="section-note">{{.Settings.ServiceDescription}}</p>{{if .Services}}<div class="offer-grid">{{range .Services}}{{template "offer-card" .}}{{end}}</div>{{end}}{{if .ServiceLinks}}<div class="resource-grid">{{range .ServiceLinks}}{{template "resource-card" .}}{{end}}</div>{{end}}{{if and (not .Services) (not .ServiceLinks)}}<p class="store-empty">Belum ada jasa di sini.</p>{{end}}</section>{{end}}
-{{if and .Settings.ResourcesEnabled (or .Links .ResourceOffers)}}<section class="store-section"><div class="store-section-head"><h2>Resource</h2><a href="/links">Lihat semua →</a></div>{{if .ResourceOffers}}<div class="offer-grid">{{range .ResourceOffers}}{{template "offer-card" .}}{{end}}</div>{{end}}<div class="resource-grid">{{range .Links}}{{template "resource-card" .}}{{end}}</div></section>{{end}}
+<form class="store-search" method="get" action="/offers" role="search"><input type="search" name="q" placeholder="Search products, services, or links…" aria-label="Search the catalog" /><button type="submit">Search</button></form>
+{{if .OfferCategories}}<nav class="store-categories" aria-label="Categories"><a class="store-chip active" href="/offers">All</a>{{range .OfferCategories}}<a class="store-chip" href="/offers?category={{. | urlquery}}">{{.}}</a>{{end}}</nav>{{end}}
+{{end}}
+{{if and .Settings.ProjectsEnabled .Projects}}<section class="store-section"><div class="store-section-head"><div><span class="store-eyebrow">PORTFOLIO</span><h2>Projects</h2></div><a href="/offers?view=projects">View all →</a></div><div class="offer-grid">{{range .Projects}}{{template "offer-card" .}}{{end}}</div></section>{{end}}
+{{if and .Settings.ArticlesEnabled .Articles}}<section class="store-section article-section"><div class="store-section-head"><div><span class="store-eyebrow">READING</span><h2>Articles</h2></div><a href="/offers?view=articles">View all →</a></div><div class="offer-grid">{{range .Articles}}{{template "offer-card" .}}{{end}}</div></section>{{end}}
+{{if .Settings.CatalogEnabled}}
+{{if and .HeroEnabled .FeaturedOffers}}<section class="store-section"><div class="store-section-head"><div><span class="store-eyebrow">FEATURED</span><h2>Featured</h2></div></div><div class="featured-scroller"><div class="featured-track" data-featured-track>{{range .FeaturedOffers}}{{template "offer-card" .}}{{end}}</div></div></section>{{end}}
+{{if .Offers}}<section class="store-section"><div class="store-section-head"><h2>Products &amp; referrals</h2><a href="/offers">View all →</a></div><div class="offer-grid">{{range .Offers}}{{template "offer-card" .}}{{end}}</div></section>{{end}}{{end}}
+{{if .Settings.ServicesEnabled}}<section class="store-section service-section"><div class="store-section-head"><div><span class="store-eyebrow">Services</span><h2>{{.Settings.ServiceTitle}}</h2></div><a href="/offers?view=services">View services →</a></div><p class="section-note">{{.Settings.ServiceDescription}}</p>{{if .Services}}<div class="offer-grid">{{range .Services}}{{template "offer-card" .}}{{end}}</div>{{end}}{{if .ServiceLinks}}<div class="resource-grid">{{range .ServiceLinks}}{{template "resource-card" .}}{{end}}</div>{{end}}{{if and (not .Services) (not .ServiceLinks)}}<p class="store-empty"><span class="empty-icon" aria-hidden="true">{{template "nav-icon" "service"}}</span><span>No services available yet.</span></p>{{end}}</section>{{end}}
+{{if and .Settings.ResourcesEnabled (or .Links .ResourceOffers)}}<section class="store-section"><div class="store-section-head"><h2>Resources</h2><a href="/links">View all →</a></div>{{if .ResourceOffers}}<div class="offer-grid">{{range .ResourceOffers}}{{template "offer-card" .}}{{end}}</div>{{end}}<div class="resource-grid">{{range .Links}}{{template "resource-card" .}}{{end}}</div></section>{{end}}
 {{if and .Settings.CatalogEnabled .AffiliateDisclosure}}<p class="affiliate-note">{{.AffiliateDisclosure}}</p>{{end}}
 </main>{{template "public-footer" .}}{{template "contact-fab" .}}{{template "public-nav" .}}</body></html>
 {{end}}

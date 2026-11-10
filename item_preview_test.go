@@ -113,7 +113,7 @@ func TestItemPreviewsInheritCatalogWithoutTrackingCrawlers(t *testing.T) {
 			t.Fatal(err)
 		}
 		w := get("/vps", "Discordbot", "GET")
-		if w.Code != 200 || strings.Contains(w.Body.String(), `property="og:image" content="https://cdn.example/item.png"`) || !strings.Contains(w.Body.String(), "Program ") {
+		if w.Code != 200 || strings.Contains(w.Body.String(), `property="og:image" content="https://cdn.example/item.png"`) || !strings.Contains(w.Body.String(), "program ") {
 			t.Fatal("stale lifecycle preview")
 		}
 	}

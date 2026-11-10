@@ -29,7 +29,7 @@ func TestProductWhatsAppOrderingAndClickAccounting(t *testing.T) {
 		return w
 	}
 	page := request("GET", path, "browser")
-	if page.Code != 200 || !strings.Contains(page.Body.String(), `href="`+path+`/whatsapp"`) || !strings.Contains(page.Body.String(), "Pesan via WhatsApp") {
+	if page.Code != 200 || !strings.Contains(page.Body.String(), `href="`+path+`/whatsapp"`) || !strings.Contains(page.Body.String(), "Order via WhatsApp") {
 		t.Fatal("product page does not expose the WhatsApp action")
 	}
 	for _, tc := range []struct{ method, agent string }{{"HEAD", "browser"}, {"GET", "WhatsApp/2.0"}, {"GET", "browser"}} {

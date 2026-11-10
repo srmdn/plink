@@ -48,14 +48,14 @@ func TestPublicOfferLifecycle(t *testing.T) {
 	}{
 		{"active", "active", "", "", "notice", "", "", true, 302, "https://provider.example/?ref=social"},
 		{"end date inclusive", "active", "", date(0), "notice", "", "", true, 302, "https://provider.example/?ref=social"},
-		{"expired no fallback", "active", "", date(-1), "notice", "", "Program sudah berakhir", false, 200, ""},
-		{"ended notice", "ended", "", "", "notice", "https://provider.example/go", "Program sudah berakhir", false, 200, ""},
-		{"paused overrides fallback", "paused", "", date(-1), "redirect", "https://provider.example/go", "Program sedang dijeda", false, 200, ""},
-		{"upcoming", "active", date(1), "", "redirect", "https://provider.example/go", "Program belum dimulai", false, 200, ""},
+		{"expired no fallback", "active", "", date(-1), "notice", "", "This program has ended", false, 200, ""},
+		{"ended notice", "ended", "", "", "notice", "https://provider.example/go", "This program has ended", false, 200, ""},
+		{"paused overrides fallback", "paused", "", date(-1), "redirect", "https://provider.example/go", "This program is paused", false, 200, ""},
+		{"upcoming", "active", date(1), "", "redirect", "https://provider.example/go", "This program has not started", false, 200, ""},
 		{"explicit ended redirect", "ended", "", "", "redirect", "https://provider.example/go", "", false, 302, "https://provider.example/go"},
 		{"expired fallback", "active", "", date(-1), "redirect", "https://provider.example/go", "", false, 302, "https://provider.example/go"},
 		{"hidden card still redirects", "active", "", "", "notice", "", "", false, 302, "https://provider.example/?ref=social"},
-		{"invalid fallback fails to notice", "ended", "", "", "redirect", "javascript:alert(1)", "Program sudah berakhir", false, 200, ""},
+		{"invalid fallback fails to notice", "ended", "", "", "redirect", "javascript:alert(1)", "This program has ended", false, 200, ""},
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
@@ -288,7 +288,7 @@ func TestPublishedStandaloneSlugsCanJoinAnOfferWithoutLosingHistory(t *testing.T
 	for _, slug := range []string{original.Slug, secondary.Slug} {
 		page := httptest.NewRecorder()
 		handler.ServeHTTP(page, httptest.NewRequest("GET", "/"+slug, nil))
-		if page.Code != 200 || !strings.Contains(page.Body.String(), "Program sudah berakhir") {
+		if page.Code != 200 || !strings.Contains(page.Body.String(), "This program has ended") {
 			t.Fatalf("published slug %s did not inherit notice", slug)
 		}
 	}

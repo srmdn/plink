@@ -346,7 +346,7 @@ func (s *Server) handleBrowse(w http.ResponseWriter, r *http.Request, resourcesO
 		if title == "" {
 			title = l.Slug
 		}
-		all = append(all, publicCard{Title: title, Provider: l.Provider, Category: l.Category, HomeSlug: l.Slug, ButtonLabel: "Buka tautan", ItemType: kind})
+		all = append(all, publicCard{Title: title, Provider: l.Provider, Category: l.Category, HomeSlug: l.Slug, ButtonLabel: "Open link", ItemType: kind})
 	}
 	category, provider, query := strings.TrimSpace(r.URL.Query().Get("category")), strings.TrimSpace(r.URL.Query().Get("provider")), strings.TrimSpace(r.URL.Query().Get("q"))
 	categories, providers := []string{}, []string{}
@@ -420,7 +420,7 @@ func (s *Server) handleBrowse(w http.ResponseWriter, r *http.Request, resourcesO
 		}
 		cards = cards[start:end]
 	}
-	title := map[string]string{"categories": "Katalog", "services": settings.ServiceTitle, "favorites": "Favorit", "resources": "Resource", "articles": "Artikel", "projects": "Proyek"}[view]
+	title := map[string]string{"categories": "Catalog", "services": settings.ServiceTitle, "favorites": "Favorites", "resources": "Resources", "articles": "Articles", "projects": "Projects"}[view]
 	w.Header().Add("Vary", "Cookie")
 	s.renderTemplate(w, "browse", browseData{Settings: settings, SEO: s.publicSEO(settings, r, view, effectivePage), Cards: cards, Categories: categories, Providers: providers, Category: category, Provider: provider, Query: query, View: view, Title: title, Total: total, Pages: pages, SiteName: settings.SiteName, SiteDesc: settings.SiteDesc, AffiliateDisclosure: settings.AffiliateDisclosure, IsLoggedIn: s.isLoggedIn(r), AdminPath: s.cfg.AdminPath})
 }

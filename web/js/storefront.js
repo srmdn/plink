@@ -10,7 +10,7 @@
     feedbackTimer = setTimeout(() => status.classList.remove('is-visible'), 3000);
   }
   function sync() {
-    document.querySelectorAll('[data-favorite]').forEach(button => { const saved = favorites.has(button.dataset.favorite); button.setAttribute('aria-pressed', String(saved)); button.classList.toggle('is-saved', saved); if (!button.dataset.saveLabel) button.dataset.saveLabel = button.getAttribute('aria-label'); button.setAttribute('aria-label', saved ? button.dataset.saveLabel.replace(/^Simpan /, 'Hapus ').replace(/ ke favorit$/, ' dari favorit') : button.dataset.saveLabel); });
+    document.querySelectorAll('[data-favorite]').forEach(button => { const saved = favorites.has(button.dataset.favorite); button.setAttribute('aria-pressed', String(saved)); button.classList.toggle('is-saved', saved); if (!button.dataset.saveLabel) button.dataset.saveLabel = button.getAttribute('aria-label'); button.setAttribute('aria-label', saved ? button.dataset.saveLabel.replace(/^Save /, 'Remove ').replace(/ to favorites$/, ' from favorites') : button.dataset.saveLabel); });
     let visible = 0;
     document.querySelectorAll('[data-favorite-card]').forEach(card => { const saved = favorites.has(card.dataset.favoriteCard); card.classList.toggle('is-favorite', saved); if (saved) visible++; });
     document.querySelectorAll('[data-favorite-count]').forEach(el => { el.textContent = favorites.size || ''; });
@@ -20,8 +20,8 @@
     const button = event.target.closest('[data-favorite]'); if (!button) return;
     favorites = read(); const slug = button.dataset.favorite;
     favorites.has(slug) ? favorites.delete(slug) : favorites.add(slug);
-    try { localStorage.setItem(key, JSON.stringify([...favorites])); feedback(favorites.has(slug) ? 'Disimpan ke favorit.' : 'Dihapus dari favorit.'); }
-    catch { favorites = read(); feedback('Browser tidak mengizinkan penyimpanan favorit.'); }
+    try { localStorage.setItem(key, JSON.stringify([...favorites])); feedback(favorites.has(slug) ? 'Saved to favorites.' : 'Removed from favorites.'); }
+    catch { favorites = read(); feedback('Your browser could not save favorites.'); }
     sync();
   });
   window.addEventListener('storage', event => { if (event.key === key || event.key === null) { favorites = read(); sync(); } });
@@ -93,5 +93,24 @@
     track.addEventListener('scroll', update, { passive: true });
     window.addEventListener('resize', update);
     update();
+  });
+})();
+
+(() => {
+  if (!('IntersectionObserver' in window) || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+  // Keep content visible without JavaScript and leave the first screen still.
+  const targets = document.querySelectorAll('.store-section, .store-main > .offer-grid > .offer-card, .product-section');
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (!entry.isIntersecting) return;
+      observer.unobserve(entry.target);
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches || entry.target.contains(document.activeElement)) return;
+      entry.target.classList.add('motion-reveal');
+      entry.target.addEventListener('animationend', () => entry.target.classList.remove('motion-reveal'), { once: true });
+    });
+  }, { threshold: 0 });
+  targets.forEach(target => {
+    if (target.getBoundingClientRect().top >= window.innerHeight) observer.observe(target);
   });
 })();

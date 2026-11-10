@@ -1,6 +1,6 @@
 {{define "link-catalog"}}
 <!doctype html>
-<html lang="id">
+<html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -22,18 +22,18 @@
       <span class="store-mark" aria-hidden="true">↗</span>
       <span class="store-brand-copy"><strong>{{.SiteName}}</strong><span>{{.SiteDesc}}</span></span>
     </a>
-    <a class="store-admin-link" href="/offers">Katalog</a>
+    <a class="store-admin-link" href="/offers">Catalog</a>
   </header>
   <main class="store-main" id="resources">
-    <div class="catalog-heading"><span class="store-eyebrow">Resource dan tautan</span><h1>Semua links</h1><p>{{.Total}} hasil · Tautan lama tetap bisa dibuka langsung.</p></div>
+    <div class="catalog-heading"><span class="store-eyebrow">Resources and links</span><h1>All links</h1><p>{{.Total}} results · Existing links still work directly.</p></div>
     <form class="store-search" method="get" action="/links" role="search">
-      <input type="search" name="q" value="{{.Query}}" placeholder="Cari slug, kategori, atau deskripsi…" aria-label="Cari tautan" />
+      <input type="search" name="q" value="{{.Query}}" placeholder="Search slugs, categories, or descriptions…" aria-label="Search links" />
       {{if .Category}}<input type="hidden" name="category" value="{{.Category}}" />{{end}}
-      <button type="submit">Cari</button>
+      <button type="submit">Search</button>
     </form>
     {{if .Categories}}
-    <nav class="store-categories" aria-label="Kategori tautan">
-      <a class="store-chip {{if eq .Category ""}}active{{end}}" href="/links">Semua</a>
+    <nav class="store-categories" aria-label="Link categories">
+      <a class="store-chip {{if eq .Category ""}}active{{end}}" href="/links">All</a>
       {{range .Categories}}<a class="store-chip {{if eq . $.Category}}active{{end}}" href="/links?category={{. | urlquery}}">{{.}}</a>{{end}}
     </nav>
     {{end}}
@@ -42,17 +42,17 @@
       {{range .Links}}<a class="resource-card" href="/{{.Slug}}"><strong>{{.Slug}}</strong><span>{{if .Category}}{{.Category}} · {{end}}{{.Description}}</span></a>{{end}}
     </div>
     {{else}}
-    <div class="store-empty">Belum ada tautan yang cocok dengan pencarian ini.</div>
+    <div class="store-empty">No links match your search.</div>
     {{end}}
     {{if gt (len .Pages) 1}}
-    <nav class="catalog-pagination" aria-label="Halaman katalog">
-      {{if .PreviousURL}}<a class="catalog-page" href="{{.PreviousURL}}" aria-label="Halaman sebelumnya">←</a>{{end}}
+    <nav class="catalog-pagination" aria-label="Catalog pages">
+      {{if .PreviousURL}}<a class="catalog-page" href="{{.PreviousURL}}" aria-label="Previous page">←</a>{{end}}
       {{range .Pages}}<a class="catalog-page {{if .Current}}active{{end}}" href="{{.URL}}" {{if .Current}}aria-current="page"{{end}}>{{.Number}}</a>{{end}}
-      {{if .NextURL}}<a class="catalog-page" href="{{.NextURL}}" aria-label="Halaman berikutnya">→</a>{{end}}
+      {{if .NextURL}}<a class="catalog-page" href="{{.NextURL}}" aria-label="Next page">→</a>{{end}}
     </nav>
     {{end}}
   </main>
-  <footer class="store-footer">Dikelola dengan <a href="https://github.com/srmdn/plink" target="_blank" rel="noopener">Plink</a>.</footer>
+  <footer class="store-footer">Powered by <a href="https://github.com/srmdn/plink" target="_blank" rel="noopener">Plink</a>.</footer>
 </body>
 </html>
 {{end}}

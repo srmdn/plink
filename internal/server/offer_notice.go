@@ -91,20 +91,20 @@ func (s *Server) handleAttachExistingOfferLink(w http.ResponseWriter, r *http.Re
 func noticeContent(offer *db.Offer, status string) offerNoticeData {
 	data := offerNoticeData{
 		Offer:     offer,
-		Heading:   "Program sudah berakhir",
-		Message:   "Promo atau manfaat referral dari program ini sudah tidak berlaku. Tautan lama tetap tersedia agar lo bisa membaca pembaruan ini.",
-		DateLabel: "Status berlaku sejak", Date: offer.StatusChangedOn,
+		Heading:   "This program has ended",
+		Message:   "The promotion or referral benefit is no longer available. This link remains available so you can read this update.",
+		DateLabel: "Status effective since", Date: offer.StatusChangedOn,
 	}
 	switch status {
 	case "paused":
-		data.Heading = "Program sedang dijeda"
-		data.Message = "Promo atau manfaat referral dari program ini sedang dijeda atau diverifikasi. Cek kembali sebelum mendaftar atau membeli."
+		data.Heading = "This program is paused"
+		data.Message = "The promotion or referral benefit is paused or under review. Check again before signing up or buying."
 	case "upcoming":
-		data.Heading = "Program belum dimulai"
-		data.Message = "Promo atau manfaat referral dari program ini belum berlaku. Cek kembali setelah tanggal mulai."
-		data.DateLabel, data.Date = "Mulai berlaku", offer.StartsOn
+		data.Heading = "This program has not started"
+		data.Message = "The promotion or referral benefit is not available yet. Check again after the start date."
+		data.DateLabel, data.Date = "Starts on", offer.StartsOn
 	case "expired":
-		data.DateLabel, data.Date = "Terakhir berlaku", offer.EndsOn
+		data.DateLabel, data.Date = "Ended on", offer.EndsOn
 	}
 	if offer.NoticeMessage != "" {
 		data.Message = offer.NoticeMessage

@@ -27,7 +27,7 @@ func TestArticleCatalogItem(t *testing.T) {
 	if strings.Contains(body, `href="/cara-pilih-vps"`) {
 		t.Fatal("article card should not use the Plink slug")
 	}
-	if !strings.Contains(body, "Artikel") {
+	if !strings.Contains(body, "Articles") {
 		t.Fatal("home article section missing")
 	}
 	if strings.Contains(body, `data-favorite-card="cara-pilih-vps"`) || strings.Contains(body, `data-favorite="cara-pilih-vps"`) {

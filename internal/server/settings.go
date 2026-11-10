@@ -14,7 +14,7 @@ import (
 
 var hexColor = regexp.MustCompile(`^#[0-9a-fA-F]{6}$`)
 
-const defaultAffiliateDisclosure = "Sebagian tautan di sini adalah tautan referral. Jika Anda membeli melalui tautan tersebut, saya dapat komisi tanpa biaya tambahan untuk Anda."
+const defaultAffiliateDisclosure = "Some links on this page are affiliate links. I may earn a commission if you make a purchase, at no extra cost to you."
 
 func (s *Server) currentSiteSettings() (db.SiteSettings, error) {
 	settings, err := s.db.GetSiteSettings()

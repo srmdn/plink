@@ -67,25 +67,25 @@ func (s *Server) publicSEO(settings db.SiteSettings, r *http.Request, view strin
 	values := url.Values{}
 	if r.URL.Path != "/" {
 		canonical = "/offers"
-		label := "Katalog"
+		label := "Catalog"
 		switch view {
 		case "services":
 			label, description = settings.ServiceTitle, settings.ServiceDescription
 			if label == "" {
-				label = "Jasa"
+				label = "Services"
 			}
 			values.Set("view", "services")
 		case "resources":
-			label = "Resource"
+			label = "Resources"
 			canonical = "/links"
 		case "favorites":
-			label = "Favorit"
+			label = "Favorites"
 			values.Set("view", "favorites")
 		case "articles":
-			label = "Artikel"
+			label = "Articles"
 			values.Set("view", "articles")
 		case "projects":
-			label = "Proyek"
+			label = "Projects"
 			values.Set("view", "projects")
 		}
 		title = label + " · " + settings.SiteName

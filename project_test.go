@@ -26,7 +26,7 @@ func TestProjectCatalogItem(t *testing.T) {
 	if strings.Contains(body, `href="/plink-project"`) {
 		t.Fatal("project card should not use the Plink slug")
 	}
-	if !strings.Contains(body, "Portofolio") || !strings.Contains(body, "Proyek") {
+	if !strings.Contains(body, "PORTFOLIO") || !strings.Contains(body, "Projects") {
 		t.Fatal("home project section missing")
 	}
 	if strings.Contains(body, `data-favorite-card="plink-project"`) || strings.Contains(body, `data-favorite="plink-project"`) {

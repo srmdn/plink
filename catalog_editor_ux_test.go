@@ -17,10 +17,10 @@ func TestPublicCatalogNavigationKeepsExistingRoutes(t *testing.T) {
 		w := httptest.NewRecorder()
 		handler.ServeHTTP(w, httptest.NewRequest("GET", path, nil))
 		body := w.Body.String()
-		if w.Code != http.StatusOK || !strings.Contains(body, `href="/offers?view=categories"`) || !strings.Contains(body, `Katalog</a>`) {
+		if w.Code != http.StatusOK || !strings.Contains(body, `href="/offers?view=categories"`) || !strings.Contains(body, `Catalog</a>`) {
 			t.Fatalf("%s: catalog navigation missing", path)
 		}
-		if path != "/" && !strings.Contains(body, `<h1>Katalog</h1>`) {
+		if path != "/" && !strings.Contains(body, `<h1>Catalog</h1>`) {
 			t.Fatalf("%s: catalog heading missing", path)
 		}
 		if !strings.Contains(body, `href="/offers?view=services"`) || !strings.Contains(body, `href="/offers?view=projects"`) {
