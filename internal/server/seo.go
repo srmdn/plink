@@ -128,6 +128,11 @@ func (s *Server) handleSitemap(w http.ResponseWriter, r *http.Request) {
 		}
 		if settings.ArticlesEnabled {
 			paths = append(paths, "/offers?view=articles")
+			if articles, err := s.db.ListPublishedArticles(); err == nil {
+				for _, article := range articles {
+					paths = append(paths, "/a/"+article.Slug)
+				}
+			}
 		}
 		if settings.ProjectsEnabled {
 			paths = append(paths, "/offers?view=projects")

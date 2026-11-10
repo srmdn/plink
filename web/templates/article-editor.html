@@ -1,0 +1,51 @@
+{{define "article-editor"}}
+<!doctype html>
+<html lang="en">
+{{template "head" .}}
+<body class="admin-page">
+<div id="app" class="admin-app">
+  {{template "admin-header" .}}
+  <div class="admin-layout">
+{{template "admin-nav" (dict "AdminPath" .AdminPath "Active" "articles")}}
+    <main class="admin-main">
+      <div class="admin-page-heading">
+        <div><div class="admin-eyebrow">Article</div><h1>{{if .IsNew}}New article{{else}}{{.Article.Title}}{{end}}</h1><p>The body is Markdown. Drafts are only visible in this admin.</p></div>
+        <a href="/{{.AdminPath}}/articles" class="btn btn-ghost btn-sm admin-home-link">Back to articles</a>
+      </div>
+      {{if .Error}}<div class="offer-error" role="alert">{{.Error}}</div>{{end}}
+      {{if .Saved}}<div class="settings-saved" role="status">Article saved.</div>{{end}}
+      <section class="analytics-page-panel">
+        <form method="POST" enctype="multipart/form-data" action="{{if .IsNew}}/{{.AdminPath}}/articles{{else}}/{{.AdminPath}}/articles/{{.Article.ID}}{{end}}" id="article-form">
+          <div class="field"><label for="article-title">Title</label><input id="article-title" name="title" maxlength="160" required value="{{.Article.Title}}" /></div>
+          <div class="form-pair">
+            <div class="field"><label for="article-slug">Slug</label><input id="article-slug" name="slug" maxlength="120" value="{{.Article.Slug}}" placeholder="generated-from-title" /><div class="field-help">Published at /a/&lt;slug&gt;. Leave empty to generate it from the title.</div></div>
+            <div class="field"><label for="article-status">Status</label><select id="article-status" name="status"><option value="draft" {{if eq .Article.Status "draft"}}selected{{end}}>Draft</option><option value="published" {{if eq .Article.Status "published"}}selected{{end}}>Published</option></select></div>
+          </div>
+          <div class="form-pair">
+            <div class="field"><label for="article-published">Publish date</label><input type="date" id="article-published" name="published_at" value="{{.Article.PublishedAt}}" /><div class="field-help">Defaults to today when the article is published.</div></div>
+            <div class="field"><label for="article-source">Source or discussion URL</label><input type="url" id="article-source" name="source_url" maxlength="2048" value="{{.Article.SourceURL}}" placeholder="https://x.com/..." /><div class="field-help">Optional. Shown as a discussion link at the end of the article.</div></div>
+          </div>
+          <div class="field"><label for="article-excerpt">Excerpt</label><textarea id="article-excerpt" name="excerpt" maxlength="300" rows="2">{{.Article.Excerpt}}</textarea><div class="field-help">Used for the summary and the social preview. Left empty, it is generated from the body.</div></div>
+          <div class="field"><label for="article-cover">Cover image</label><input id="article-cover" name="cover_url" value="{{.Article.CoverURL}}" placeholder="/media/... or https://..." /><input type="file" id="article-cover-file" name="cover_file" accept="image/png,image/jpeg,image/webp" /><div class="field-help">Wide image around 5:2 or 1200 × 630, up to 5 MB.</div></div>
+          <div class="field"><label for="article-body">Body (Markdown)</label><textarea id="article-body" name="body_md" rows="20" spellcheck="false" class="article-body-input">{{.Article.BodyMD}}</textarea></div>
+          <div class="modal-footer" data-main-save>
+            <a href="/{{.AdminPath}}/articles" class="btn btn-ghost">Cancel</a>
+            <button type="submit" name="preview" value="1" class="btn btn-ghost">Preview</button>
+            <button type="submit" class="btn btn-primary">Save article</button>
+          </div>
+          <div class="sticky-save" data-sticky-save data-form="article-form"><button type="submit" class="btn btn-primary">Save article</button></div>
+        </form>
+      </section>
+      {{if .Preview}}<section class="analytics-page-panel"><h2>Preview</h2><div class="article-body">{{.Preview}}</div></section>{{end}}
+      {{if not .IsNew}}
+      <section class="analytics-page-panel article-actions-panel">
+        <form method="POST" action="/{{.AdminPath}}/articles/{{.Article.ID}}/toggle"><button type="submit" class="btn btn-ghost">{{if eq .Article.Status "published"}}Unpublish{{else}}Publish{{end}}</button></form>
+        <form method="POST" action="/{{.AdminPath}}/articles/{{.Article.ID}}/delete" onsubmit="return confirm('Delete this article? This cannot be undone.')"><button type="submit" class="btn btn-ghost row-menu-danger">Delete</button></form>
+      </section>
+      {{end}}
+    </main>
+  </div>
+</div>
+</body>
+</html>
+{{end}}

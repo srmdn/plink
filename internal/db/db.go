@@ -259,6 +259,24 @@ ALTER TABLE site_settings ADD COLUMN service_description TEXT NOT NULL DEFAULT '
 	);
 	CREATE INDEX idx_product_whatsapp_clicks_offer_time ON product_whatsapp_clicks(offer_id, clicked_at);
 	CREATE INDEX idx_product_whatsapp_clicks_time ON product_whatsapp_clicks(clicked_at);`,
+
+	// v22: short native articles. Drafts stay private; published articles get a
+	// canonical page on the site.
+	`CREATE TABLE articles (
+		id INTEGER PRIMARY KEY AUTOINCREMENT,
+		slug TEXT NOT NULL UNIQUE,
+		title TEXT NOT NULL,
+		excerpt TEXT NOT NULL DEFAULT '',
+		cover_url TEXT NOT NULL DEFAULT '',
+		body_md TEXT NOT NULL DEFAULT '',
+		status TEXT NOT NULL DEFAULT 'draft' CHECK (status IN ('draft','published')),
+		source_url TEXT NOT NULL DEFAULT '',
+		published_at TEXT NOT NULL DEFAULT '',
+		views INTEGER NOT NULL DEFAULT 0,
+		created_at INTEGER NOT NULL,
+		updated_at INTEGER NOT NULL
+	);
+	CREATE INDEX idx_articles_status_published ON articles(status, published_at);`,
 }
 
 func migrate(conn *sql.DB) error {

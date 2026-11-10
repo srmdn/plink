@@ -1,0 +1,45 @@
+{{define "articles-dashboard"}}
+<!doctype html>
+<html lang="en">
+{{template "head" .}}
+<body class="admin-page">
+<div id="app" class="admin-app">
+  {{template "admin-header" .}}
+  <div class="admin-layout">
+{{template "admin-nav" (dict "AdminPath" .AdminPath "Active" "articles")}}
+    <main class="admin-main workspace-page">
+      <div class="admin-page-heading">
+        <div><div class="admin-eyebrow">Short articles</div><h1>Articles</h1><p>Write short articles here. A draft stays private until you publish it.</p></div>
+        <a href="/{{.AdminPath}}/articles/new" class="btn btn-primary">+ New article</a>
+      </div>
+      <section class="dashboard-stats">
+        <div class="stat-card"><div class="stat-value">{{len .Articles}}</div><div class="stat-label">Total articles</div></div>
+        <div class="stat-card"><div class="stat-value">{{.Published}}</div><div class="stat-label">Published</div></div>
+        <div class="stat-card"><div class="stat-value">{{.Drafts}}</div><div class="stat-label">Drafts</div></div>
+      </section>
+      {{if .Articles}}
+      <div class="table-wrap">
+        <table class="link-table">
+          <thead><tr><th>Article</th><th>Status</th><th>Published</th><th>Views</th><th><span class="sr-only">Actions</span></th></tr></thead>
+          <tbody>
+            {{range .Articles}}
+            <tr>
+              <td><a class="analytics-offer-link" href="/{{$.AdminPath}}/articles/{{.ID}}"><strong>{{.Title}}</strong></a><div class="field-help">/a/{{.Slug}}</div></td>
+              <td><span class="status {{if eq .Status "published"}}on{{else}}off{{end}}">{{if eq .Status "published"}}Published{{else}}Draft{{end}}</span></td>
+              <td>{{if .PublishedAt}}{{.PublishedAt}}{{else}}—{{end}}</td>
+              <td>{{.Views}}</td>
+              <td><a class="btn btn-ghost btn-sm" href="/{{$.AdminPath}}/articles/{{.ID}}">Edit</a></td>
+            </tr>
+            {{end}}
+          </tbody>
+        </table>
+      </div>
+      {{else}}
+      <div class="empty-state"><strong>No articles yet.</strong><span>Write a short article and keep it as a draft until it is ready.</span><a href="/{{.AdminPath}}/articles/new" class="btn btn-primary">Write the first article</a></div>
+      {{end}}
+    </main>
+  </div>
+</div>
+</body>
+</html>
+{{end}}

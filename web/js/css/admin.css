@@ -1775,3 +1775,7 @@ html { scroll-padding-bottom: 130px; }
   border:0;
   border-radius:7px
 }
+
+/* Article editor */
+.article-body-input { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 13px; line-height: 1.6; }
+.article-actions-panel { display: flex; gap: 10px; flex-wrap: wrap; }

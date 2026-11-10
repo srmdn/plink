@@ -5,6 +5,7 @@
 <nav class="admin-bottom-nav" aria-label="Admin navigation">
 <a href="/{{.AdminPath}}" {{if eq .Active "links"}}aria-current="page"{{end}}>{{template "nav-icon" "link"}}Links</a>
 <a href="/{{.AdminPath}}/offers" {{if eq .Active "offers"}}aria-current="page"{{end}}>{{template "nav-icon" "grid"}}Catalog</a>
+<a href="/{{.AdminPath}}/articles" {{if eq .Active "articles"}}aria-current="page"{{end}}>{{template "nav-icon" "article"}}Articles</a>
 <a href="/{{.AdminPath}}/analytics/dashboard" {{if eq .Active "analytics"}}aria-current="page"{{end}}>{{template "nav-icon" "chart"}}Analytics</a>
 <a href="/{{.AdminPath}}/settings" {{if eq .Active "settings"}}aria-current="page"{{end}}>{{template "nav-icon" "settings"}}Settings</a>
 </nav>

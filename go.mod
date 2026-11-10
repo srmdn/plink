@@ -3,6 +3,7 @@ module github.com/srmdn/plink
 go 1.26.6
 
 require (
+	github.com/yuin/goldmark v1.8.7
 	golang.org/x/image v0.47.0
 	modernc.org/sqlite v1.61.1
 )

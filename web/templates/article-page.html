@@ -1,0 +1,30 @@
+{{define "article-page"}}
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+{{template "public-seo" .SEO}}
+{{template "favicon-link" .}}
+{{template "storefront-styles" .}}
+{{template "analytics-tag" .}}
+</head>
+<body class="article-page">
+{{template "public-header" .}}
+<main class="store-main article-main">
+  <article class="article">
+    <header class="article-head">
+      <span class="store-eyebrow">ARTICLE</span>
+      <h1>{{.Article.Title}}</h1>
+      <p class="article-meta">{{if .Published}}{{.Published}} · {{end}}{{.ReadingTime}} min read</p>
+      {{if .CoverURL}}<img class="article-cover" src="{{.CoverURL}}" alt="" />{{end}}
+    </header>
+    <div class="article-body">{{.Body}}</div>
+    {{if .SourceURL}}<p class="article-source"><a href="{{.SourceURL}}" target="_blank" rel="noopener">Discuss this article ↗</a></p>{{end}}
+  </article>
+</main>
+{{template "public-footer" .}}
+{{template "public-nav" .}}
+</body>
+</html>
+{{end}}
