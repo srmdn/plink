@@ -33,7 +33,7 @@ function initAnalyticsDonutTooltips() {
         var label = document.createElement('strong');
         label.textContent = segment.dataset.label || '';
         var detail = document.createElement('span');
-        detail.textContent = (segment.dataset.clicks || '0') + ' klik · ' + (segment.dataset.percent || '0') + '%';
+        detail.textContent = (segment.dataset.clicks || '0') + ' clicks · ' + (segment.dataset.percent || '0') + '%';
         tooltip.appendChild(label);
         tooltip.appendChild(detail);
         tooltip.classList.add('is-visible');
@@ -102,34 +102,34 @@ function adminFeedback(message, isError) {
   status.classList.toggle('is-error', !!isError); status.classList.add('is-visible');
   status._timer = setTimeout(function() { status.classList.remove('is-visible'); }, 3000);
 }
-document.addEventListener('htmx:response:error', function() { adminFeedback('Perubahan belum tersimpan. Coba lagi.', true); });
-document.addEventListener('htmx:error', function() { adminFeedback('Koneksi terputus. Coba lagi.', true); });
-document.addEventListener('closeModal', function() { adminFeedback('Tautan disimpan.'); });
+document.addEventListener('htmx:response:error', function() { adminFeedback('Changes were not saved. Try again.', true); });
+document.addEventListener('htmx:error', function() { adminFeedback('Connection lost. Try again.', true); });
+document.addEventListener('closeModal', function() { adminFeedback('Link saved.'); });
 document.addEventListener('submit', function(event) {
   var form = event.target;
   if (!form.matches('form[method="POST"]') || form.hasAttribute('hx-post')) return;
   var button = event.submitter;
-  if (!button || !button.textContent.includes('Simpan')) return;
-  button.textContent = 'Menyimpan…'; button.setAttribute('aria-busy', 'true');
+  if (!button || !button.textContent.includes('Save')) return;
+  button.textContent = 'Saving…'; button.setAttribute('aria-busy', 'true');
 });
 function copyLink(btn) {
   var slug = btn.dataset.slug;
   if (!slug) return;
-  feedbackButton(btn, 'Menyalin…');
+  feedbackButton(btn, 'Copying…');
   copyText(linkURL(slug)).then(function() {
-    feedbackButton(btn, 'Disalin!'); adminFeedback('Tautan disalin.');
+    feedbackButton(btn, 'Copied!'); adminFeedback('Link copied.');
   }).catch(function() {
-    feedbackButton(btn, 'Gagal menyalin'); adminFeedback('Tautan gagal disalin. Coba lagi.', true);
+    feedbackButton(btn, 'Copy failed'); adminFeedback('The link could not be copied. Try again.', true);
   });
 }
 function copyURL(btn) {
   var url = btn.dataset.url;
   if (!url) return;
-  feedbackButton(btn, 'Menyalin…');
+  feedbackButton(btn, 'Copying…');
   copyText(url).then(function() {
-    feedbackButton(btn, 'Disalin!'); adminFeedback('Tautan disalin.');
+    feedbackButton(btn, 'Copied!'); adminFeedback('Link copied.');
   }).catch(function() {
-    feedbackButton(btn, 'Gagal menyalin'); adminFeedback('Tautan gagal disalin. Coba lagi.', true);
+    feedbackButton(btn, 'Copy failed'); adminFeedback('The link could not be copied. Try again.', true);
   });
 }
 function shareURL(btn) {
@@ -142,7 +142,7 @@ function shareURL(btn) {
     }).catch(function(error) {
       if (error && error.name === 'AbortError') return;
       copyText(url).then(function() {
-        feedbackButton(btn, 'Disalin!'); adminFeedback('Tautan disalin.');
+        feedbackButton(btn, 'Copied!'); adminFeedback('Link copied.');
       }).catch(function() {
         feedbackButton(btn, 'share failed');
       });
@@ -150,7 +150,7 @@ function shareURL(btn) {
     return;
   }
   copyText(url).then(function() {
-    feedbackButton(btn, 'Disalin!'); adminFeedback('Tautan disalin.');
+    feedbackButton(btn, 'Copied!'); adminFeedback('Link copied.');
   }).catch(function() {
     feedbackButton(btn, 'share failed');
   });
@@ -189,7 +189,7 @@ function enhanceComboInputs(root) {
     toggle.type = 'button';
     toggle.className = 'combo-toggle';
     toggle.tabIndex = -1;
-    toggle.setAttribute('aria-label', 'Tampilkan pilihan');
+    toggle.setAttribute('aria-label', 'Show options');
     toggle.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>';
     wrap.appendChild(toggle);
     var list = document.createElement('ul');
@@ -219,7 +219,7 @@ function enhanceComboInputs(root) {
       if (!visible.length) {
         var empty = document.createElement('li');
         empty.className = 'combo-empty';
-        empty.textContent = 'Tidak ada pilihan';
+        empty.textContent = 'No options';
         list.appendChild(empty);
         return;
       }
@@ -312,15 +312,15 @@ function enhanceFileInputs(root) {
     var button = document.createElement('button');
     button.type = 'button';
     button.className = 'file-picker-btn';
-    button.textContent = 'Pilih file';
-    if (labelText) button.setAttribute('aria-label', 'Pilih file ' + labelText);
+    button.textContent = 'Choose file';
+    if (labelText) button.setAttribute('aria-label', 'Choose file ' + labelText);
     var name = document.createElement('span');
     name.className = 'file-picker-name';
-    name.textContent = 'Belum ada file';
+    name.textContent = 'No file chosen';
     name.setAttribute('aria-live', 'polite');
     button.addEventListener('click', function() { input.click(); });
     input.addEventListener('change', function() {
-      name.textContent = input.files && input.files.length ? input.files[0].name : 'Belum ada file';
+      name.textContent = input.files && input.files.length ? input.files[0].name : 'No file chosen';
     });
     picker.appendChild(button);
     picker.appendChild(name);

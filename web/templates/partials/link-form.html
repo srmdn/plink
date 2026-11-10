@@ -1,9 +1,9 @@
 {{define "link-form"}}
 <div class="modal-header">
-  <span class="modal-title">{{if .Editing}}Edit tautan{{else}}Tambah tautan{{end}}</span>
+  <span class="modal-title">{{if .Editing}}Edit link{{else}}Add link{{end}}</span>
   <button type="button" class="btn btn-ghost btn-sm" onclick="closeModal()">✕</button>
 </div>
-{{if .Error}}<div class="modal-error">{{uiText .Error}}</div>{{end}}
+{{if .Error}}<div class="modal-error">{{.Error}}</div>{{end}}
 <form
   {{if .Editing}}hx-put="/{{.AdminPath}}/links/{{.Link.ID}}"{{else}}hx-post="/{{.AdminPath}}/links"{{end}}
   hx-target="#links-section"
@@ -14,37 +14,37 @@
   <input type="hidden" name="filter_category" value="{{.CategoryFilter}}" />
   <input type="hidden" name="filter_status" value="{{.StatusFilter}}" />
   <input type="hidden" name="filter_date" value="{{.DateFilter}}" />
-  <h2 class="link-form-section-heading">Tautan utama</h2>
+  <h2 class="link-form-section-heading">Main link</h2>
   <div class="field">
     <label for="f-slug">slug</label>
     <input type="text" id="f-slug" name="slug" value="{{if .Link}}{{.Link.Slug}}{{end}}" placeholder="my-referral-link" autocomplete="off" spellcheck="false" {{if not .Link}}autofocus{{end}} />
   </div>
   <div class="field">
-    <label for="f-url">URL tujuan</label>
+    <label for="f-url">Destination URL</label>
     <input type="url" id="f-url" name="url" value="{{if .Link}}{{.Link.URL}}{{end}}" placeholder="https://example.com/ref?id=..." autocomplete="off" spellcheck="false" {{if .Link}}autofocus{{end}} />
   </div>
   <div class="field">
-    <label for="f-desc">Deskripsi <span style="color:var(--border)">(opsional)</span></label>
+    <label for="f-desc">Description <span style="color:var(--border)">(optional)</span></label>
     <input type="text" id="f-desc" name="description" value="{{if .Link}}{{.Link.Description}}{{end}}" placeholder="Shopee referral — food category" autocomplete="off" />
   </div>
   <div class="field">
-    <label for="f-cat">Kategori <span style="color:var(--border)">(opsional)</span></label>
+    <label for="f-cat">Category <span style="color:var(--border)">(optional)</span></label>
     <input type="text" id="f-cat" name="category" value="{{if .Link}}{{.Link.Category}}{{end}}" placeholder="Tools, Courses, Shopping..." autocomplete="off" list="cat-suggestions" />
     <datalist id="cat-suggestions">
       {{range .Categories}}<option value="{{.}}">{{end}}
     </datalist>
   </div>
-  <h2 class="link-form-section-heading">Atribusi &amp; pelacakan</h2>
+  <h2 class="link-form-section-heading">Attribution &amp; tracking</h2>
   <div class="form-pair">
     <div class="field">
-      <label for="f-provider">Penyedia <span style="color:var(--border)">(opsional)</span></label>
+      <label for="f-provider">Provider <span style="color:var(--border)">(optional)</span></label>
       <input type="text" id="f-provider" name="provider" value="{{if .Link}}{{.Link.Provider}}{{end}}" placeholder="GreenCloud, Shopee, MidTeknologi..." autocomplete="off" />
-      <div class="field-help">Nama merek atau pemilik program</div>
+      <div class="field-help">Brand name or program owner</div>
     </div>
     <div class="field">
-      <label for="f-channel">Channel <span style="color:var(--border)">(opsional)</span></label>
+      <label for="f-channel">Channel <span style="color:var(--border)">(optional)</span></label>
       <input type="text" id="f-channel" name="channel" value="{{if .Link}}{{.Link.Channel}}{{end}}" placeholder="blog, instagram, telegram..." autocomplete="off" list="channel-suggestions" />
-      <div class="field-help">Tempat membagikan slug ini</div>
+      <div class="field-help">Where this slug is shared</div>
     </div>
   </div>
   <datalist id="channel-suggestions">
@@ -61,9 +61,9 @@
     <option value="legacy"></option>
   </datalist>
   <div class="field">
-    <label for="f-campaign">campaign / placement <span style="color:var(--border)">(opsional)</span></label>
+    <label for="f-campaign">campaign / placement <span style="color:var(--border)">(optional)</span></label>
     <input type="text" id="f-campaign" name="campaign" value="{{if .Link}}{{.Link.Campaign}}{{end}}" placeholder="review-vps, q4-promo, legacy..." autocomplete="off" list="campaign-suggestions" />
-    <div class="field-help">Pertahankan slug publik. Gunakan kampanye untuk mengelompokkan strategi.</div>
+    <div class="field-help">Keep the public slug stable. Use campaigns to group strategies.</div>
   </div>
   <datalist id="campaign-suggestions">
     <option value="always-on"></option>
@@ -80,28 +80,28 @@
     <option value="services"></option>
     <option value="legacy"></option>
   </datalist>
-  <h2 class="link-form-section-heading">Penempatan</h2>
+  <h2 class="link-form-section-heading">Placement</h2>
   {{if and .Link .Link.OfferID}}
   <input type="hidden" name="unlisted" value="{{if .Link.Unlisted}}1{{else}}0{{end}}" />
-  <div class="field-help">Tautan ini terhubung ke item katalog. Atur tampilan kartu melalui item katalog tersebut.</div>
+  <div class="field-help">This link is connected to a catalog item. Manage card visibility through that item.</div>
   {{else}}
-  <label class="check-row" for="f-unlisted"><input type="checkbox" id="f-unlisted" name="unlisted" value="1" {{if and .Link .Link.Unlisted}}checked{{end}} /><span>Sembunyikan dari daftar publik</span></label>
-  <div class="field-help">Tautan aktif tetap dapat dibuka dan dibagikan. Siapa pun yang memiliki alamatnya dapat mengaksesnya. Pengaturan ini juga menyembunyikan tautan unggulan.</div>
+  <label class="check-row" for="f-unlisted"><input type="checkbox" id="f-unlisted" name="unlisted" value="1" {{if and .Link .Link.Unlisted}}checked{{end}} /><span>Hide from the public list</span></label>
+  <div class="field-help">Active links can still be opened and shared. Anyone with the address can access it. This setting also hides featured links.</div>
   {{end}}
   <div class="form-pair">
     <div class="field">
-      <label for="f-priority">Prioritas beranda</label>
+      <label for="f-priority">Home priority</label>
       <input type="number" id="f-priority" name="priority" value="{{if .Link}}{{.Link.Priority}}{{else}}0{{end}}" min="0" step="1" inputmode="numeric" />
-      <div class="field-help">Angka lebih besar tampil lebih dulu</div>
+      <div class="field-help">Higher numbers appear first</div>
     </div>
     <label class="check-row" for="f-featured">
       <input type="checkbox" id="f-featured" name="featured" value="1" {{if and .Link .Link.Featured}}checked{{end}} />
-      <span>Tampilkan sebagai unggulan</span>
+      <span>Show as featured</span>
     </label>
   </div>
   <div class="modal-footer">
-    <button type="button" class="btn btn-ghost" onclick="closeModal()">Batal</button>
-    <button type="submit" class="btn btn-primary">Simpan</button>
+    <button type="button" class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+    <button type="submit" class="btn btn-primary">Save</button>
   </div>
 </form>
 {{end}}

@@ -1,22 +1,22 @@
 {{define "dashboard-summary"}}
 <section id="dashboard-summary" class="dashboard-stats" hx-swap-oob="outerHTML">
-  <div class="stat-card"><div class="stat-value">{{.Total}}</div><div class="stat-label">Total tautan</div></div>
-  <div class="stat-card"><div class="stat-value">{{.Count}}</div><div class="stat-label">{{uiText .CountLabel}}</div></div>
-  <div class="stat-card"><div class="stat-value">{{.TotalClicks}}</div><div class="stat-label">{{uiText .ClicksLabel}}</div></div>
+  <div class="stat-card"><div class="stat-value">{{.Total}}</div><div class="stat-label">Total links</div></div>
+  <div class="stat-card"><div class="stat-value">{{.Count}}</div><div class="stat-label">{{.CountLabel}}</div></div>
+  <div class="stat-card"><div class="stat-value">{{.TotalClicks}}</div><div class="stat-label">{{.ClicksLabel}}</div></div>
 </section>
 {{end}}
 
 {{define "dashboard-daily-export"}}
-<a id="daily-report-export" href="/api/export?format=daily-csv&amp;date={{.DailyExportDate}}">{{uiText .DailyExportLabel}}</a>
+<a id="daily-report-export" href="/api/export?format=daily-csv&amp;date={{.DailyExportDate}}">{{.DailyExportLabel}}</a>
 {{end}}
 
 {{define "dashboard-daily-export-oob"}}
-<a id="daily-report-export" hx-swap-oob="outerHTML" href="/api/export?format=daily-csv&amp;date={{.DailyExportDate}}">{{uiText .DailyExportLabel}}</a>
+<a id="daily-report-export" hx-swap-oob="outerHTML" href="/api/export?format=daily-csv&amp;date={{.DailyExportDate}}">{{.DailyExportLabel}}</a>
 {{end}}
 
 {{define "dashboard"}}
 <!DOCTYPE html>
-<html lang="id">
+<html lang="en">
 {{template "head" .}}
 <body class="admin-page" data-public-url="{{.PublicURL}}">
 <div id="app" class="admin-app">
@@ -28,11 +28,11 @@
   <main class="admin-main workspace-page links-page">
     <div class="admin-page-heading">
       <div>
-        <div class="admin-eyebrow">Kelola tautan</div>
-        <h1>Tautan</h1>
-        <p>Buat dan bagikan tautan pendek. Untuk menampilkan produk, rekomendasi, jasa, atau proyek sebagai kartu, gunakan <a href="/{{.AdminPath}}/offers">Katalog</a>.</p>
+        <div class="admin-eyebrow">Manage links</div>
+        <h1>Links</h1>
+        <p>Create and share short links. To show a product, referral, service, or project as a card, use the <a href="/{{.AdminPath}}/offers">Catalog</a>.</p>
       </div>
-      <a href="/" class="btn btn-ghost btn-sm admin-home-link">Lihat halaman publik</a>
+      <a href="/" class="btn btn-ghost btn-sm admin-home-link">View public site</a>
     </div>
     {{template "dashboard-summary" .}}
     <div class="toolbar">
@@ -42,7 +42,7 @@
           id="search"
           name="q"
           value="{{.Query}}"
-          placeholder="Cari tautan…"
+          placeholder="Search links…"
           autocomplete="off"
           spellcheck="false"
           hx-get="/{{.AdminPath}}/links"
@@ -53,10 +53,10 @@
         />
       </div>
       <div class="export-wrap">
-        <button class="btn btn-ghost btn-sm" onclick="toggleExportMenu(event)">Ekspor ↓</button>
+        <button class="btn btn-ghost btn-sm" onclick="toggleExportMenu(event)">Export ↓</button>
         <div class="export-menu hidden" id="export-menu">
-          <a href="/api/export?format=json">Katalog tautan · JSON</a>
-          <a href="/api/export?format=csv">Katalog tautan · CSV</a>
+          <a href="/api/export?format=json">Link catalog · JSON</a>
+          <a href="/api/export?format=csv">Link catalog · CSV</a>
           {{template "dashboard-daily-export" .}}
         </div>
       </div>
@@ -67,7 +67,7 @@
         hx-swap="innerHTML"
         hx-disable="this"
         hx-include="#search, select[name='category'], select[name='status'], #date-filter"
-      >+ Tambah tautan</button>
+      >+ Add link</button>
     </div>
 
     <!-- Link modal -->

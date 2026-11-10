@@ -41,7 +41,7 @@ func TestLinkFormModes(t *testing.T) {
 	if !strings.Contains(newForm, `hx-post="/admin/links"`) || strings.Contains(newForm, "hx-put=") {
 		t.Fatalf("new link form should post to the collection: %s", newForm)
 	}
-	if !strings.Contains(newForm, "Tambah tautan") {
+	if !strings.Contains(newForm, "Add link") {
 		t.Fatal("new link form should use the create title")
 	}
 
@@ -49,7 +49,7 @@ func TestLinkFormModes(t *testing.T) {
 	if !strings.Contains(editForm, `hx-put="/admin/links/`+strconv.FormatInt(link.ID, 10)+`"`) {
 		t.Fatalf("edit link form should put to the link: %s", editForm)
 	}
-	if !strings.Contains(editForm, "Edit tautan") {
+	if !strings.Contains(editForm, "Edit link") {
 		t.Fatal("edit link form should use the edit title")
 	}
 
@@ -63,7 +63,7 @@ func TestLinkFormModes(t *testing.T) {
 	if !strings.Contains(duplicate, `hx-post="/admin/links"`) || strings.Contains(duplicate, "hx-put=") {
 		t.Fatalf("duplicate create must stay in create mode: %s", duplicate)
 	}
-	if !strings.Contains(duplicate, "Tambah tautan") || strings.Contains(duplicate, "Edit tautan") {
+	if !strings.Contains(duplicate, "Add link") || strings.Contains(duplicate, "Edit link") {
 		t.Fatalf("duplicate create must keep the create title: %s", duplicate)
 	}
 }
