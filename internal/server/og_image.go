@@ -79,11 +79,11 @@ func (s *Server) handleOGImage(w http.ResponseWriter, r *http.Request) {
 		title = settings.ServiceTitle
 		description = settings.ServiceDescription
 	case "categories":
-		title = "Katalog pilihan"
+		title = "Selected catalog"
 	case "resources":
-		title = "Resource pilihan"
+		title = "Selected resources"
 	case "projects":
-		title = "Proyek pilihan"
+		title = "Selected projects"
 	}
 	if slug := r.URL.Query().Get("slug"); slug != "" {
 		link, err := s.db.GetLinkBySlug(slug)

@@ -105,7 +105,7 @@ func TestPaletteSettingsRejectInjectionAndKeepScopesSeparate(t *testing.T) {
 		t.Fatal("theme scopes leaked")
 	}
 	form.Set("public_accent", "#123456;}body{display:none}")
-	if response := post(true); response.Code != 200 || !strings.Contains(response.Body.String(), "Warna harus") {
+	if response := post(true); response.Code != 200 || !strings.Contains(response.Body.String(), "The color must") {
 		t.Fatal("invalid CSS accepted")
 	}
 	settings, err := database.GetSiteSettings()

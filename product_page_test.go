@@ -104,7 +104,7 @@ func TestProductAdminValidationAndLegacyUpdate(t *testing.T) {
 	form := url.Values{"title": {"Local product"}, "item_type": {"product"}, "home_slug": {"local-product"}, "home_url": {"https://example.com/order"}, "active": {"1"}, "product_fields_present": {"1"}, "product_page": {"1"}, "product_kind": {"physical"}, "product_currency": {"IDR"}, "product_price": {"12,50"}, "product_details": {"Useful details"}, "product_fulfillment": {"Delivery by arrangement"}}
 	form.Set("product_price", "abc")
 	bad := post("/admin/offers", form)
-	if bad.Code != 200 || !strings.Contains(bad.Body.String(), `value="abc"`) || !strings.Contains(bad.Body.String(), "harga harus") {
+	if bad.Code != 200 || !strings.Contains(bad.Body.String(), `value="abc"`) || !strings.Contains(bad.Body.String(), "the price must") {
 		t.Fatal("invalid price should report the error and preserve the input")
 	}
 	form.Set("product_price", "12,50")

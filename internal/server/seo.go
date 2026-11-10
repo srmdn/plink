@@ -40,7 +40,7 @@ func seoIdentity(settings db.SiteSettings) (string, string) {
 		description = settings.SiteDesc
 	}
 	if description == "" {
-		description = "Kumpulan barang, kelas, dan jasa pilihan."
+		description = "Selected products, courses, and services."
 	}
 	return title, description
 }

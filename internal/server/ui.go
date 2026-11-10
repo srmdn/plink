@@ -1503,7 +1503,7 @@ func parseOfferInput(r *http.Request) (db.OfferInput, error) {
 		input.ItemType = "referral"
 	}
 	if input.ItemType != "product" && input.ItemType != "referral" && input.ItemType != "service" && input.ItemType != "resource" && input.ItemType != "article" && input.ItemType != "project" {
-		return input, fmt.Errorf("jenis item tidak valid")
+		return input, fmt.Errorf("invalid item type")
 	}
 	if input.ProgramStatus == "" {
 		input.ProgramStatus = "active"
@@ -1785,7 +1785,7 @@ func (s *Server) handleOffersDashboard(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) handleNewOffer(w http.ResponseWriter, r *http.Request) {
 	today := time.Now().In(s.cfg.ReportLocation()).Format(dashboardDateLayout)
-	offer := &db.Offer{ItemType: "referral", Active: true, ProgramStatus: "active", EndedBehavior: "notice", ButtonLabel: "Lihat promo", StartsOn: today}
+	offer := &db.Offer{ItemType: "referral", Active: true, ProgramStatus: "active", EndedBehavior: "notice", ButtonLabel: "View offer", StartsOn: today}
 	s.renderOffersDashboard(w, r, offersDashboardData{Offer: offer, IsForm: true, IsNew: true})
 }
 

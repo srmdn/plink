@@ -299,7 +299,7 @@ func (db *DB) createOfferWithHomepageLink(input OfferInput, slug, url string, re
 
 	now := time.Now().Unix()
 	if strings.TrimSpace(input.ButtonLabel) == "" {
-		input.ButtonLabel = "Lihat promo"
+		input.ButtonLabel = "View offer"
 	}
 	result, err := tx.Exec(`
 		INSERT INTO offers (title, provider, description, category, image_url, button_label, fallback_url,
@@ -360,7 +360,7 @@ func (db *DB) UpdateOffer(id int64, input OfferInput) error {
 
 	now := time.Now().Unix()
 	if strings.TrimSpace(input.ButtonLabel) == "" {
-		input.ButtonLabel = "Lihat promo"
+		input.ButtonLabel = "View offer"
 	}
 	if _, err := tx.Exec(`
 		UPDATE offers

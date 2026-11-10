@@ -109,7 +109,7 @@ func TestSettingsProfileAndSocialLinks(t *testing.T) {
 	}
 
 	form.Set("social_instagram", "javascript:alert(1)")
-	if w := post(); w.Code != http.StatusOK || !strings.Contains(w.Body.String(), "Tautan sosial tidak valid") {
+	if w := post(); w.Code != http.StatusOK || !strings.Contains(w.Body.String(), "Invalid social link") {
 		t.Fatalf("invalid social accepted: %d", w.Code)
 	}
 	saved, _ := database.GetSiteSettings()

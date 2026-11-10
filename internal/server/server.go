@@ -101,7 +101,7 @@ func New(cfg *config.Config, database *db.DB, webFS embed.FS) http.Handler {
 			// change whenever the asset changes, bypassing edge caches.
 			"asset": func(path string) string { return path + "?v=" + assetVersion },
 			"itemTypeLabel": func(value string) string {
-				return map[string]string{"product": "Produk", "referral": "Referral", "service": "Jasa", "resource": "Resource", "article": "Artikel", "project": "Proyek"}[value]
+				return map[string]string{"product": "Product", "referral": "Referral", "service": "Service", "resource": "Resource", "article": "Article", "project": "Project"}[value]
 			},
 			"socialPlatforms": func() []socialPlatform { return socialPlatformList },
 			"publicProfile": func() publicProfile {
@@ -125,8 +125,7 @@ func New(cfg *config.Config, database *db.DB, webFS embed.FS) http.Handler {
 				return cfg.DevNoAuth && !cfg.Production && config.IsLoopbackListener(cfg.Addr)
 			},
 			"productPrice":  productPriceLabel,
-			"referrerLabel": func(value string) string { return uiText(referrerLabel(value)) },
-			"uiText":        uiText,
+			"referrerLabel": referrerLabel,
 			"branding":      func() brandAssets { settings, _ := database.GetSiteSettings(); return brandingAssets(settings) },
 			"offerStatus":   offerStatus,
 			"statusLabel":   statusLabel,

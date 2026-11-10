@@ -58,7 +58,7 @@ func Load() *Config {
 
 	publicURL, err := NormalizePublicURL(getEnv("PUBLIC_URL", ""), getEnv("APP_ENV", "development") == "production")
 	if err != nil {
-		log.Fatalf("PUBLIC_URL tidak valid: %v", err)
+		log.Fatalf("invalid PUBLIC_URL: %v", err)
 	}
 
 	cloudflareInsights := false

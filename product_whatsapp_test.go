@@ -112,7 +112,7 @@ func TestWhatsAppStatisticsUsesPeriodAndCategory(t *testing.T) {
 	}
 	w := httptest.NewRecorder()
 	handler.ServeHTTP(w, req)
-	if w.Code != 200 || !strings.Contains(w.Body.String(), "Klik WhatsApp") || !strings.Contains(w.Body.String(), `class="stat-value">1</div><div class="stat-card-foot">Tombol produk`) {
+	if w.Code != 200 || !strings.Contains(w.Body.String(), "WhatsApp clicks") || !strings.Contains(w.Body.String(), `class="stat-value">1</div><div class="stat-card-foot">Product buttons`) {
 		t.Fatal("statistics page does not show the filtered WhatsApp total")
 	}
 }
@@ -189,12 +189,12 @@ func TestProductWhatsAppAdminCreationAndValidation(t *testing.T) {
 	}
 	form := url.Values{"title": {"Produk uji"}, "item_type": {"product"}, "home_slug": {"produk-uji"}, "active": {"1"}, "product_fields_present": {"1"}, "product_page": {"1"}, "whatsapp_fields_present": {"1"}, "whatsapp_enabled": {"1"}, "whatsapp_number": {"08123456789"}, "whatsapp_message": {"Halo & salam"}}
 	bad := post("/admin/offers", form)
-	if bad.Code != 200 || !strings.Contains(bad.Body.String(), "kode negara") || !strings.Contains(bad.Body.String(), "08123456789") || !strings.Contains(bad.Body.String(), "Halo &amp; salam") {
+	if bad.Code != 200 || !strings.Contains(bad.Body.String(), "country code") || !strings.Contains(bad.Body.String(), "08123456789") || !strings.Contains(bad.Body.String(), "Halo &amp; salam") {
 		t.Fatal("invalid number should explain the error and preserve input")
 	}
 	form.Set("whatsapp_number", "+62 (812) 3456-789")
 	form.Del("product_page")
-	if result := post("/admin/offers", form); result.Code != 200 || !strings.Contains(result.Body.String(), "aktifkan halaman detail") {
+	if result := post("/admin/offers", form); result.Code != 200 || !strings.Contains(result.Body.String(), "enable the product detail page") {
 		t.Fatal("WhatsApp should require an enabled product detail page")
 	}
 	form.Set("product_page", "1")

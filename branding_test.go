@@ -50,7 +50,7 @@ func TestBrandingSettingsAndFavicon(t *testing.T) {
 	}
 	for _, invalid := range []string{"javascript:alert(1)", "data:image/svg+xml,unsafe", "//example.com/a.png", "/favicon.svg", "/foo/../favicon.ico", "/a\\b.png"} {
 		form.Set("logo_url", invalid)
-		if w := post(); w.Code != 200 || !strings.Contains(w.Body.String(), "Logo, favicon, dan avatar harus") {
+		if w := post(); w.Code != 200 || !strings.Contains(w.Body.String(), "The logo, favicon, and avatar must") {
 			t.Fatalf("accepted invalid asset %q", invalid)
 		}
 		saved, _ := database.GetSiteSettings()

@@ -1,6 +1,6 @@
 {{define "settings-dashboard"}}
 <!doctype html>
-<html lang="id">
+<html lang="en">
 {{template "head" .}}
 <body class="admin-page">
 <div id="app" class="admin-app">
@@ -11,114 +11,114 @@
 
     <main class="admin-main">
       <div class="admin-page-heading">
-        <div><div class="admin-eyebrow">Tampilan publik</div><h1>Pengaturan</h1><p>Atur identitas, pilihan utama, dan warna halaman.</p></div>
-        <a href="/" class="btn btn-ghost btn-sm admin-home-link">Lihat halaman publik</a>
+        <div><div class="admin-eyebrow">Public appearance</div><h1>Settings</h1><p>Set the site identity, featured items, and page colors.</p></div>
+        <a href="/" class="btn btn-ghost btn-sm admin-home-link">View public site</a>
       </div>
 
-      {{if .Error}}<div class="offer-error" role="alert">{{uiText .Error}}</div>{{end}}
-      {{if .Saved}}<div class="settings-saved" role="status">Pengaturan disimpan.</div>{{end}}
+      {{if .Error}}<div class="offer-error" role="alert">{{.Error}}</div>{{end}}
+      {{if .Saved}}<div class="settings-saved" role="status">Settings saved.</div>{{end}}
 
       <form method="POST" enctype="multipart/form-data" action="/{{.AdminPath}}/settings" id="settings-form">
-        <section class="analytics-page-panel settings-panel"><div class="offer-form-heading"><h2>Logo &amp; favicon</h2><span>Logo dipakai pada header publik dan admin.</span></div><div class="field"><label for="settings-logo">URL logo</label><input id="settings-logo" type="text" name="logo_url" maxlength="2048" value="{{.Settings.LogoURL}}" placeholder="https://domain-lo.com/logo.png" /><input type="file" id="settings-logo-file" name="logo_file" accept="image/png,image/jpeg,image/webp" /><p class="field-help">Unggah PNG/JPEG/WebP maks 5 MB, atau isi URL/path (termasuk SVG). Unggahan menimpa URL. Kosongkan untuk memakai logo bawaan.</p></div><div class="field"><label for="settings-favicon">URL favicon</label><input id="settings-favicon" type="text" name="favicon_url" maxlength="2048" value="{{.Settings.FaviconURL}}" placeholder="https://domain-lo.com/favicon.png" /><input type="file" id="settings-favicon-file" name="favicon_file" accept="image/png,image/jpeg,image/webp" /><p class="field-help">Opsional. Jika kosong, favicon memakai logo lo; tanpa logo khusus, favicon mengikuti warna aksen publik. Unggah PNG/JPEG/WebP atau isi URL HTTPS/path lokal.</p></div><div class="brand-preview">{{template "brand-logo" .}}<span>Logo yang sedang digunakan</span></div></section>
+        <section class="analytics-page-panel settings-panel"><div class="offer-form-heading"><h2>Logo &amp; favicon</h2><span>The logo is used in the public and admin headers.</span></div><div class="field"><label for="settings-logo">Logo URL</label><input id="settings-logo" type="text" name="logo_url" maxlength="2048" value="{{.Settings.LogoURL}}" placeholder="https://your-domain.com/logo.png" /><input type="file" id="settings-logo-file" name="logo_file" accept="image/png,image/jpeg,image/webp" /><p class="field-help">Upload a PNG/JPEG/WebP up to 5 MB, or enter a URL/path (SVG allowed). An upload replaces the URL. Leave empty to use the default logo.</p></div><div class="field"><label for="settings-favicon">Favicon URL</label><input id="settings-favicon" type="text" name="favicon_url" maxlength="2048" value="{{.Settings.FaviconURL}}" placeholder="https://your-domain.com/favicon.png" /><input type="file" id="settings-favicon-file" name="favicon_file" accept="image/png,image/jpeg,image/webp" /><p class="field-help">Optional. If empty, the favicon uses your logo; without a custom logo, it follows the public accent color. Upload a PNG/JPEG/WebP or enter an HTTPS URL/local path.</p></div><div class="brand-preview">{{template "brand-logo" .}}<span>Logo currently in use</span></div></section>
         <section class="analytics-page-panel settings-panel">
-          <div class="offer-form-heading"><h2>Profil &amp; tautan sosial</h2><span>Bagian atas halaman publik. Tautan sosial opsional.</span></div>
-          <div class="field"><label for="settings-avatar">URL avatar</label><input id="settings-avatar" type="text" name="avatar_url" maxlength="2048" value="{{.Settings.AvatarURL}}" placeholder="https://domain-lo.com/foto.jpg" /><input type="file" id="settings-avatar-file" name="avatar_file" accept="image/png,image/jpeg,image/webp" /><p class="field-help">Foto profil bulat di header. Unggah PNG/JPEG/WebP maks 5 MB atau isi URL/path. Kosongkan untuk memakai logo.</p></div>
+          <div class="offer-form-heading"><h2>Profile &amp; social links</h2><span>The top of the public page. Social links are optional.</span></div>
+          <div class="field"><label for="settings-avatar">Avatar URL</label><input id="settings-avatar" type="text" name="avatar_url" maxlength="2048" value="{{.Settings.AvatarURL}}" placeholder="https://your-domain.com/photo.jpg" /><input type="file" id="settings-avatar-file" name="avatar_file" accept="image/png,image/jpeg,image/webp" /><p class="field-help">Round profile photo in the header. Upload a PNG/JPEG/WebP up to 5 MB or enter a URL/path. Leave empty to use the logo.</p></div>
           <div class="profile-social-fields">
             {{range socialPlatforms}}
-            <div class="field"><label for="settings-social-{{.Key}}">{{.Label}}</label><input id="settings-social-{{.Key}}" type="text" name="social_{{.Key}}" maxlength="2048" value="{{index $.Social .Key}}" placeholder="{{if eq .Key "email"}}nama@email.com{{else}}https://…{{end}}" /></div>
+            <div class="field"><label for="settings-social-{{.Key}}">{{.Label}}</label><input id="settings-social-{{.Key}}" type="text" name="social_{{.Key}}" maxlength="2048" value="{{index $.Social .Key}}" placeholder="{{if eq .Key "email"}}name@email.com{{else}}https://…{{end}}" /></div>
             {{end}}
           </div>
-          <p class="field-help">Isi hanya tautan yang dipakai. Jika semua kosong, baris ikon sosial tidak muncul di halaman publik.</p>
+          <p class="field-help">Fill in only the links you use. If all are empty, the social icon row does not appear on the public page.</p>
         </section>
         <section class="analytics-page-panel settings-panel">
-          <div class="offer-form-heading"><h2>Tombol kontak</h2><span>Tombol mengambang di semua halaman publik. Isi minimal satu kanal untuk memunculkannya.</span></div>
+          <div class="offer-form-heading"><h2>Contact button</h2><span>A floating button on every public page. Fill at least one channel to show it.</span></div>
           <div class="form-pair">
-            <div class="field"><label for="settings-contact-title">Judul gelembung</label><input id="settings-contact-title" type="text" name="contact_title" maxlength="60" value="{{.Settings.ContactTitle}}" placeholder="Hubungi saya" /></div>
-            <div class="field"><label for="settings-contact-note">Pesan singkat <span class="field-help">(opsional)</span></label><input id="settings-contact-note" type="text" name="contact_note" maxlength="200" value="{{.Settings.ContactNote}}" placeholder="Ada pertanyaan? Chat saya." /></div>
+            <div class="field"><label for="settings-contact-title">Bubble title</label><input id="settings-contact-title" type="text" name="contact_title" maxlength="60" value="{{.Settings.ContactTitle}}" placeholder="Contact me" /></div>
+            <div class="field"><label for="settings-contact-note">Short message <span class="field-help">(optional)</span></label><input id="settings-contact-note" type="text" name="contact_note" maxlength="200" value="{{.Settings.ContactNote}}" placeholder="Have a question? Message me." /></div>
           </div>
           <div class="contact-rows" data-contact-rows>
             {{range .ContactList}}{{$row := .}}
             <div class="contact-row">
-              <div class="contact-row-order"><button type="button" class="contact-order-btn" data-contact-up aria-label="Naikkan kanal">▲</button><button type="button" class="contact-order-btn" data-contact-down aria-label="Turunkan kanal">▼</button></div>
-              <select name="contact_platform" aria-label="Ikon kanal">{{range socialPlatforms}}<option value="{{.Key}}" {{if eq .Key $row.Platform}}selected{{end}}>{{.Label}}</option>{{end}}</select>
-              <input type="text" name="contact_label" maxlength="40" value="{{$row.Label}}" placeholder="Label (opsional)" aria-label="Label kanal" />
-              <input type="text" name="contact_url" maxlength="2048" value="{{$row.URL}}" placeholder="https://… atau email" aria-label="URL kanal" />
-              <button type="button" class="btn btn-ghost btn-sm" data-contact-remove aria-label="Hapus kanal">Hapus</button>
+              <div class="contact-row-order"><button type="button" class="contact-order-btn" data-contact-up aria-label="Move channel up">▲</button><button type="button" class="contact-order-btn" data-contact-down aria-label="Move channel down">▼</button></div>
+              <select name="contact_platform" aria-label="Channel icon">{{range socialPlatforms}}<option value="{{.Key}}" {{if eq .Key $row.Platform}}selected{{end}}>{{.Label}}</option>{{end}}</select>
+              <input type="text" name="contact_label" maxlength="40" value="{{$row.Label}}" placeholder="Label (optional)" aria-label="Channel label" />
+              <input type="text" name="contact_url" maxlength="2048" value="{{$row.URL}}" placeholder="https://… or email" aria-label="Channel URL" />
+              <button type="button" class="btn btn-ghost btn-sm" data-contact-remove aria-label="Remove channel">Remove</button>
             </div>
             {{end}}
           </div>
-          <div class="contact-add"><button type="button" class="btn btn-ghost btn-sm" data-contact-add>+ Tambah kanal</button></div>
-          <template id="contact-row-template"><div class="contact-row-order"><button type="button" class="contact-order-btn" data-contact-up aria-label="Naikkan kanal">▲</button><button type="button" class="contact-order-btn" data-contact-down aria-label="Turunkan kanal">▼</button></div><select name="contact_platform" aria-label="Ikon kanal">{{range socialPlatforms}}<option value="{{.Key}}">{{.Label}}</option>{{end}}</select><input type="text" name="contact_label" maxlength="40" placeholder="Label (opsional)" aria-label="Label kanal" /><input type="text" name="contact_url" maxlength="2048" placeholder="https://… atau email" aria-label="URL kanal" /><button type="button" class="btn btn-ghost btn-sm" data-contact-remove aria-label="Hapus kanal">Hapus</button></template>
-          <p class="field-help">Pilih ikon kanal lalu isi URL (atau alamat email untuk ikon Email). Label opsional untuk mengganti teks tombol. Klik kanal membuka aplikasi atau situsnya. Tombol hanya muncul jika fitur "Tombol kontak mengambang" aktif dan minimal satu kanal diisi.</p>
+          <div class="contact-add"><button type="button" class="btn btn-ghost btn-sm" data-contact-add>+ Add channel</button></div>
+          <template id="contact-row-template"><div class="contact-row-order"><button type="button" class="contact-order-btn" data-contact-up aria-label="Move channel up">▲</button><button type="button" class="contact-order-btn" data-contact-down aria-label="Move channel down">▼</button></div><select name="contact_platform" aria-label="Channel icon">{{range socialPlatforms}}<option value="{{.Key}}">{{.Label}}</option>{{end}}</select><input type="text" name="contact_label" maxlength="40" placeholder="Label (optional)" aria-label="Channel label" /><input type="text" name="contact_url" maxlength="2048" placeholder="https://… or email" aria-label="Channel URL" /><button type="button" class="btn btn-ghost btn-sm" data-contact-remove aria-label="Remove channel">Remove</button></template>
+          <p class="field-help">Choose a channel icon, then enter a URL (or an email address for the Email icon). The label is optional and overrides the button text. Selecting a channel opens its app or site. The button only appears when the "Floating contact button" feature is enabled and at least one channel is filled in.</p>
         </section>
         <section class="analytics-page-panel settings-panel">
-          <div class="offer-form-heading"><h2>Identitas halaman</h2><span>Ditampilkan pada halaman publik.</span></div>
+          <div class="offer-form-heading"><h2>Site identity</h2><span>Shown on the public page.</span></div>
           <div class="form-pair">
-            <div class="field"><label for="settings-site-name">Nama halaman</label><input id="settings-site-name" name="site_name" type="text" maxlength="80" required value="{{.Settings.SiteName}}" /></div>
-            <div class="field"><label for="settings-site-desc">Deskripsi singkat</label><input id="settings-site-desc" name="site_desc" type="text" maxlength="200" value="{{.Settings.SiteDesc}}" /><p class="field-help">Juga dipakai sebagai bio di header profil.</p></div>
+            <div class="field"><label for="settings-site-name">Site name</label><input id="settings-site-name" name="site_name" type="text" maxlength="80" required value="{{.Settings.SiteName}}" /></div>
+            <div class="field"><label for="settings-site-desc">Short description</label><input id="settings-site-desc" name="site_desc" type="text" maxlength="200" value="{{.Settings.SiteDesc}}" /><p class="field-help">Also used as the bio in the profile header.</p></div>
           </div>
         </section>
 
         <section class="analytics-page-panel settings-panel">
-          <div class="offer-form-heading"><h2>Fitur publik</h2><span>Pilih apa saja yang tampil di halaman publik. Cocok untuk memakai Plink murni sebagai pemendek tautan.</span></div>
-          <div class="field"><label for="feature-mode">Mode tampilan</label><select id="feature-mode" name="feature_mode"><option value="full" {{if eq .Settings.FeatureMode "full"}}selected{{end}}>Katalog penuh (semua fitur)</option><option value="biolink" {{if eq .Settings.FeatureMode "biolink"}}selected{{end}}>Bio link (profil + tautan)</option><option value="shortener" {{if eq .Settings.FeatureMode "shortener"}}selected{{end}}>Hanya pemendek tautan</option><option value="custom" {{if eq .Settings.FeatureMode "custom"}}selected{{end}}>Kustom</option></select><p class="field-help">Mode mengisi centang di bawah. Pilih Kustom untuk mencentang manual; centang terkunci selama mode preset aktif. Mematikan semua fitur tetap menyimpan pengalihan slug pendek.</p></div>
+          <div class="offer-form-heading"><h2>Public features</h2><span>Choose what appears on the public page. Useful for using Plink purely as a link shortener.</span></div>
+          <div class="field"><label for="feature-mode">Display mode</label><select id="feature-mode" name="feature_mode"><option value="full" {{if eq .Settings.FeatureMode "full"}}selected{{end}}>Full catalog (all features)</option><option value="biolink" {{if eq .Settings.FeatureMode "biolink"}}selected{{end}}>Bio link (profile + links)</option><option value="shortener" {{if eq .Settings.FeatureMode "shortener"}}selected{{end}}>Link shortener only</option><option value="custom" {{if eq .Settings.FeatureMode "custom"}}selected{{end}}>Custom</option></select><p class="field-help">The mode fills the checkboxes below. Choose Custom to tick them manually; checkboxes are locked while a preset mode is active. Turning off every feature still keeps short slug redirects working.</p></div>
           <div class="offer-form-options" id="feature-flags">
-            <input type="hidden" name="feature_storefront_present" value="1" /><label class="check-row"><input type="checkbox" name="feature_storefront" value="1" data-feature {{if .Settings.StorefrontEnabled}}checked{{end}} /><span>Halaman beranda publik</span></label>
-            <input type="hidden" name="feature_catalog_present" value="1" /><label class="check-row"><input type="checkbox" name="feature_catalog" value="1" data-feature {{if .Settings.CatalogEnabled}}checked{{end}} /><span>Katalog produk &amp; referral</span></label>
-            <input type="hidden" name="feature_services_present" value="1" /><label class="check-row"><input type="checkbox" name="feature_services" value="1" data-feature {{if .Settings.ServicesEnabled}}checked{{end}} /><span>Jasa</span></label>
-            <input type="hidden" name="feature_articles_present" value="1" /><label class="check-row"><input type="checkbox" name="feature_articles" value="1" data-feature {{if .Settings.ArticlesEnabled}}checked{{end}} /><span>Artikel</span></label>
-            <input type="hidden" name="feature_projects_present" value="1" /><label class="check-row"><input type="checkbox" name="feature_projects" value="1" data-feature {{if .Settings.ProjectsEnabled}}checked{{end}} /><span>Proyek</span></label>
-            <input type="hidden" name="feature_resources_present" value="1" /><label class="check-row"><input type="checkbox" name="feature_resources" value="1" data-feature {{if .Settings.ResourcesEnabled}}checked{{end}} /><span>Resource / tautan (/links)</span></label>
-            <input type="hidden" name="feature_profile_present" value="1" /><label class="check-row"><input type="checkbox" name="feature_profile" value="1" data-feature {{if .Settings.ProfileEnabled}}checked{{end}} /><span>Profil &amp; bio</span></label>
-            <input type="hidden" name="feature_support_present" value="1" /><label class="check-row"><input type="checkbox" name="feature_support" value="1" data-feature {{if .Settings.SupportEnabled}}checked{{end}} /><span>Tombol dukungan</span></label>
-            <input type="hidden" name="feature_contact_present" value="1" /><label class="check-row"><input type="checkbox" name="feature_contact" value="1" data-feature {{if .Settings.ContactEnabled}}checked{{end}} /><span>Tombol kontak mengambang</span></label>
-            <input type="hidden" name="feature_favorites_present" value="1" /><label class="check-row"><input type="checkbox" name="feature_favorites" value="1" data-feature {{if .Settings.FavoritesEnabled}}checked{{end}} /><span>Favorit</span></label>
+            <input type="hidden" name="feature_storefront_present" value="1" /><label class="check-row"><input type="checkbox" name="feature_storefront" value="1" data-feature {{if .Settings.StorefrontEnabled}}checked{{end}} /><span>Public home page</span></label>
+            <input type="hidden" name="feature_catalog_present" value="1" /><label class="check-row"><input type="checkbox" name="feature_catalog" value="1" data-feature {{if .Settings.CatalogEnabled}}checked{{end}} /><span>Product &amp; referral catalog</span></label>
+            <input type="hidden" name="feature_services_present" value="1" /><label class="check-row"><input type="checkbox" name="feature_services" value="1" data-feature {{if .Settings.ServicesEnabled}}checked{{end}} /><span>Services</span></label>
+            <input type="hidden" name="feature_articles_present" value="1" /><label class="check-row"><input type="checkbox" name="feature_articles" value="1" data-feature {{if .Settings.ArticlesEnabled}}checked{{end}} /><span>Articles</span></label>
+            <input type="hidden" name="feature_projects_present" value="1" /><label class="check-row"><input type="checkbox" name="feature_projects" value="1" data-feature {{if .Settings.ProjectsEnabled}}checked{{end}} /><span>Projects</span></label>
+            <input type="hidden" name="feature_resources_present" value="1" /><label class="check-row"><input type="checkbox" name="feature_resources" value="1" data-feature {{if .Settings.ResourcesEnabled}}checked{{end}} /><span>Resources / links (/links)</span></label>
+            <input type="hidden" name="feature_profile_present" value="1" /><label class="check-row"><input type="checkbox" name="feature_profile" value="1" data-feature {{if .Settings.ProfileEnabled}}checked{{end}} /><span>Profile &amp; bio</span></label>
+            <input type="hidden" name="feature_support_present" value="1" /><label class="check-row"><input type="checkbox" name="feature_support" value="1" data-feature {{if .Settings.SupportEnabled}}checked{{end}} /><span>Support button</span></label>
+            <input type="hidden" name="feature_contact_present" value="1" /><label class="check-row"><input type="checkbox" name="feature_contact" value="1" data-feature {{if .Settings.ContactEnabled}}checked{{end}} /><span>Floating contact button</span></label>
+            <input type="hidden" name="feature_favorites_present" value="1" /><label class="check-row"><input type="checkbox" name="feature_favorites" value="1" data-feature {{if .Settings.FavoritesEnabled}}checked{{end}} /><span>Favorites</span></label>
           </div>
-          <p class="field-help">Fitur yang dimatikan hilang dari navigasi dan tidak dapat diakses lewat URL langsung. Beranda tetap ada sebagai halaman minimal. Halaman katalog, jasa, proyek, artikel, resource, dan detail produk membutuhkan beranda publik aktif. Detail produk dan tombol WhatsApp juga membutuhkan katalog aktif. Pengaturan dan konten tetap tersimpan; slug pendek aktif tetap mengarah ke tujuannya.</p>
+          <p class="field-help">Disabled features disappear from navigation and cannot be reached by direct URL. The home page remains as a minimal page. Catalog, services, projects, articles, resources, and product detail pages require the public home page to be active. Product details and the WhatsApp button also require the catalog to be active. Settings and content are kept; active short slugs still point to their destination.</p>
         </section>
 
-        <section class="analytics-page-panel settings-panel"><div class="offer-form-heading"><h2>Konten beranda &amp; jasa</h2><span>Sesuaikan teks publik tanpa mengubah kode.</span></div>
-<div class="field"><label for="hero-eyebrow">Label beranda</label><input id="hero-eyebrow" type="text" name="hero_eyebrow" maxlength="80" value="{{.Settings.HeroEyebrow}}" /></div>
-<div class="field"><label for="hero-title">Judul beranda</label><textarea id="hero-title" required name="hero_title" maxlength="160" rows="2">{{.Settings.HeroTitle}}</textarea><p class="field-help">Enter membuat baris baru.</p></div>
-<div class="field"><label for="hero-description">Deskripsi beranda</label><textarea id="hero-description" name="hero_description" maxlength="300" rows="3">{{.Settings.HeroDescription}}</textarea></div>
-<div class="field"><label for="service-title">Judul bagian jasa</label><input id="service-title" required type="text" name="service_title" maxlength="80" value="{{.Settings.ServiceTitle}}" /></div>
-<div class="field"><label for="service-description">Deskripsi jasa</label><textarea id="service-description" name="service_description" maxlength="300" rows="3">{{.Settings.ServiceDescription}}</textarea></div></section>
+        <section class="analytics-page-panel settings-panel"><div class="offer-form-heading"><h2>Home &amp; services content</h2><span>Adjust public text without changing code.</span></div>
+<div class="field"><label for="hero-eyebrow">Home label</label><input id="hero-eyebrow" type="text" name="hero_eyebrow" maxlength="80" value="{{.Settings.HeroEyebrow}}" /></div>
+<div class="field"><label for="hero-title">Home title</label><textarea id="hero-title" required name="hero_title" maxlength="160" rows="2">{{.Settings.HeroTitle}}</textarea><p class="field-help">Enter starts a new line.</p></div>
+<div class="field"><label for="hero-description">Home description</label><textarea id="hero-description" name="hero_description" maxlength="300" rows="3">{{.Settings.HeroDescription}}</textarea></div>
+<div class="field"><label for="service-title">Services section title</label><input id="service-title" required type="text" name="service_title" maxlength="80" value="{{.Settings.ServiceTitle}}" /></div>
+<div class="field"><label for="service-description">Services description</label><textarea id="service-description" name="service_description" maxlength="300" rows="3">{{.Settings.ServiceDescription}}</textarea></div></section>
 
-        <section class="analytics-page-panel settings-panel"><div class="offer-form-heading"><h2>SEO &amp; berbagi</h2><span>Atur bagaimana halaman muncul di pencarian dan saat dibagikan.</span></div>
+        <section class="analytics-page-panel settings-panel"><div class="offer-form-heading"><h2>SEO &amp; sharing</h2><span>Control how the page appears in search and when shared.</span></div>
           <input type="hidden" name="item_previews_present" value="1" />
-          <label class="check-row"><input type="checkbox" name="item_previews" value="1" {{if .Settings.ItemPreviews}}checked{{end}} /><span>Preview otomatis per item Katalog</span></label><p class="field-help">Judul, deskripsi, dan gambar mengikuti item untuk semua slug terkait. Tanpa gambar, kartu dibuat otomatis. Pengunjung tetap langsung ke tujuan; program berakhir menampilkan status terbaru. Platform sosial dapat menyimpan preview lama.</p>
-          <div class="field"><label for="settings-public-origin">Alamat publik</label><input id="settings-public-origin" type="url" name="public_origin" maxlength="2048" value="{{.Settings.PublicOrigin}}" placeholder="https://example.com" /><p class="field-help">Dipakai pada tautan salin, canonical, sitemap, dan domain gambar OG. Isi domain tanpa path. Kosongkan untuk mengikuti PUBLIC_URL atau alamat akses. Ini tidak mengubah DNS maupun alamat server.</p><p class="field-help">Alamat yang sedang dipakai: <strong>{{.EffectivePublicURL}}</strong></p></div>
-          <div class="field"><label for="settings-seo-title">Judul SEO</label><input id="settings-seo-title" type="text" name="seo_title" maxlength="100" value="{{.Settings.SEOTitle}}" placeholder="Mengikuti nama halaman" /><p class="field-help">Kosongkan untuk memakai nama halaman. Katalog dan Jasa punya judul sesuai halamannya.</p></div>
-          <div class="field"><label for="settings-seo-description">Deskripsi SEO</label><textarea id="settings-seo-description" name="seo_description" maxlength="200" rows="3" placeholder="Mengikuti deskripsi singkat">{{.Settings.SEODescription}}</textarea></div>
-          <div class="field"><label for="settings-share-image">URL gambar share</label><input id="settings-share-image" name="share_image_url" type="text" maxlength="2048" value="{{.Settings.ShareImageURL}}" placeholder="Kosongkan untuk gambar otomatis" /><input type="file" id="settings-share-image-file" name="share_image_file" accept="image/png,image/jpeg,image/webp" /><p class="field-help">Unggah PNG/JPEG/WebP horizontal 1200 × 630 maks 5 MB, atau isi URL HTTPS/path lokal. Unggahan menimpa URL. Jika kosong, gambar otomatis mengikuti judul, deskripsi, dan warna publik. Logo PNG/JPG/WebP publik ikut ditampilkan; SVG atau logo yang tidak dapat dibaca memakai mark bawaan.</p></div>
-          <figure class="share-preview"><img src="{{.SEO.Image}}" alt="Preview gambar share yang tersimpan" loading="lazy" /><figcaption><small>{{.Settings.SiteName}}</small><strong>{{.SEO.Title}}</strong><span>{{.SEO.Description}}</span></figcaption></figure>
-          <p class="field-help">Preview memakai pengaturan tersimpan. Platform sosial bisa menyimpan preview lama sementara waktu. Link pendek aktif tetap langsung menuju website tujuan.</p>
+          <label class="check-row"><input type="checkbox" name="item_previews" value="1" {{if .Settings.ItemPreviews}}checked{{end}} /><span>Automatic preview per Catalog item</span></label><p class="field-help">The title, description, and image follow the item for all connected slugs. Without an image, a card is generated automatically. Visitors still go straight to the destination; an ended program shows its latest status. Social platforms may cache an older preview.</p>
+          <div class="field"><label for="settings-public-origin">Public address</label><input id="settings-public-origin" type="url" name="public_origin" maxlength="2048" value="{{.Settings.PublicOrigin}}" placeholder="https://example.com" /><p class="field-help">Used for copied links, canonical URLs, the sitemap, and the OG image domain. Enter the domain without a path. Leave empty to follow PUBLIC_URL or the access address. This does not change DNS or the server address.</p><p class="field-help">Address currently in use: <strong>{{.EffectivePublicURL}}</strong></p></div>
+          <div class="field"><label for="settings-seo-title">SEO title</label><input id="settings-seo-title" type="text" name="seo_title" maxlength="100" value="{{.Settings.SEOTitle}}" placeholder="Follows the site name" /><p class="field-help">Leave empty to use the site name. Catalog and Services have titles that match their pages.</p></div>
+          <div class="field"><label for="settings-seo-description">SEO description</label><textarea id="settings-seo-description" name="seo_description" maxlength="200" rows="3" placeholder="Follows the short description">{{.Settings.SEODescription}}</textarea></div>
+          <div class="field"><label for="settings-share-image">Share image URL</label><input id="settings-share-image" name="share_image_url" type="text" maxlength="2048" value="{{.Settings.ShareImageURL}}" placeholder="Leave empty for a generated image" /><input type="file" id="settings-share-image-file" name="share_image_file" accept="image/png,image/jpeg,image/webp" /><p class="field-help">Upload a horizontal 1200 × 630 PNG/JPEG/WebP up to 5 MB, or enter an HTTPS URL/local path. An upload replaces the URL. If empty, a generated image follows the title, description, and public colors. A public PNG/JPG/WebP logo is included; an SVG or unreadable logo falls back to the default mark.</p></div>
+          <figure class="share-preview"><img src="{{.SEO.Image}}" alt="Preview of the saved share image" loading="lazy" /><figcaption><small>{{.Settings.SiteName}}</small><strong>{{.SEO.Title}}</strong><span>{{.SEO.Description}}</span></figcaption></figure>
+          <p class="field-help">The preview uses saved settings. Social platforms may keep an older preview for a while. Active short links still go straight to the destination website.</p>
         </section>
 
         <section class="analytics-page-panel settings-panel">
-          <div class="offer-form-heading"><h2>Pilihan utama</h2><span>Isi dan urutan kartu diatur lewat Katalog.</span></div>
+          <div class="offer-form-heading"><h2>Featured items</h2><span>Card content and order are managed in the Catalog.</span></div>
           <div class="offer-form-options">
-            <label class="check-row"><input type="checkbox" name="hero_enabled" value="1" {{if .Settings.HeroEnabled}}checked{{end}} /><span>Tampilkan pilihan utama di beranda</span></label>
+            <label class="check-row"><input type="checkbox" name="hero_enabled" value="1" {{if .Settings.HeroEnabled}}checked{{end}} /><span>Show featured items on the home page</span></label>
           </div>
-          <div class="field settings-limit-field"><label for="settings-featured-limit">Jumlah pilihan utama</label><select id="settings-featured-limit" name="featured_limit">
-            <option value="1" {{if eq .Settings.FeaturedLimit 1}}selected{{end}}>1 kartu</option>
-            <option value="2" {{if eq .Settings.FeaturedLimit 2}}selected{{end}}>2 kartu</option>
-            <option value="3" {{if eq .Settings.FeaturedLimit 3}}selected{{end}}>3 kartu</option>
-          </select><div class="field-help">Item unggulan yang tersedia dan berprioritas tinggi muncul lebih dulu. Geser kartu secara manual.</div></div>
+          <div class="field settings-limit-field"><label for="settings-featured-limit">Number of featured items</label><select id="settings-featured-limit" name="featured_limit">
+            <option value="1" {{if eq .Settings.FeaturedLimit 1}}selected{{end}}>1 card</option>
+            <option value="2" {{if eq .Settings.FeaturedLimit 2}}selected{{end}}>2 cards</option>
+            <option value="3" {{if eq .Settings.FeaturedLimit 3}}selected{{end}}>3 cards</option>
+          </select><div class="field-help">Available featured items with higher priority appear first. Swipe the cards manually.</div></div>
         </section>
 
         <section class="analytics-page-panel settings-panel">
-          <div class="offer-form-heading"><h2>Keterangan referral</h2><span>Kosongkan untuk menyembunyikan keterangan.</span></div>
-          <div class="field"><label for="settings-affiliate-disclosure">Teks keterangan</label><textarea id="settings-affiliate-disclosure" name="affiliate_disclosure" maxlength="500" rows="3">{{.Settings.AffiliateDisclosure}}</textarea></div>
+          <div class="offer-form-heading"><h2>Referral disclosure</h2><span>Leave empty to hide the disclosure.</span></div>
+          <div class="field"><label for="settings-affiliate-disclosure">Disclosure text</label><textarea id="settings-affiliate-disclosure" name="affiliate_disclosure" maxlength="500" rows="3">{{.Settings.AffiliateDisclosure}}</textarea></div>
         </section>
 
-        <section class="analytics-page-panel settings-panel"><div class="offer-form-heading"><h2>Warna tampilan</h2><span>Palet awal dari Geopolitics. Publik dan admin bisa berbeda.</span></div>
-<div class="form-pair"><div class="field"><label for="public-accent">Aksen publik</label><input id="public-accent" type="color" name="public_accent" value="{{.Settings.PublicAccent}}" /></div><div class="field"><label for="public-background">Latar publik</label><input id="public-background" type="color" name="public_background" value="{{.Settings.PublicBackground}}" /></div></div>
-<div class="form-pair"><div class="field"><label for="admin-accent">Aksen admin</label><input id="admin-accent" type="color" name="admin_accent" value="{{.Settings.AdminAccent}}" /></div><div class="field"><label for="admin-background">Latar admin</label><input id="admin-background" type="color" name="admin_background" value="{{.Settings.AdminBackground}}" /></div></div><p class="field-help">Pilih latar terang dan aksen yang kontras agar teks mudah dibaca.</p></section>
-<section class="analytics-page-panel settings-panel"><h2>Butuh bantuan?</h2><p class="field-help">Alur tautan, katalog, status program, dan statistik dijelaskan di panduan.</p><a class="btn btn-ghost" href="/{{.AdminPath}}/guide">Buka panduan →</a></section>
+        <section class="analytics-page-panel settings-panel"><div class="offer-form-heading"><h2>Display colors</h2><span>Starting palette from Geopolitics. Public and admin can differ.</span></div>
+<div class="form-pair"><div class="field"><label for="public-accent">Public accent</label><input id="public-accent" type="color" name="public_accent" value="{{.Settings.PublicAccent}}" /></div><div class="field"><label for="public-background">Public background</label><input id="public-background" type="color" name="public_background" value="{{.Settings.PublicBackground}}" /></div></div>
+<div class="form-pair"><div class="field"><label for="admin-accent">Admin accent</label><input id="admin-accent" type="color" name="admin_accent" value="{{.Settings.AdminAccent}}" /></div><div class="field"><label for="admin-background">Admin background</label><input id="admin-background" type="color" name="admin_background" value="{{.Settings.AdminBackground}}" /></div></div><p class="field-help">Choose a light background and a contrasting accent so text stays readable.</p></section>
+<section class="analytics-page-panel settings-panel"><h2>Need help?</h2><p class="field-help">Link flow, catalog, program status, and analytics are explained in the guide.</p><a class="btn btn-ghost" href="/{{.AdminPath}}/guide">Open the guide →</a></section>
 
-        <div class="modal-footer settings-actions" data-main-save><a href="/{{.AdminPath}}" class="btn btn-ghost">Batal</a><button type="submit" class="btn btn-primary">Simpan pengaturan</button></div>
-        <div class="sticky-save" data-sticky-save data-form="settings-form"><button type="submit" class="btn btn-primary">Simpan pengaturan</button></div>
+        <div class="modal-footer settings-actions" data-main-save><a href="/{{.AdminPath}}" class="btn btn-ghost">Cancel</a><button type="submit" class="btn btn-primary">Save settings</button></div>
+        <div class="sticky-save" data-sticky-save data-form="settings-form"><button type="submit" class="btn btn-primary">Save settings</button></div>
       </form>
     </main>
   </div>

@@ -106,7 +106,7 @@ func (s *Server) handleSaveSettings(w http.ResponseWriter, r *http.Request) {
 	} {
 		if values, present := r.PostForm[field.name]; present {
 			if len(values) != 1 || len(values[0]) > field.limit {
-				s.renderSettingsDashboard(w, r, settingsDashboardData{Settings: settings, Error: "Isian alamat atau konten terlalu panjang."})
+				s.renderSettingsDashboard(w, r, settingsDashboardData{Settings: settings, Error: "The address or content is too long."})
 				return
 			}
 			*field.value = strings.TrimSpace(values[0])
@@ -114,12 +114,12 @@ func (s *Server) handleSaveSettings(w http.ResponseWriter, r *http.Request) {
 	}
 	origin, originErr := config.NormalizePublicURL(settings.PublicOrigin, s.cfg.Production)
 	if originErr != nil {
-		s.renderSettingsDashboard(w, r, settingsDashboardData{Settings: settings, Error: "Alamat publik tidak valid: " + originErr.Error()})
+		s.renderSettingsDashboard(w, r, settingsDashboardData{Settings: settings, Error: "Invalid public address: " + originErr.Error()})
 		return
 	}
 	settings.PublicOrigin = origin
 	if settings.HeroTitle == "" || settings.ServiceTitle == "" {
-		s.renderSettingsDashboard(w, r, settingsDashboardData{Settings: settings, Error: "Judul beranda dan bagian jasa wajib diisi."})
+		s.renderSettingsDashboard(w, r, settingsDashboardData{Settings: settings, Error: "The home title and services section title are required."})
 		return
 	}
 	settings.PublicAccent, settings.PublicBackground = previous.PublicAccent, previous.PublicBackground
@@ -137,7 +137,7 @@ func (s *Server) handleSaveSettings(w http.ResponseWriter, r *http.Request) {
 	} {
 		if values, present := r.PostForm[field.name]; present {
 			if len(values) != 1 || len(values[0]) > field.limit {
-				s.renderSettingsDashboard(w, r, settingsDashboardData{Settings: settings, Error: "Isian SEO terlalu panjang atau tidak valid."})
+				s.renderSettingsDashboard(w, r, settingsDashboardData{Settings: settings, Error: "The SEO fields are too long or invalid."})
 				return
 			}
 			*field.value = strings.TrimSpace(values[0])
@@ -150,7 +150,7 @@ func (s *Server) handleSaveSettings(w http.ResponseWriter, r *http.Request) {
 		settings.ShareImageURL = path
 	}
 	if !validBrandImage(settings.ShareImageURL) || strings.HasPrefix(settings.ShareImageURL, "/og-image.png") {
-		s.renderSettingsDashboard(w, r, settingsDashboardData{Settings: settings, Error: "Gambar share harus berupa URL HTTPS atau path gambar lokal, bukan endpoint gambar otomatis."})
+		s.renderSettingsDashboard(w, r, settingsDashboardData{Settings: settings, Error: "The share image must be an HTTPS URL or a local image path, not a generated image endpoint."})
 		return
 	}
 	for _, asset := range []struct {
@@ -164,7 +164,7 @@ func (s *Server) handleSaveSettings(w http.ResponseWriter, r *http.Request) {
 			}
 			*asset.value = strings.TrimSpace(values[0])
 			if !validBrandImage(*asset.value) {
-				s.renderSettingsDashboard(w, r, settingsDashboardData{Settings: settings, Error: "Logo, favicon, dan avatar harus berupa URL HTTPS atau path lokal, maksimal 2048 karakter."})
+				s.renderSettingsDashboard(w, r, settingsDashboardData{Settings: settings, Error: "The logo, favicon, and avatar must be HTTPS URLs or local paths, up to 2048 characters."})
 				return
 			}
 		}
@@ -194,7 +194,7 @@ func (s *Server) handleSaveSettings(w http.ResponseWriter, r *http.Request) {
 		}
 		raw := strings.TrimSpace(values[0])
 		if !validSocialURL(platform.Key, raw) {
-			s.renderSettingsDashboard(w, r, settingsDashboardData{Settings: settings, Error: "Tautan sosial tidak valid. Gunakan URL http(s), atau alamat email untuk Email."})
+			s.renderSettingsDashboard(w, r, settingsDashboardData{Settings: settings, Error: "Invalid social link. Use an http(s) URL, or an email address for Email."})
 			return
 		}
 		if raw == "" {
@@ -223,11 +223,11 @@ func (s *Server) handleSaveSettings(w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 		if !knownPlatform(platform) || !validSocialURL(platform, raw) {
-			s.renderSettingsDashboard(w, r, settingsDashboardData{Settings: settings, Error: "Kontak tidak valid. Pilih ikon kanal dan isi URL http(s) atau alamat email."})
+			s.renderSettingsDashboard(w, r, settingsDashboardData{Settings: settings, Error: "Invalid contact. Choose a channel icon and enter an http(s) URL or email address."})
 			return
 		}
 		if len(label) > 40 {
-			s.renderSettingsDashboard(w, r, settingsDashboardData{Settings: settings, Error: "Label kontak maksimal 40 karakter."})
+			s.renderSettingsDashboard(w, r, settingsDashboardData{Settings: settings, Error: "The contact label is limited to 40 characters."})
 			return
 		}
 		if platform == "email" && !strings.HasPrefix(raw, "mailto:") {
@@ -238,14 +238,14 @@ func (s *Server) handleSaveSettings(w http.ResponseWriter, r *http.Request) {
 	settings.ContactLinks = encodeContactEntries(entries)
 	if values, present := r.PostForm["contact_title"]; present {
 		if len(values) != 1 || len(strings.TrimSpace(values[0])) > 60 {
-			s.renderSettingsDashboard(w, r, settingsDashboardData{Settings: settings, Error: "Judul kontak maksimal 60 karakter."})
+			s.renderSettingsDashboard(w, r, settingsDashboardData{Settings: settings, Error: "The contact title is limited to 60 characters."})
 			return
 		}
 		settings.ContactTitle = strings.TrimSpace(values[0])
 	}
 	if values, present := r.PostForm["contact_note"]; present {
 		if len(values) != 1 || len(strings.TrimSpace(values[0])) > 200 {
-			s.renderSettingsDashboard(w, r, settingsDashboardData{Settings: settings, Error: "Pesan kontak maksimal 200 karakter."})
+			s.renderSettingsDashboard(w, r, settingsDashboardData{Settings: settings, Error: "The contact message is limited to 200 characters."})
 			return
 		}
 		settings.ContactNote = strings.TrimSpace(values[0])
@@ -259,7 +259,7 @@ func (s *Server) handleSaveSettings(w http.ResponseWriter, r *http.Request) {
 	} {
 		if value, present := r.PostForm[color.name]; present {
 			if len(value) != 1 || !hexColor.MatchString(value[0]) {
-				s.renderSettingsDashboard(w, r, settingsDashboardData{Settings: settings, Error: "Warna harus berupa kode hex enam digit, misalnya #c43424."})
+				s.renderSettingsDashboard(w, r, settingsDashboardData{Settings: settings, Error: "The color must be a six-digit hex code, for example #c43424."})
 				return
 			}
 			*color.value = strings.ToLower(value[0])
@@ -317,7 +317,7 @@ func applyFeatureFlags(r *http.Request, settings *db.SiteSettings, previous db.S
 		return ""
 	}
 	if len(modes) != 1 {
-		return "Isian fitur publik tidak valid."
+		return "Invalid public feature settings."
 	}
 	setFeatures := func(storefront, catalog, services, articles, projects, resources, profile, support, favorites, contact bool) {
 		settings.StorefrontEnabled = storefront
@@ -359,12 +359,12 @@ func applyFeatureFlags(r *http.Request, settings *db.SiteSettings, previous db.S
 			}
 			values := r.PostForm[flag.name]
 			if len(values) > 1 || (len(values) == 1 && values[0] != "1") {
-				return "Isian fitur publik tidak valid."
+				return "Invalid public feature settings."
 			}
 			*flag.value = len(values) == 1
 		}
 	default:
-		return "Mode fitur publik tidak dikenal."
+		return "Unknown public feature mode."
 	}
 	return ""
 }

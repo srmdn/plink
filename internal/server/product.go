@@ -24,12 +24,12 @@ func parseProductPrice(value string) (*int64, error) {
 		return nil, nil
 	}
 	if !productPricePattern.MatchString(value) {
-		return nil, fmt.Errorf("harga harus berupa angka positif dengan maksimal dua desimal")
+		return nil, fmt.Errorf("the price must be a positive number with at most two decimals")
 	}
 	parts := strings.SplitN(strings.ReplaceAll(value, ",", "."), ".", 2)
 	whole, err := strconv.ParseInt(parts[0], 10, 64)
 	if err != nil {
-		return nil, fmt.Errorf("harga tidak valid")
+		return nil, fmt.Errorf("invalid price")
 	}
 	var fraction int64
 	if len(parts) == 2 {
@@ -102,16 +102,16 @@ func parseProductDetails(r *http.Request) (*db.ProductDetails, error) {
 		product.Currency = "IDR"
 	}
 	if product.WhatsApp != nil && product.WhatsApp.Enabled && !product.Enabled {
-		return product, fmt.Errorf("aktifkan halaman detail produk untuk menggunakan tombol WhatsApp")
+		return product, fmt.Errorf("enable the product detail page to use the WhatsApp button")
 	}
 	if product.Kind != "" && product.Kind != "physical" && product.Kind != "digital" {
-		return product, fmt.Errorf("jenis produk tidak valid")
+		return product, fmt.Errorf("invalid product type")
 	}
 	if !productCurrencyPattern.MatchString(product.Currency) {
-		return product, fmt.Errorf("mata uang harus berupa tiga huruf, misalnya IDR")
+		return product, fmt.Errorf("the currency must be three letters, for example IDR")
 	}
 	if len(product.Details) > 5000 || len(product.Fulfillment) > 1000 {
-		return product, fmt.Errorf("detail produk atau informasi pengiriman terlalu panjang")
+		return product, fmt.Errorf("product details or shipping information are too long")
 	}
 	var err error
 	product.PriceMinor, err = parseProductPrice(r.FormValue("product_price"))
@@ -128,11 +128,11 @@ func normalizeWhatsAppNumber(raw string) (string, error) {
 		if c >= '0' && c <= '9' {
 			number.WriteRune(c)
 		} else if c != ' ' && c != '-' && c != '(' && c != ')' {
-			return "", fmt.Errorf("nomor WhatsApp harus menggunakan kode negara dan angka")
+			return "", fmt.Errorf("the WhatsApp number must use a country code and digits")
 		}
 	}
 	if !whatsappNumberPattern.MatchString(number.String()) {
-		return "", fmt.Errorf("nomor WhatsApp harus 8–15 digit dengan kode negara, tanpa angka 0 di depan")
+		return "", fmt.Errorf("the WhatsApp number must be 8–15 digits including the country code, without a leading 0")
 	}
 	return number.String(), nil
 }
@@ -202,9 +202,9 @@ func (s *Server) handleProductWhatsApp(w http.ResponseWriter, r *http.Request) {
 	}
 	message := strings.TrimSpace(offer.WhatsAppMessage)
 	if message == "" {
-		message = "Halo, saya tertarik dengan produk ini."
+		message = "Hi, I am interested in this product."
 	}
-	message += "\n\nProduk: " + offer.Title + "\n" + s.publicURL(r) + "/offers/item/" + strconv.FormatInt(id, 10)
+	message += "\n\nProduct: " + offer.Title + "\n" + s.publicURL(r) + "/offers/item/" + strconv.FormatInt(id, 10)
 	destination := "https://wa.me/" + offer.WhatsAppNumber + "?" + url.Values{"text": {message}}.Encode()
 	if r.Method == http.MethodGet && !isSocialPreviewBot(r.UserAgent()) {
 		if err := s.db.RecordProductWhatsAppClick(id, time.Now().Unix()); err != nil {
