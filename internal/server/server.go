@@ -133,8 +133,9 @@ func New(cfg *config.Config, database *db.DB, webFS embed.FS) http.Handler {
 			"add": func(left, right int) int {
 				return left + right
 			},
-			"js":       template.JSEscaper,
-			"urlquery": template.URLQueryEscaper,
+			"js":        template.JSEscaper,
+			"hasPrefix": strings.HasPrefix,
+			"urlquery":  template.URLQueryEscaper,
 			"analyticsTag": func() any {
 				if cfg.AnalyticsScriptURL == "" {
 					return nil

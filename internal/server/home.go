@@ -29,6 +29,7 @@ type homeData struct {
 	FeaturedOffers      []db.Offer
 	Services            []db.Offer
 	Articles            []db.Offer
+	NativeArticles      []db.Offer
 	Projects            []db.Offer
 	ResourceOffers      []db.Offer
 	ServiceLinks        []db.PublicLink
@@ -188,6 +189,21 @@ func (s *Server) handleHome(w http.ResponseWriter, r *http.Request) {
 	}
 	sort.Strings(categories)
 
+	var nativeArticles []db.Offer
+	if published, err := s.db.ListPublishedArticles(); err == nil {
+		for _, a := range published {
+			if len(nativeArticles) == 4 {
+				break
+			}
+			nativeArticles = append(nativeArticles, db.Offer{
+				ID: a.ID, ItemType: "article", Title: a.Title, Description: a.Excerpt,
+				ImageURL: a.CoverURL, HomeSlug: a.Slug, HomeURL: "/a/" + a.Slug,
+				ButtonLabel: "Read article", Active: true,
+			})
+		}
+	}
+	externalArticleSlots := 4 - len(nativeArticles)
+
 	var services, resourceOffers, articles, projects []db.Offer
 	for _, offer := range activeOffers {
 		if offer.ItemType == "service" {
@@ -196,7 +212,7 @@ func (s *Server) handleHome(w http.ResponseWriter, r *http.Request) {
 		if offer.ItemType == "resource" {
 			resourceOffers = append(resourceOffers, offer)
 		}
-		if offer.ItemType == "article" && len(articles) < 4 {
+		if offer.ItemType == "article" && len(articles) < externalArticleSlots {
 			articles = append(articles, offer)
 		}
 		if offer.ItemType == "project" && len(projects) < 4 {
@@ -242,7 +258,7 @@ func (s *Server) handleHome(w http.ResponseWriter, r *http.Request) {
 		SEO:      s.publicSEO(settings, r, ""),
 		Settings: settings,
 		Links:    links,
-		Services: services, Articles: articles, Projects: projects, ResourceOffers: resourceOffers, ServiceLinks: serviceLinks,
+		Services: services, Articles: articles, NativeArticles: nativeArticles, Projects: projects, ResourceOffers: resourceOffers, ServiceLinks: serviceLinks,
 		Offers:              pageOffers,
 		FeaturedOffers:      featuredOffers,
 		OfferCategories:     categoriesForOffers(publicOffers(offers, today)),
@@ -368,6 +384,15 @@ func (s *Server) handleBrowse(w http.ResponseWriter, r *http.Request, resourcesO
 			title = l.Slug
 		}
 		all = append(all, publicCard{Title: title, Provider: l.Provider, Category: l.Category, HomeSlug: l.Slug, ButtonLabel: "Open link", ItemType: kind})
+	}
+	if view == "articles" {
+		if published, err := s.db.ListPublishedArticles(); err == nil {
+			native := make([]publicCard, 0, len(published))
+			for _, a := range published {
+				native = append(native, publicCard{Title: a.Title, Description: a.Excerpt, ImageURL: a.CoverURL, HomeSlug: a.Slug, HomeURL: "/a/" + a.Slug, ButtonLabel: "Read article", ItemType: "article"})
+			}
+			all = append(native, all...)
+		}
 	}
 	category, provider, query := strings.TrimSpace(r.URL.Query().Get("category")), strings.TrimSpace(r.URL.Query().Get("provider")), strings.TrimSpace(r.URL.Query().Get("q"))
 	categories, providers := []string{}, []string{}
