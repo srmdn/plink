@@ -1,20 +1,20 @@
 # Analytics backlog
 
-Catatan ini menyimpan opsi lanjutan yang sengaja ditunda dari release analytics
-dashboard saat ini. Fitur inti tetap fokus pada pengelolaan link, ranking
-provider, dan pembacaan performa berdasarkan slug.
+This note records advanced options deliberately deferred from the current
+analytics dashboard release. The core feature set stays focused on link
+management, provider ranking, and reading performance by slug.
 
 ## Status
 
-- [x] **Trend yang kontekstual** — kolom Trend disembunyikan ketika filter
-  periode berada di `all`, karena tidak ada periode pembanding yang bermakna.
-  Dirilis di v1.3.0.
-- [ ] **Bulk edit metadata** — ubah provider, channel, campaign, atau kategori
-   untuk beberapa link sekaligus.
-- [ ] **Status strategi promosi** — tambahkan status manual `push`, `observe`, dan
-   `pause` agar ranking bisa langsung menjadi daftar kerja promosi.
-- [ ] **Conversion dan revenue tracking** — hubungkan klik dengan conversion,
-   komisi, dan revenue supaya ranking tidak hanya berdasarkan traffic.
+- [x] **Contextual trend** — the Trend column is hidden when the period filter
+  is `all`, because there is no meaningful comparison period. Released in
+  v1.3.0.
+- [ ] **Bulk metadata edit** — change provider, channel, campaign, or category
+  for several links at once.
+- [ ] **Promotion strategy status** — add manual `push`, `observe`, and `pause`
+  states so the ranking can become a promotion worklist directly.
+- [ ] **Conversion and revenue tracking** — connect clicks with conversion,
+  commission, and revenue so ranking is not based on traffic alone.
 
-Trend kontekstual sudah dirilis di v1.3.0. Tiga item tersisa belum dikerjakan
-dan perlu dievaluasi setelah dashboard dipakai dengan data produksi.
+Contextual trend shipped in v1.3.0. The three remaining items are not done and
+need evaluation after the dashboard has been used with production data.
