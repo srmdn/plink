@@ -33,6 +33,7 @@ type homeData struct {
 	ResourceOffers      []db.Offer
 	ServiceLinks        []db.PublicLink
 	OfferCategories     []string
+	OfferSectionTitle   string
 	Categories          []string
 	SiteName            string
 	SiteDesc            string
@@ -215,6 +216,25 @@ func (s *Server) handleHome(w http.ResponseWriter, r *http.Request) {
 		links = links[:6]
 	}
 
+	// The section heading follows what the catalog actually contains, so a site
+	// with only referrals is not labelled as selling products.
+	offerSectionTitle := "Offers"
+	hasProduct, hasReferral := false, false
+	for _, offer := range activeOffers {
+		switch offer.ItemType {
+		case "product":
+			hasProduct = true
+		case "referral":
+			hasReferral = true
+		}
+	}
+	switch {
+	case hasProduct && hasReferral:
+		offerSectionTitle = "Products & offers"
+	case hasProduct:
+		offerSectionTitle = "Products"
+	}
+
 	loggedIn := s.isLoggedIn(r)
 
 	w.Header().Add("Vary", "Cookie")
@@ -226,6 +246,7 @@ func (s *Server) handleHome(w http.ResponseWriter, r *http.Request) {
 		Offers:              pageOffers,
 		FeaturedOffers:      featuredOffers,
 		OfferCategories:     categoriesForOffers(publicOffers(offers, today)),
+		OfferSectionTitle:   offerSectionTitle,
 		Categories:          categories,
 		SiteName:            settings.SiteName,
 		SiteDesc:            settings.SiteDesc,

@@ -63,7 +63,7 @@
 </svg>
 {{end}}
 {{define "public-button-label"}}{{if eq . "Lihat proyek"}}View project{{else if eq . "Pelajari selengkapnya"}}Learn more{{else if eq . "Lihat promo"}}View offer{{else if eq . "Lihat produk"}}View product{{else if eq . "Lihat jasa"}}View service{{else if eq . "Lihat VPS"}}View VPS{{else if eq . "Baca artikel"}}Read article{{else}}{{.}}{{end}}{{end}}
-{{define "public-item-type"}}{{if eq . "product"}}Product{{else if eq . "referral"}}Referral{{else if eq . "service"}}Service{{else if eq . "resource"}}Resource{{else if eq . "article"}}Article{{else if eq . "project"}}Project{{end}}{{end}}
+{{define "public-item-type"}}{{if eq . "product"}}Product{{else if eq . "referral"}}Offer{{else if eq . "service"}}Service{{else if eq . "resource"}}Resource{{else if eq . "article"}}Article{{else if eq . "project"}}Project{{end}}{{end}}
 {{define "offer-card"}}
 {{$external := or (eq .ItemType "article") (eq .ItemType "project")}}
 {{$productPage := and (eq .ItemType "product") .ProductPage}}
@@ -93,7 +93,7 @@
 {{if and .Settings.ArticlesEnabled .Articles}}<section class="store-section article-section"><div class="store-section-head"><div><span class="store-eyebrow">READING</span><h2>Articles</h2></div><a href="/offers?view=articles">View all →</a></div><div class="offer-grid">{{range .Articles}}{{template "offer-card" .}}{{end}}</div></section>{{end}}
 {{if .Settings.CatalogEnabled}}
 {{if and .HeroEnabled .FeaturedOffers}}<section class="store-section"><div class="store-section-head"><div><span class="store-eyebrow">FEATURED</span><h2>Featured</h2></div></div><div class="featured-scroller"><div class="featured-track" data-featured-track>{{range .FeaturedOffers}}{{template "offer-card" .}}{{end}}</div></div></section>{{end}}
-{{if .Offers}}<section class="store-section"><div class="store-section-head"><h2>Products &amp; referrals</h2><a href="/offers">View all →</a></div><div class="offer-grid">{{range .Offers}}{{template "offer-card" .}}{{end}}</div></section>{{end}}{{end}}
+{{if .Offers}}<section class="store-section"><div class="store-section-head"><h2>{{.OfferSectionTitle}}</h2><a href="/offers">View all →</a></div><div class="offer-grid">{{range .Offers}}{{template "offer-card" .}}{{end}}</div></section>{{end}}{{end}}
 {{if .Settings.ServicesEnabled}}<section class="store-section service-section"><div class="store-section-head"><div><span class="store-eyebrow">Services</span><h2>{{.Settings.ServiceTitle}}</h2></div><a href="/offers?view=services">View services →</a></div><p class="section-note">{{.Settings.ServiceDescription}}</p>{{if .Services}}<div class="offer-grid">{{range .Services}}{{template "offer-card" .}}{{end}}</div>{{end}}{{if .ServiceLinks}}<div class="resource-grid">{{range .ServiceLinks}}{{template "resource-card" .}}{{end}}</div>{{end}}{{if and (not .Services) (not .ServiceLinks)}}<p class="store-empty"><span class="empty-icon" aria-hidden="true">{{template "nav-icon" "service"}}</span><span>No services available yet.</span></p>{{end}}</section>{{end}}
 {{if and .Settings.ResourcesEnabled (or .Links .ResourceOffers)}}<section class="store-section"><div class="store-section-head"><h2>Resources</h2><a href="/links">View all →</a></div>{{if .ResourceOffers}}<div class="offer-grid">{{range .ResourceOffers}}{{template "offer-card" .}}{{end}}</div>{{end}}<div class="resource-grid">{{range .Links}}{{template "resource-card" .}}{{end}}</div></section>{{end}}
 {{if and .Settings.CatalogEnabled .AffiliateDisclosure}}<p class="affiliate-note">{{.AffiliateDisclosure}}</p>{{end}}
