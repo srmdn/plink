@@ -3,6 +3,8 @@ module github.com/srmdn/plink
 go 1.26.6
 
 require (
+	github.com/disintegration/imaging v1.6.2
+	github.com/gen2brain/webp v0.6.4
 	github.com/yuin/goldmark v1.8.7
 	golang.org/x/image v0.47.0
 	modernc.org/sqlite v1.61.1
@@ -10,6 +12,7 @@ require (
 
 require (
 	github.com/dustin/go-humanize v1.1.0 // indirect
+	github.com/ebitengine/purego v0.10.1 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/mattn/go-isatty v0.0.24 // indirect
 	github.com/ncruces/go-strftime v1.1.0 // indirect

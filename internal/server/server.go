@@ -68,6 +68,7 @@ func (s *Server) securityHeaders(next http.Handler) http.Handler {
 var staticAssets = []string{
 	"web/js/css/storefront.css",
 	"web/js/css/admin.css",
+	"web/js/article-editor.js",
 	"web/js/storefront.js",
 	"web/js/htmx.min.js",
 }
@@ -191,9 +192,10 @@ func New(cfg *config.Config, database *db.DB, webFS embed.FS) http.Handler {
 	mux.HandleFunc("POST "+ap+"/offers/{id}/toggle", s.requireAuth(s.requireCSRF(s.handleToggleOffer)))
 	mux.HandleFunc("GET "+ap+"/articles", s.requireAuth(s.handleArticlesDashboard))
 	mux.HandleFunc("GET "+ap+"/articles/new", s.requireAuth(s.handleNewArticle))
+	mux.HandleFunc("POST "+ap+"/articles/media", s.limitArticleBody(s.requireAuth(s.requireCSRF(s.handleArticleMediaUpload))))
 	mux.HandleFunc("GET "+ap+"/articles/{id}", s.requireAuth(s.handleArticleEditor))
-	mux.HandleFunc("POST "+ap+"/articles", s.requireAuth(s.requireCSRF(s.handleCreateArticle)))
-	mux.HandleFunc("POST "+ap+"/articles/{id}", s.requireAuth(s.requireCSRF(s.handleUpdateArticle)))
+	mux.HandleFunc("POST "+ap+"/articles", s.limitArticleBody(s.requireAuth(s.requireCSRF(s.handleCreateArticle))))
+	mux.HandleFunc("POST "+ap+"/articles/{id}", s.limitArticleBody(s.requireAuth(s.requireCSRF(s.handleUpdateArticle))))
 	mux.HandleFunc("POST "+ap+"/articles/{id}/delete", s.requireAuth(s.requireCSRF(s.handleDeleteArticle)))
 	mux.HandleFunc("POST "+ap+"/articles/{id}/toggle", s.requireAuth(s.requireCSRF(s.handleToggleArticle)))
 	mux.HandleFunc("GET "+ap+"/analytics/dashboard", s.requireAuth(s.handleAnalyticsDashboard))

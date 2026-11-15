@@ -2,6 +2,7 @@ package plink
 
 import (
 	"bytes"
+	"crypto/rand"
 	"image"
 	"image/color"
 	"image/png"
@@ -130,8 +131,8 @@ func TestSettingsAssetUpload(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !strings.HasPrefix(settings.LogoURL, "/media/") || !strings.HasSuffix(settings.LogoURL, ".png") {
-		t.Fatalf("logo url = %q, want /media/<hash>.png", settings.LogoURL)
+	if !strings.HasPrefix(settings.LogoURL, "/media/") || !strings.HasSuffix(settings.LogoURL, ".webp") {
+		t.Fatalf("logo url = %q, want /media/<hash>.webp", settings.LogoURL)
 	}
 	name := strings.TrimPrefix(settings.LogoURL, "/media/")
 	media := httptest.NewRecorder()
@@ -171,15 +172,21 @@ func TestOfferImageUpload(t *testing.T) {
 	if err != nil || offer == nil {
 		t.Fatalf("offer lookup: %v", err)
 	}
-	if !strings.HasPrefix(offer.ImageURL, "/media/") || !strings.HasSuffix(offer.ImageURL, ".png") {
-		t.Fatalf("image url = %q, want /media/<hash>.png", offer.ImageURL)
+	if !strings.HasPrefix(offer.ImageURL, "/media/") || !strings.HasSuffix(offer.ImageURL, ".webp") {
+		t.Fatalf("image url = %q, want /media/<hash>.webp", offer.ImageURL)
 	}
 
 	name := strings.TrimPrefix(offer.ImageURL, "/media/")
 	media := httptest.NewRecorder()
 	handler.ServeHTTP(media, httptest.NewRequest("GET", "/media/"+name, nil))
-	if media.Code != http.StatusOK || media.Header().Get("Content-Type") != "image/png" || media.Header().Get("X-Content-Type-Options") != "nosniff" {
+	if media.Code != http.StatusOK || media.Header().Get("Content-Type") != "image/webp" || media.Header().Get("X-Content-Type-Options") != "nosniff" {
 		t.Fatalf("media response: %d %q nosniff=%q", media.Code, media.Header().Get("Content-Type"), media.Header().Get("X-Content-Type-Options"))
+	}
+	if media.Body.Len() > 1_000_000 {
+		t.Fatalf("stored image exceeds 1 MB: %d bytes", media.Body.Len())
+	}
+	if _, format, err := image.Decode(bytes.NewReader(media.Body.Bytes())); err != nil || format != "webp" {
+		t.Fatalf("stored image is not decodable WebP: format=%q err=%v", format, err)
 	}
 	if !strings.Contains(media.Header().Get("Cache-Control"), "immutable") {
 		t.Fatalf("media cache-control = %q", media.Header().Get("Cache-Control"))
@@ -189,6 +196,42 @@ func TestOfferImageUpload(t *testing.T) {
 	handler.ServeHTTP(bad, httptest.NewRequest("GET", "/media/notahash.png", nil))
 	if bad.Code != http.StatusNotFound {
 		t.Fatalf("invalid media name returned %d, want 404", bad.Code)
+	}
+}
+
+func TestLargeImageIsStoredUnderOneMegabyte(t *testing.T) {
+	database, handler, cfg := uploadTestServer(t)
+	img := image.NewNRGBA(image.Rect(0, 0, 800, 800))
+	if _, err := rand.Read(img.Pix); err != nil {
+		t.Fatal(err)
+	}
+	for i := 3; i < len(img.Pix); i += 4 {
+		img.Pix[i] = 255
+	}
+	var input bytes.Buffer
+	if err := png.Encode(&input, img); err != nil {
+		t.Fatal(err)
+	}
+	if input.Len() <= 1_000_000 {
+		t.Fatalf("input too small: %d", input.Len())
+	}
+	fields := map[string]string{"title": "Large image", "home_slug": "large-image", "home_url": "https://example.com"}
+	rec := httptest.NewRecorder()
+	handler.ServeHTTP(rec, createOfferRequest(t, loginAs(t, handler, cfg), fields, "image.png", input.Bytes(), true))
+	if rec.Code != http.StatusSeeOther {
+		t.Fatalf("upload: %d %s", rec.Code, rec.Body.String())
+	}
+	offer, err := database.GetOfferByID(1)
+	if err != nil || offer == nil {
+		t.Fatalf("offer lookup: %v", err)
+	}
+	media := httptest.NewRecorder()
+	handler.ServeHTTP(media, httptest.NewRequest("GET", offer.ImageURL, nil))
+	if media.Code != http.StatusOK || media.Body.Len() > 1_000_000 {
+		t.Fatalf("stored image: status %d, bytes %d", media.Code, media.Body.Len())
+	}
+	if _, format, err := image.Decode(bytes.NewReader(media.Body.Bytes())); err != nil || format != "webp" {
+		t.Fatalf("stored image: format %q, error %v", format, err)
 	}
 }
 
@@ -223,5 +266,48 @@ func TestOfferImageUploadRequiresCSRF(t *testing.T) {
 	handler.ServeHTTP(rec, createOfferRequest(t, cookies, fields, "p.png", testPNG(t), false))
 	if rec.Code != http.StatusForbidden {
 		t.Fatalf("upload without CSRF returned %d, want 403", rec.Code)
+	}
+}
+
+func TestArticleMediaUploadRequiresAuthAndCSRF(t *testing.T) {
+	_, handler, cfg := uploadTestServer(t)
+	makeRequest := func(cookies []*http.Cookie, withToken bool) *http.Request {
+		var buf bytes.Buffer
+		mw := multipart.NewWriter(&buf)
+		part, err := mw.CreateFormFile("image_file", "diagram.png")
+		if err != nil {
+			t.Fatal(err)
+		}
+		if _, err = part.Write(testPNG(t)); err != nil {
+			t.Fatal(err)
+		}
+		if err = mw.Close(); err != nil {
+			t.Fatal(err)
+		}
+		req := httptest.NewRequest("POST", "/admin/articles/media", &buf)
+		req.Header.Set("Content-Type", mw.FormDataContentType())
+		for _, c := range cookies {
+			req.AddCookie(c)
+			if withToken && c.Name == "plink_csrf" {
+				req.Header.Set("X-CSRF-Token", c.Value)
+			}
+		}
+		return req
+	}
+	unauth := httptest.NewRecorder()
+	handler.ServeHTTP(unauth, makeRequest(nil, false))
+	if unauth.Code != http.StatusFound && unauth.Code != http.StatusSeeOther && unauth.Code != http.StatusUnauthorized {
+		t.Fatalf("unauthenticated upload: %d", unauth.Code)
+	}
+	cookies := loginAs(t, handler, cfg)
+	noToken := httptest.NewRecorder()
+	handler.ServeHTTP(noToken, makeRequest(cookies, false))
+	if noToken.Code != http.StatusForbidden {
+		t.Fatalf("upload without CSRF: %d", noToken.Code)
+	}
+	valid := httptest.NewRecorder()
+	handler.ServeHTTP(valid, makeRequest(cookies, true))
+	if valid.Code != http.StatusOK || !strings.Contains(valid.Body.String(), ".webp") {
+		t.Fatalf("valid upload: %d %s", valid.Code, valid.Body.String())
 	}
 }

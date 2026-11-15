@@ -25,6 +25,7 @@ var (
 	markdownLink     = regexp.MustCompile(`\[([^\]]*)\]\([^)]*\)`)
 	markdownMarkers  = regexp.MustCompile("[*_`>#~]")
 	markdownLineNote = regexp.MustCompile(`(?m)^\s*[-+]\s+`)
+	captionedImage   = regexp.MustCompile(`<p>(<img [^>]*?) title="plink-caption:([^"]*)"([^>]*>)</p>`)
 )
 
 func renderMarkdown(source string) template.HTML {
@@ -32,7 +33,9 @@ func renderMarkdown(source string) template.HTML {
 	if err := markdownRenderer.Convert([]byte(source), &buf); err != nil {
 		return template.HTML("<p>This article could not be rendered.</p>")
 	}
-	return template.HTML(unsafeHref.ReplaceAllString(buf.String(), `$1="#"`))
+	html := unsafeHref.ReplaceAllString(buf.String(), `$1="#"`)
+	html = captionedImage.ReplaceAllString(html, `<figure>$1$3<figcaption>$2</figcaption></figure>`)
+	return template.HTML(html)
 }
 
 // articleExcerpt turns markdown into a short plain-text summary. It is only a

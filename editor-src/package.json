@@ -1,0 +1,27 @@
+{
+  "name": "plink-editor-build",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "esbuild editor.js --bundle --minify --outfile=../web/js/article-editor.js",
+    "test": "node --test editor.test.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "dependencies": {
+    "@tiptap/core": "^3.34.0",
+    "@tiptap/extension-image": "^3.34.0",
+    "@tiptap/extension-placeholder": "^3.34.0",
+    "@tiptap/markdown": "^3.34.0",
+    "@tiptap/starter-kit": "^3.34.0",
+    "esbuild": "^0.28.2",
+    "marked": "18.2.0"
+  },
+  "private": true,
+  "devDependencies": {
+    "jsdom": "^31.0.1"
+  }
+}
