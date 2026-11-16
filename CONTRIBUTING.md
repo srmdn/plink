@@ -52,7 +52,7 @@ Schema changes go in `internal/db/db.go` as new entries in the `migrations` slic
 
 - Standard Go formatting (`gofmt`)
 - No external dependencies unless absolutely necessary
-- Keep templates in `web/templates/` as plain HTML — no build step, no npm
+- Keep templates in `web/templates/` as plain HTML; the article editor bundle has a separate npm build (see [editor instructions](editor-src/README.md))
 
 ## Documentation
 
@@ -67,4 +67,4 @@ repository's private security reporting channel instead.
 
 ## License
 
-By contributing, you agree that your contributions will be licensed under the [MIT License](LICENSE).
+By contributing, you agree that your contributions will be licensed under the [GNU Affero General Public License v3.0 only](LICENSE).

@@ -70,7 +70,7 @@
           <a href="/" class="btn btn-ghost btn-sm admin-home-link">View public site ↗</a>
           <div class="guide-toc-menu" id="guide-toc-menu" hidden>
             <nav aria-label="Guide sections">
-              <a href="#hubungan-modul"><span class="guide-toc-num">01</span><span>How modules relate</span></a><a href="#link-biasa"><span class="guide-toc-num">02</span><span>Plain links</span></a><a href="#program"><span class="guide-toc-num">03</span><span>Programs &amp; channels</span></a><a href="#link-lama"><span class="guide-toc-num">04</span><span>Links already shared</span></a><a href="#program-berakhir"><span class="guide-toc-num">05</span><span>Programs that ended</span></a><a href="#statistik"><span class="guide-toc-num">06</span><span>Analytics</span></a><a href="#homepage"><span class="guide-toc-num">07</span><span>Site &amp; home page</span></a><a href="#tanya-jawab"><span class="guide-toc-num">08</span><span>FAQ</span></a><a href="#item-types"><span class="guide-toc-num">09</span><span>Choosing an item type</span></a>
+              <a href="#hubungan-modul"><span class="guide-toc-num">01</span><span>How modules relate</span></a><a href="#link-biasa"><span class="guide-toc-num">02</span><span>Plain links</span></a><a href="#program"><span class="guide-toc-num">03</span><span>Programs &amp; channels</span></a><a href="#link-lama"><span class="guide-toc-num">04</span><span>Links already shared</span></a><a href="#program-berakhir"><span class="guide-toc-num">05</span><span>Programs that ended</span></a><a href="#statistik"><span class="guide-toc-num">06</span><span>Analytics</span></a><a href="#homepage"><span class="guide-toc-num">07</span><span>Site &amp; home page</span></a><a href="#tanya-jawab"><span class="guide-toc-num">08</span><span>FAQ</span></a><a href="#item-types"><span class="guide-toc-num">09</span><span>Choosing an item type</span></a><a href="#native-articles"><span class="guide-toc-num">10</span><span>Write an article</span></a>
             </nav>
           </div>
         </div>
@@ -233,6 +233,17 @@
         </div>
         <p class="guide-note">When a card feels like two types, choose by what the click should achieve. A review you wrote that earns commission is an <b>Article</b> if the goal is reading, and a <b>Referral</b> if the goal is signing up.</p>
       </section>
+      <section class="analytics-page-panel guide-section" id="native-articles" aria-labelledby="native-articles-title">
+        <div class="guide-heading"><span class="guide-step">10</span><div><h2 id="native-articles-title">Write an article in Plink</h2><p>Host an article here, or use a Catalog Article item to link to a page hosted elsewhere.</p></div></div>
+        <ol class="guide-steps">
+          <li>Open <a href="/{{.AdminPath}}/articles">Articles</a> and choose <b>New article</b>. Enter a title and write in the visual editor or Markdown source.</li>
+          <li>Add a cover and, under <b>Article settings</b>, an optional slug, excerpt, date, and discussion URL. Leave the slug empty to generate it from the title.</li>
+          <li>Choose <b>Preview</b> to check your work. Save as <b>Draft</b> to keep it private in the admin.</li>
+          <li>When ready, select <b>Published</b> and save, or use <b>Publish</b> on a saved draft. The public page is at <code>/a/&lt;slug&gt;</code>. Use <b>Unpublish</b> to return it to draft.</li>
+        </ol>
+        <p class="guide-note">The publish date is article metadata, not a schedule. Enable the public storefront and Articles feature for public article pages. Unsupported Markdown opens in source mode to preserve its formatting.</p>
+      </section>
+
       <p class="guide-end">Start with <a href="/{{.AdminPath}}">Links</a> for a simple link, or <a href="/{{.AdminPath}}/offers">Catalog</a> for a program that needs to be managed as a whole.</p>
     </main>
 

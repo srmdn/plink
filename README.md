@@ -2,7 +2,7 @@
 
 Self-hosted and production-ready.
 
-Self-hosted link shortener that can stay minimal or grow into a public catalog and bio-link page. No prefix, no bloat — `yourdomain.com/my-link` goes straight to the destination.
+Self-hosted link shortener, bio-link page, and article publisher that can stay minimal or grow into a public catalog. No prefix, no bloat — `yourdomain.com/my-link` goes straight to the destination.
 
 ```
 yourdomain.com/shopee-referral  →  https://shopee.com/...?ref=xxx
@@ -11,6 +11,7 @@ yourdomain.com/tokopedia-promo  →  https://tokopedia.com/...
 
 ## Features
 
+- Native articles — write, preview, and publish Markdown articles on your own site
 - Clean slugs — no `s/` prefix
 - Click analytics — date-aware source reports, a last 30 days chart, and
   referrer breakdowns
@@ -31,7 +32,7 @@ yourdomain.com/tokopedia-promo  →  https://tokopedia.com/...
   fulfillment information, with an optional WhatsApp ordering button
 - Project listing — a Portofolio section and `/offers?view=projects`; project cards
   link straight to their URL, like article cards
-- Feature toggles — Settings → Fitur publik with preset modes (full catalog, bio
+- Feature toggles — Settings → Public features with preset modes (full catalog, bio
   link, or shortener-only) or per-feature switches; disabled features leave the
   navigation and their URLs return 404
 - Storefront settings — edit the public name, description, hero and service copy,
@@ -57,7 +58,7 @@ yourdomain.com/tokopedia-promo  →  https://tokopedia.com/...
 
 - **Go** — standard library HTTP server
 - **SQLite** — one file database (`modernc.org/sqlite`, no CGo)
-- **Vanilla HTML/JS** — no npm, no build step
+- **HTML/JS** — bundled assets need no npm at runtime; rebuilding the article editor requires Node.js and npm
 
 ## Quick start
 
@@ -138,17 +139,17 @@ variables `ANALYTICS_SCRIPT_URL`, `ANALYTICS_WEBSITE_ID`, and
 ## Public homepage
 
 Plink uses a centered, mobile-width storefront with a bottom navigation that
-adapts to the enabled features: Beranda, Katalog, and Favorit, plus Proyek and
-Jasa when those features are on (see **Fitur publik** below). The public catalog
+adapts to the enabled features: Home, Catalog, and Favorites, plus Projects and
+Services when those features are on (see **Public features** below). The public catalog
 at `/offers` searches both available offer cards and standalone resources.
 Category and provider filters persist during search and pagination. `/links`
 remains the resource catalog. Favorites are stored in the visitor's browser
 without login; unavailable items are omitted from the favorites page. Articles
-render in a Bacaan section (`/offers?view=articles`) and projects in a Portofolio
-section (`/offers?view=projects`); their cards link straight to the destination URL.
+render in a Reading section (`/offers?view=articles`) and projects in a Portfolio
+section (`/offers?view=projects`); catalog cards link to their destination URL. Native articles are hosted at `/a/<slug>`.
 
-Admin uses Tautan, Katalog, Statistik, and Pengaturan as its bottom navigation.
-Panduan is available from the header and Settings. Catalog items have an explicit
+Admin uses Links, Catalog, Articles, Analytics, and Settings in its navigation.
+The Guide is available from the header and Settings. Catalog items have an explicit
 product, referral, service, resource, article, or project type; services appear in
 the Jasa tab and articles in the Bacaan section. Legacy standalone links categorized
 as Service, Services, or Jasa also appear in the Jasa tab. Existing offers default
@@ -163,7 +164,7 @@ background and a contrasting accent. Featured picks scroll manually and are not
 repeated in the homepage grid. Clicking a card still records its homepage slug's
 redirect click. Browsing catalogs and saving favorites do not record clicks.
 
-Settings → **Fitur publik** controls which public surfaces exist. Choose a preset
+Settings → **Public features** controls which public surfaces exist. Choose a preset
 (**Full catalog**, **Bio link**, or **Link shortener only**) or toggle features
 individually: public homepage, catalog, services, articles, projects, resources,
 profile, support buttons, favorites, and the floating contact button. Disabled
@@ -199,7 +200,7 @@ item's visibility setting instead.
 Reusing an unlisted slug as a catalog card's link can expose that slug on the
 public card whenever the item is visible and available.
 Editing a catalog item's description, category, or provider does not change
-those fields on existing attached links. Manage each link's metadata in Tautan;
+those fields on existing attached links. Manage each link's metadata in Links;
 new channel links inherit the item's category and provider when created.
 
 For a product, enable **Use a detail page for this product card** to show a
@@ -213,7 +214,7 @@ are optional.
 Older binaries do not render product detail pages or prices and will show cards
 using the prior direct-link behavior; plan and verify rollback accordingly.
 
-Enable **Terima pesanan melalui WhatsApp** on a product detail page and enter a
+Enable **Accept orders through WhatsApp** on a product detail page and enter a
 number in international format. Visitors open WhatsApp with an editable draft
 containing the product name and detail-page URL; no message is sent automatically.
 For a new product, leaving its short-link destination empty creates a link to
@@ -222,7 +223,7 @@ number changes update the product button; edit the short-link destination in
 **Tautan** if it should change too.
 
 WhatsApp button clicks are recorded separately from short-link redirect clicks.
-The product editor shows an all-time count, and Statistik shows the count for
+The product editor shows an all-time count, and Analytics shows the count for
 the selected period and category. These counts do not indicate that a message
 was sent, an order was placed, or a payment was made. Grouped link rankings and
 source charts do not include WhatsApp button clicks. WhatsApp settings and click
@@ -253,6 +254,25 @@ including link edits and analytics, unless separately recovered.
 The footer links to Plink's GitHub repository so you can share or self-host
 the project without exposing deployment-specific configuration.
 
+## Write an article
+
+Open **Articles → New article** in the admin. Add a title and write in the
+visual editor or Markdown source. Add a cover, excerpt, slug, publish date, and
+source or discussion URL under the relevant fields if needed. Use **Preview**
+to check the article, then **Save article** with status **Draft** to keep it
+private. Select **Published** and save, or use **Publish** on a saved article,
+when it is ready. Published articles have an address at `/a/<slug>`; use
+**Unpublish** to return one to draft.
+
+The publish date is displayed as article metadata, not a scheduling control.
+The public storefront and Articles feature must be enabled for public article
+pages. A native article is hosted by Plink; a Catalog item of type Article
+can also point directly to an article hosted elsewhere.
+
+The editor stores Markdown. If the visual editor cannot safely represent the
+content, it opens source mode to avoid losing formatting. To change its code,
+see [the editor build instructions](editor-src/README.md).
+
 ## Dashboard
 
 The admin dashboard keeps daily link management compact. It includes summary
@@ -279,7 +299,7 @@ date range is selected.
 
 Public home, catalog, services, and resources render descriptions, canonical URLs,
 Open Graph metadata, and Twitter card tags on the server. Configure the homepage
-SEO title, description, and optional share-image URL under **Settings → SEO & berbagi**.
+SEO title, description, and optional share-image URL under **Settings → SEO & sharing**.
 Empty SEO fields follow the site identity. Empty image settings use a generated
 1200×630 PNG with the public palette; no external image-generation service is required.
 The settings preview displays the saved configuration. Custom images should be
@@ -297,7 +317,7 @@ Schema v11 adds three optional SEO settings and preserves existing values.
 
 ## Public address and editable copy
 
-Settings → SEO & berbagi includes **Alamat publik**. A saved origin overrides
+Settings → SEO & sharing includes **Public address**. A saved origin overrides
 `PUBLIC_URL`; clearing it restores the environment fallback, then the request
 origin. The same origin is used for copied links, exports, canonical URLs,
 sitemap, and the generated card domain. It changes generated addresses, not DNS
@@ -314,7 +334,7 @@ full art direction. Generated card variants are cached in memory.
 
 ## Automatic catalog item previews
 
-Settings → SEO & berbagi includes **Preview otomatis per item Katalog**, enabled
+Settings → SEO & sharing includes **Automatic preview per Catalog item**, enabled
 by default (schema v13). All active channel slugs inherit the attached item's title,
 description and image without duplicate fields. Missing descriptions use the item
 title/provider; missing images generate a themed 1200×630 card. Site share images
@@ -349,4 +369,8 @@ See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## License
 
-MIT
+Plink is licensed under the [GNU Affero General Public License v3.0 only](LICENSE).
+Earlier versions released under MIT remain available under their original
+terms; their notice is retained in [LICENSE-MIT](LICENSE-MIT). Third-party
+components retain their own licenses, including the
+[article editor notices](web/js/article-editor-licenses.txt).
