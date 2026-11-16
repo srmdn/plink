@@ -4,8 +4,14 @@ All notable changes to Plink are documented in this file.
 
 ## Unreleased
 
+## v1.5.0
+
 ### Added
 
+- Write native articles in Plink with a visual editor or Markdown, private
+  drafts, previews, covers, and published pages at `/a/<slug>`. Published
+  native articles also appear alongside catalog articles.
+- Added a project website and an English analytics screenshot using sample data.
 - Local development can opt out of admin login on a loopback-only listener;
   normal deployments keep authentication and CSRF protection.
 - Standalone links can be hidden from public listings while remaining active
@@ -19,11 +25,18 @@ All notable changes to Plink are documented in this file.
 
 ### Changed
 
+- The project is now licensed under AGPL-3.0-only; previously released MIT
+  versions remain available under their original terms. Third-party licenses
+  continue to apply.
+- Translated the storefront and admin interface to English and updated the
+  README and in-app guide.
+- Updated `modernc.org/sqlite` from 1.60.1 to 1.62.0 and
+  `modernc.org/libc` from 1.77.1 to 1.80.1.
 - The catalog dashboard shows visibility separately from item status, offers a
   visibility filter, and clarifies that its counts follow the current filters.
 - Catalog search includes channel slugs and retains filters after changing an
   item's visibility. The editor explains when a hidden slug becomes public.
-- The public navigation calls the item list Katalog, while the admin explains
+- The public navigation calls the item list Catalog, while the admin explains
   the difference between short links and catalog cards. The item editor shows
   type-specific guidance and groups program settings for new items.
 
@@ -33,6 +46,15 @@ All notable changes to Plink are documented in this file.
   provider on its attached links.
 - Period analytics include clicks recorded during the current second.
 - Click-share percentages match between the chart, its tooltips, and rankings.
+
+### Upgrade notes
+
+- This release adds database migrations through schema v22 for unlisted links,
+  product pages, WhatsApp ordering, and native articles. Back up the database
+  and uploads before upgrading and verify the backup.
+- Older versions do not understand some newer settings and content. In
+  particular, unlisted links may reappear in public listings after a rollback.
+  See the README for rollback precautions.
 
 ## v1.4.2
 
