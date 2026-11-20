@@ -205,8 +205,8 @@ func TestBuildChartSVGIncludesAccessibleZeroClickTargets(t *testing.T) {
 	if !strings.Contains(chart, `aria-label="Filter report to Aug 25, 0 clicks"`) {
 		t.Fatalf("chart aria label = %s, want zero-click filter label", chart)
 	}
-	if !strings.Contains(chart, `data-date="2026-08-25"`) || !strings.Contains(chart, `onclick="selectReportDate(this.dataset.date)"`) {
-		t.Fatalf("chart = %s, want date filter action", chart)
+	if !strings.Contains(chart, `data-date="2026-08-25"`) || strings.Contains(chart, "onclick=") {
+		t.Fatalf("chart = %s, want date filter action without inline handlers", chart)
 	}
 }
 

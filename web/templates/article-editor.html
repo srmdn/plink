@@ -61,7 +61,7 @@
       {{if not .IsNew}}
       <section class="analytics-page-panel article-actions-panel">
         <form method="POST" action="/{{.AdminPath}}/articles/{{.Article.ID}}/toggle"><button type="submit" class="btn btn-ghost">{{if eq .Article.Status "published"}}Unpublish{{else}}Publish{{end}}</button></form>
-        <form method="POST" action="/{{.AdminPath}}/articles/{{.Article.ID}}/delete" onsubmit="return confirm('Delete this article? This cannot be undone.')"><button type="submit" class="btn btn-ghost row-menu-danger">Delete</button></form>
+        <form method="POST" action="/{{.AdminPath}}/articles/{{.Article.ID}}/delete" data-confirm="Delete this article? This cannot be undone."><button type="submit" class="btn btn-ghost row-menu-danger">Delete</button></form>
       </section>
       {{end}}
     </main>

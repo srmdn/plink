@@ -1,5 +1,5 @@
 {{define "product-page"}}
-<!doctype html><html lang="en"><head><meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />{{template "public-seo" .SEO}}{{template "favicon-link" .}}{{template "storefront-styles" .}}{{template "analytics-tag" .}}</head>
+<!doctype html><html lang="en"><head><meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />{{template "public-seo" .SEO}}{{template "favicon-link" .}}{{template "storefront-styles" .}}{{template "analytics-tag" .}}<script type="application/ld+json" nonce="{{.SEO.Nonce}}">{"@context":"https://schema.org","@type":"Product","name":{{.Offer.Title}}{{if .Offer.Description}},"description":{{.Offer.Description}}{{end}}{{if .Offer.PriceMinor}},"offers":{"@type":"Offer","price":{{productPriceValue .Offer.PriceMinor}},"priceCurrency":{{.Offer.Currency}}}{{end}},"brand":{"@type":"Brand","name":{{.SiteName}}}}</script></head>
 {{$profile := publicProfile}}
 <body>{{template "public-header" .}}<main class="store-main product-page{{if and .Settings.ContactEnabled $profile.Contact}} product-page-with-contact{{end}}">
   <a class="product-back" href="/offers">← Back to catalog</a>
@@ -11,7 +11,7 @@
   {{if .Offer.PriceMinor}}<p class="product-price">{{productPrice .Offer.PriceMinor .Offer.Currency}}</p>{{end}}
   {{if .Offer.Description}}<p class="product-copy">{{.Offer.Description}}</p>{{end}}
   {{if .Offer.ProductDetails}}<section class="product-section"><h2>Product information</h2><p class="product-copy">{{.Offer.ProductDetails}}</p></section>{{end}}
-  {{if .Offer.Fulfillment}}<section class="product-section"><h2>Delivery or fulfillment</h2><p class="product-copy">{{.Offer.Fulfillment}}</p></section>{{end}}
-  {{if .Offer.WhatsAppEnabled}}<a class="product-action" href="/offers/item/{{.Offer.ID}}/whatsapp" target="_blank" rel="noopener">Order via WhatsApp <span aria-hidden="true">↗</span></a>{{else}}<a class="product-action" href="/{{.Offer.HomeSlug}}" target="_blank" rel="noopener">{{.Offer.ButtonLabel}} <span aria-hidden="true">↗</span></a>{{end}}
+  {{if .Offer.Fulfillment}}<section class="product-section"><h2>{{if eq .Offer.ProductKind "digital"}}Delivery or access{{else}}Delivery or fulfillment{{end}}</h2><p class="product-copy">{{.Offer.Fulfillment}}</p></section>{{end}}
+  {{if .Offer.WhatsAppEnabled}}<a class="product-action" href="/offers/item/{{.Offer.HomeSlug}}/whatsapp" target="_blank" rel="noopener">Order via WhatsApp <span aria-hidden="true">↗</span></a>{{else}}<a class="product-action" href="/{{.Offer.HomeSlug}}" target="_blank" rel="noopener">{{.Offer.ButtonLabel}} <span aria-hidden="true">↗</span></a>{{end}}{{if .ContactItemAction}}<a class="product-action product-action-secondary" href="{{.ContactItemAction}}"{{if not (hasPrefix .ContactItemAction "mailto:")}} target="_blank" rel="noopener noreferrer"{{end}}>{{if .ContactItemLabel}}{{.ContactItemLabel}}{{else}}Ask about this item{{end}}{{if not (hasPrefix .ContactItemAction "mailto:")}} <span aria-hidden="true">↗</span>{{end}}</a>{{end}}
 </main>{{template "public-footer" .}}{{template "contact-fab" .}}{{template "public-nav" .}}</body></html>
 {{end}}

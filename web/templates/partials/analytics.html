@@ -6,8 +6,8 @@
     <a class="analytics-url" href="{{.ShortURL}}" target="_blank" rel="noopener">{{.ShortURL}}</a>
   </div>
   <div class="analytics-actions">
-    <button class="btn btn-ghost btn-sm" data-label="Copy" data-url="{{.ShortURL}}" onclick="copyURL(this)">Copy</button>
-    <button class="btn btn-ghost btn-sm" data-label="Share" data-url="{{.ShortURL}}" onclick="shareURL(this)">Share</button>
+    <button class="btn btn-ghost btn-sm" data-label="Copy" data-url="{{.ShortURL}}" data-copy-url>Copy</button>
+    <button class="btn btn-ghost btn-sm" data-label="Share" data-url="{{.ShortURL}}" data-share-url>Share</button>
   </div>
 </div>
 
@@ -38,7 +38,7 @@
   {{if .HasRecentClicks}}{{.ChartSVG}}{{else}}<div class="chart-empty">No clicks in the last 30 days</div>{{end}}
 </div>
 
-<div style="margin-bottom:20px">
+<div class="traffic-sources-wrap">
   <div class="section-heading">
     <div class="section-label">Traffic sources</div>
     <span class="section-meta">{{.TrafficSourcesLabel}}</span>
@@ -74,7 +74,7 @@
   {{end}}
   {{end}}
   {{else}}
-  <p style="color:var(--muted);padding:12px 0;font-size:12px">{{.TrafficSourcesEmpty}}</p>
+  <p class="ref-empty-note">{{.TrafficSourcesEmpty}}</p>
   {{end}}
 </div>
 

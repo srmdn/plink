@@ -3,12 +3,16 @@ package db
 import (
 	"database/sql"
 	"fmt"
+	"sync"
 
 	_ "modernc.org/sqlite"
 )
 
 type DB struct {
 	*sql.DB
+
+	settingsMu    sync.Mutex
+	settingsHooks []func()
 }
 
 func Init(path string) (*DB, error) {
@@ -34,7 +38,7 @@ func Init(path string) (*DB, error) {
 		return nil, fmt.Errorf("enable foreign keys: %w", err)
 	}
 
-	return &DB{conn}, nil
+	return &DB{DB: conn}, nil
 }
 
 var migrations = []string{
@@ -277,6 +281,28 @@ ALTER TABLE site_settings ADD COLUMN service_description TEXT NOT NULL DEFAULT '
 		updated_at INTEGER NOT NULL
 	);
 	CREATE INDEX idx_articles_status_published ON articles(status, published_at);`,
+
+	// v23: admin sessions survive restarts and deploys. Only token hashes are
+	// stored, so a database copy cannot be replayed as a live session.
+	`CREATE TABLE sessions (
+		token_hash TEXT PRIMARY KEY,
+		csrf_hash  TEXT NOT NULL,
+		expires_at INTEGER NOT NULL
+	);
+	CREATE INDEX idx_sessions_expires_at ON sessions(expires_at);`,
+
+	// v24: product detail page visits are internal operator data, counted
+	// separately from slug clicks and WhatsApp clicks. Nothing is shown to
+	// visitors.
+	`CREATE TABLE product_views (
+		id INTEGER PRIMARY KEY AUTOINCREMENT,
+		offer_id INTEGER NOT NULL REFERENCES offers(id) ON DELETE CASCADE,
+		viewed_at INTEGER NOT NULL,
+		referrer TEXT NOT NULL DEFAULT '',
+		user_agent TEXT NOT NULL DEFAULT ''
+	);
+	CREATE INDEX idx_product_views_offer_time ON product_views(offer_id, viewed_at);
+	CREATE INDEX idx_product_views_time ON product_views(viewed_at);`,
 }
 
 func migrate(conn *sql.DB) error {

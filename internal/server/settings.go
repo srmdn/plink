@@ -16,7 +16,15 @@ var hexColor = regexp.MustCompile(`^#[0-9a-fA-F]{6}$`)
 
 const defaultAffiliateDisclosure = "Some links on this page are affiliate links. I may earn a commission if you make a purchase, at no extra cost to you."
 
+// currentSiteSettings returns the effective storefront settings. Every read
+// path goes through it so one process keeps one cached copy of the row; the
+// cache is dropped by the database settings hook after any write.
 func (s *Server) currentSiteSettings() (db.SiteSettings, error) {
+	if s.settings != nil {
+		if settings, ok := s.settings.get(); ok {
+			return settings, nil
+		}
+	}
 	settings, err := s.db.GetSiteSettings()
 	if err != nil {
 		return settings, err
@@ -30,7 +38,19 @@ func (s *Server) currentSiteSettings() (db.SiteSettings, error) {
 		settings.FeaturedLimit = 3
 	}
 	normalizePalette(&settings)
+	if s.settings != nil {
+		s.settings.store(settings)
+	}
 	return settings, nil
+}
+
+// invalidateSettingsCache drops the cached settings row. It is registered as a
+// database change hook, so writes that bypass the settings handler cannot leave
+// a stale render behind.
+func (s *Server) invalidateSettingsCache() {
+	if s.settings != nil {
+		s.settings.invalidate()
+	}
 }
 
 func (s *Server) renderSettingsDashboard(w http.ResponseWriter, r *http.Request, data settingsDashboardData) {
@@ -41,6 +61,11 @@ func (s *Server) renderSettingsDashboard(w http.ResponseWriter, r *http.Request,
 	data.ContactList = parseContactEntries(data.Settings.ContactLinks)
 	data.AdminPath = s.cfg.AdminPath
 	data.Production = s.cfg.Production
+	// The contrast hint belongs to the post-save page only; form errors keep
+	// their own message and never stack two notices.
+	if data.Saved {
+		data.ContrastWarning = themeContrastWarning(data.Settings)
+	}
 	s.renderTemplate(w, "settings-dashboard", data)
 }
 
@@ -383,6 +408,9 @@ func normalizePalette(settings *db.SiteSettings) {
 	}
 }
 
+// handleTheme emits the operator palette. The light block keeps its historical
+// shape exactly; a second block follows the visitor's system dark mode with the
+// fixed P2b palette while the accent stays operator-owned.
 func (s *Server) handleTheme(w http.ResponseWriter, r *http.Request) {
 	settings, err := s.currentSiteSettings()
 	if err != nil {
@@ -395,5 +423,6 @@ func (s *Server) handleTheme(w http.ResponseWriter, r *http.Request) {
 	}
 	w.Header().Set("Content-Type", "text/css; charset=utf-8")
 	w.Header().Set("Cache-Control", "no-store")
-	fmt.Fprintf(w, ":root{--accent:%s;--bg:%s;--paper:%s;--green:%s}", accent, background, background, accent)
+	fmt.Fprintf(w, ":root{--accent:%s;--bg:%s;--paper:%s}", accent, background, background)
+	fmt.Fprintf(w, "@media (prefers-color-scheme:dark){:root{--paper:#161a19;--bg:#161a19;--surface:#202623;--line:#39413d;--ink:#e9ece9;--muted:#9aa49e;--accent:%s}}", accent)
 }

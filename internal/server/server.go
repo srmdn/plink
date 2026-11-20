@@ -1,6 +1,7 @@
 package server
 
 import (
+	"context"
 	"crypto/sha256"
 	"embed"
 	"encoding/hex"
@@ -17,9 +18,11 @@ import (
 type Server struct {
 	ogCacheMu    sync.Mutex
 	ogCache      map[string][]byte
+	ogCacheOrder []string
 	cfg          *config.Config
 	db           *db.DB
 	sessions     *sessionStore
+	settings     *settingsCache
 	loginLimiter *loginLimiter
 	webFS        embed.FS
 	uploadsDir   string
@@ -35,32 +38,52 @@ type analyticsTag struct {
 }
 
 func (s *Server) securityHeaders(next http.Handler) http.Handler {
-	scriptSrc := "script-src 'self' 'unsafe-inline'"
 	// Third-party origins allowed in connect-src. Empty keeps the directive out
 	// entirely so a plain self-hosted instance sends no third-party allowance.
 	var connect []string
 	if s.cfg.CloudflareInsights {
 		// Cloudflare Web Analytics is injected by the proxy; only allow-listed.
-		scriptSrc += " https://static.cloudflareinsights.com"
 		connect = append(connect, "https://cloudflareinsights.com")
 	}
 	if origin := s.cfg.AnalyticsOrigin(); origin != "" {
-		scriptSrc += " " + origin
 		connect = append(connect, origin)
 	}
-	csp := "default-src 'self'; " + scriptSrc + "; style-src 'self' 'unsafe-inline'; img-src 'self' https: data:; object-src 'none'; base-uri 'self'; frame-ancestors 'none';"
-	if len(connect) > 0 {
-		csp += " connect-src 'self' " + strings.Join(connect, " ") + ";"
-	}
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// The nonce is fresh per response so only the inline JSON-LD blocks the
+		// templates emit are executable; arbitrary inline script stays blocked.
+		nonce := randomToken()
+		scriptSrc := "script-src 'self' 'nonce-" + nonce + "'"
+		if s.cfg.CloudflareInsights {
+			scriptSrc += " https://static.cloudflareinsights.com"
+		}
+		if origin := s.cfg.AnalyticsOrigin(); origin != "" {
+			scriptSrc += " " + origin
+		}
+		csp := "default-src 'self'; " + scriptSrc + "; style-src 'self' 'unsafe-inline'; img-src 'self' https: data:; object-src 'none'; base-uri 'self'; frame-ancestors 'none';"
+		if len(connect) > 0 {
+			csp += " connect-src 'self' " + strings.Join(connect, " ") + ";"
+		}
 		w.Header().Set("X-Content-Type-Options", "nosniff")
 		w.Header().Set("X-Frame-Options", "DENY")
 		w.Header().Set("Referrer-Policy", "strict-origin-when-cross-origin")
 		w.Header().Set("Permissions-Policy", "geolocation=(), microphone=(), camera=()")
 		w.Header().Set("Strict-Transport-Security", "max-age=31536000; includeSubDomains")
 		w.Header().Set("Content-Security-Policy", csp)
-		next.ServeHTTP(w, r)
+		next.ServeHTTP(w, r.WithContext(withCspNonce(r.Context(), nonce)))
 	})
+}
+
+// withCspNonce carries the response nonce so page handlers can stamp it onto
+// the inline JSON-LD blocks search engines read.
+type cspNonceContextKey struct{}
+
+func withCspNonce(ctx context.Context, nonce string) context.Context {
+	return context.WithValue(ctx, cspNonceContextKey{}, nonce)
+}
+
+func cspNonceFrom(r *http.Request) string {
+	nonce, _ := r.Context().Value(cspNonceContextKey{}).(string)
+	return nonce
 }
 
 // staticAssets are the cacheable CSS/JS files whose content drives the asset
@@ -70,6 +93,7 @@ var staticAssets = []string{
 	"web/js/css/admin.css",
 	"web/js/article-editor.js",
 	"web/js/storefront.js",
+	"web/js/admin.js",
 	"web/js/htmx.min.js",
 }
 
@@ -89,7 +113,23 @@ func computeAssetVersion(webFS embed.FS) string {
 
 func New(cfg *config.Config, database *db.DB, webFS embed.FS) http.Handler {
 	assetVersion := computeAssetVersion(webFS)
-	tmpl := template.Must(
+
+	// The server (and its settings cache) exists before the template funcs are
+	// defined so the closures read settings through the same cached path as the
+	// handlers instead of querying the database on every render.
+	s := &Server{
+		cfg:          cfg,
+		db:           database,
+		sessions:     newSessionStore(database),
+		settings:     &settingsCache{},
+		loginLimiter: newLoginLimiter(),
+		webFS:        webFS,
+		uploadsDir:   cfg.UploadsDir,
+	}
+	database.OnSettingsChange(s.invalidateSettingsCache)
+	go s.runUploadCleanup()
+
+	s.tmpl = template.Must(
 		template.New("").Funcs(template.FuncMap{
 			"dict": func(values ...any) map[string]any {
 				result := map[string]any{}
@@ -106,7 +146,7 @@ func New(cfg *config.Config, database *db.DB, webFS embed.FS) http.Handler {
 			},
 			"socialPlatforms": func() []socialPlatform { return socialPlatformList },
 			"publicProfile": func() publicProfile {
-				settings, _ := database.GetSiteSettings()
+				settings, _ := s.currentSiteSettings()
 				return buildPublicProfile(settings)
 			},
 			"percent": func(val, max int64) int64 {
@@ -125,12 +165,16 @@ func New(cfg *config.Config, database *db.DB, webFS embed.FS) http.Handler {
 			"devNoAuth": func() bool {
 				return cfg.DevNoAuth && !cfg.Production && config.IsLoopbackListener(cfg.Addr)
 			},
-			"productPrice":  productPriceLabel,
-			"referrerLabel": referrerLabel,
-			"branding":      func() brandAssets { settings, _ := database.GetSiteSettings(); return brandingAssets(settings) },
-			"offerStatus":   offerStatus,
-			"statusLabel":   statusLabel,
-			"isGuide":       func(data any) bool { _, ok := data.(guideData); return ok },
+			"productPrice":      productPriceLabel,
+			"productPriceValue": productPriceInput,
+			"referrerLabel":     referrerLabel,
+			"branding": func() brandAssets {
+				settings, _ := s.currentSiteSettings()
+				return brandingAssets(settings)
+			},
+			"offerStatus": offerStatus,
+			"statusLabel": statusLabel,
+			"isGuide":     func(data any) bool { _, ok := data.(guideData); return ok },
 			"add": func(left, right int) int {
 				return left + right
 			},
@@ -148,16 +192,6 @@ func New(cfg *config.Config, database *db.DB, webFS embed.FS) http.Handler {
 			"web/templates/partials/*.html",
 		),
 	)
-
-	s := &Server{
-		cfg:          cfg,
-		db:           database,
-		sessions:     newSessionStore(),
-		loginLimiter: newLoginLimiter(),
-		webFS:        webFS,
-		uploadsDir:   cfg.UploadsDir,
-		tmpl:         tmpl,
-	}
 
 	ap := "/" + cfg.AdminPath
 
@@ -191,6 +225,7 @@ func New(cfg *config.Config, database *db.DB, webFS embed.FS) http.Handler {
 	mux.HandleFunc("POST "+ap+"/offers/{id}/links/{linkID}/homepage", s.requireAuth(s.requireCSRF(s.handleSetOfferHomepageLink)))
 	mux.HandleFunc("POST "+ap+"/offers/{id}/toggle", s.requireAuth(s.requireCSRF(s.handleToggleOffer)))
 	mux.HandleFunc("GET "+ap+"/articles", s.requireAuth(s.handleArticlesDashboard))
+	mux.HandleFunc("GET "+ap+"/media", s.requireAuth(s.handleMediaLibrary))
 	mux.HandleFunc("GET "+ap+"/articles/new", s.requireAuth(s.handleNewArticle))
 	mux.HandleFunc("POST "+ap+"/articles/media", s.limitArticleBody(s.requireAuth(s.requireCSRF(s.handleArticleMediaUpload))))
 	mux.HandleFunc("GET "+ap+"/articles/{id}", s.requireAuth(s.handleArticleEditor))
@@ -226,8 +261,8 @@ func New(cfg *config.Config, database *db.DB, webFS embed.FS) http.Handler {
 
 	// Public homepage
 	mux.HandleFunc("GET /offers", s.handleOfferCatalog)
-	mux.HandleFunc("GET /offers/item/{id}", s.handleProductPage)
-	mux.HandleFunc("GET /offers/item/{id}/whatsapp", s.handleProductWhatsApp)
+	mux.HandleFunc("GET /offers/item/{slug}", s.handleProductPage)
+	mux.HandleFunc("GET /offers/item/{slug}/whatsapp", s.handleProductWhatsApp)
 	mux.HandleFunc("GET /links", s.handleLinkCatalog)
 	mux.HandleFunc("GET /a/{slug}", s.handleArticlePage)
 	mux.HandleFunc("GET /{$}", s.handleHome)

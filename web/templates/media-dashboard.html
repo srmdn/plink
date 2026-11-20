@@ -1,0 +1,52 @@
+{{define "media-dashboard"}}
+<!doctype html>
+<html lang="en">
+{{template "head" .}}
+<body class="admin-page">
+<div id="app" class="admin-app">
+  {{template "admin-header" .}}
+  <div class="admin-layout">
+{{template "admin-nav" (dict "AdminPath" .AdminPath "Active" "articles")}}
+    <main class="admin-main">
+      <div class="admin-page-heading">
+        <div><div class="admin-eyebrow">Articles</div><h1>Media library</h1><p>Image files stored on this server for articles and cards. "Yes" means something references the file today; unreferenced files are removed automatically once they are older than 48 hours.</p></div>
+        <div class="admin-heading-actions"><a class="btn btn-ghost btn-sm" href="/{{.AdminPath}}/articles">Back to articles</a></div>
+      </div>
+      {{$referenced := 0}}{{$orphans := 0}}
+      {{range .Files}}{{if .Referenced}}{{$referenced = add $referenced 1}}{{else}}{{$orphans = add $orphans 1}}{{end}}{{end}}
+      <section class="dashboard-stats" aria-label="Media library summary">
+        <div class="stat-card"><div class="stat-value">{{len .Files}}</div><div class="stat-label">Files stored</div></div>
+        <div class="stat-card"><div class="stat-value">{{$referenced}}</div><div class="stat-label">Referenced</div></div>
+        <div class="stat-card"><div class="stat-value">{{$orphans}}</div><div class="stat-label">Not referenced</div></div>
+      </section>
+      {{if .Files}}
+      <div class="table-wrap">
+        <table class="link-table media-table">
+          <thead><tr><th>File</th><th>Size</th><th>Modified</th><th>Referenced</th><th><span class="sr-only">Actions</span></th></tr></thead>
+          <tbody>
+            {{range .Files}}
+            <tr>
+              <td>
+                <div class="media-file">
+                  <img class="media-thumb" src="{{.URL}}" alt="" loading="lazy" width="42" height="42" />
+                  <a class="media-name" href="{{.URL}}" target="_blank" rel="noopener" title="{{.Name}}" aria-label="Open file {{.Name}}">{{if gt (len .Name) 58}}{{slice .Name 0 6}}…{{slice .Name 58}}{{else}}{{.Name}}{{end}}</a>
+                </div>
+              </td>
+              <td>{{.SizeKB}} KB</td>
+              <td>{{.ModifiedAt}}</td>
+              <td>{{if .Referenced}}<span class="media-badge">Yes</span>{{else}}<span class="media-badge media-badge-orphan">Not referenced</span>{{end}}</td>
+              <td><button type="button" class="btn btn-ghost btn-sm" data-label="Copy URL" data-url="{{.URL}}" data-copy-url aria-label="Copy URL for {{.Name}}">Copy URL</button></td>
+            </tr>
+            {{end}}
+          </tbody>
+        </table>
+      </div>
+      {{else}}
+      <div class="empty-state"><strong>No media files yet.</strong><span>Images you upload while writing an article or a card will appear here.</span></div>
+      {{end}}
+    </main>
+  </div>
+</div>
+</body>
+</html>
+{{end}}

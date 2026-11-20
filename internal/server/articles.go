@@ -314,6 +314,7 @@ func (s *Server) handleArticlePage(w http.ResponseWriter, r *http.Request) {
 		URL:         base + "/a/" + article.Slug,
 		Image:       cover,
 		SiteName:    settings.SiteName,
+		Nonce:       cspNonceFrom(r),
 	}
 	s.renderTemplate(w, "article-page", articlePageData{
 		Settings:    settings,

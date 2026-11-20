@@ -23,7 +23,7 @@
           <div class="form-section"><div class="offer-form-heading"><h2>Item information</h2><span>One card on the public page</span></div>
           <div class="field"><label for="offer-item-type">Item type</label><select id="offer-item-type" name="item_type" aria-describedby="offer-type-help"><option value="referral" {{if eq .Offer.ItemType "referral"}}selected{{end}}>Referral</option><option value="product" {{if eq .Offer.ItemType "product"}}selected{{end}}>Product</option><option value="service" {{if eq .Offer.ItemType "service"}}selected{{end}}>Service</option><option value="resource" {{if eq .Offer.ItemType "resource"}}selected{{end}}>Resource</option><option value="article" {{if eq .Offer.ItemType "article"}}selected{{end}}>Article</option><option value="project" {{if eq .Offer.ItemType "project"}}selected{{end}}>Project</option></select><p class="field-help" id="offer-type-help" aria-live="polite">{{if eq .Offer.ItemType "product"}}Product cards can show details before opening the destination URL.{{else if eq .Offer.ItemType "service"}}Services appear in the Services section and link to the destination URL.{{else if eq .Offer.ItemType "project"}}Projects appear in the Projects section and open the project URL.{{else if eq .Offer.ItemType "article"}}Articles appear in the Reading section and open the article URL.{{else if eq .Offer.ItemType "resource"}}Resources appear in the Resources section and link to the destination URL.{{else}}Referrals link to the offer on the provider site.{{end}}</p></div>
           <div class="form-pair">
-            <div class="field"><label for="offer-title">Item name</label><input type="text" id="offer-title" name="title" maxlength="160" required value="{{if .Offer}}{{.Offer.Title}}{{end}}" placeholder="Product, offer, or service name" /></div>
+            <div class="field"><label for="offer-title">Item name</label><input type="text" id="offer-title" name="title" maxlength="160" required value="{{if .Offer}}{{.Offer.Title}}{{end}}" placeholder="Product, offer, or service name" />{{with index .FieldErrors "title"}}<p class="field-error">{{.}}</p>{{end}}</div>
             <div class="field"><label for="offer-provider">Provider or store</label><input type="text" id="offer-provider" name="provider" maxlength="120" value="{{if .Offer}}{{.Offer.Provider}}{{end}}" placeholder="For example: Shopee, Tokopedia, or another provider" /></div>
           </div>
           <div class="field"><label for="offer-description">Short description</label><textarea id="offer-description" name="description" maxlength="500" rows="3" placeholder="Explain the benefit or details worth knowing">{{if .Offer}}{{.Offer.Description}}{{end}}</textarea><p class="field-help">The item description, category, and provider are separate from the metadata of connected links. Change link metadata from the Links page.</p></div>
@@ -44,17 +44,18 @@
             <p class="field-help">The short link still points to the destination. Existing products do not change until the detail page is enabled.</p>
             <div class="form-pair">
               <div class="field"><label for="product-kind">Product type</label><select id="product-kind" name="product_kind"><option value="">Not set</option><option value="digital" {{if eq .Offer.ProductKind "digital"}}selected{{end}}>Digital</option><option value="physical" {{if eq .Offer.ProductKind "physical"}}selected{{end}}>Physical</option></select></div>
-              <div class="field"><label for="product-currency">Currency</label><input type="text" id="product-currency" name="product_currency" maxlength="3" value="{{if .Offer.Currency}}{{.Offer.Currency}}{{else}}IDR{{end}}" placeholder="IDR" /><div class="field-help">Three-letter code, for example IDR or USD.</div></div>
+              <div class="field"><label for="product-currency">Currency</label><input type="text" id="product-currency" name="product_currency" maxlength="3" value="{{if .Offer.Currency}}{{.Offer.Currency}}{{else}}IDR{{end}}" placeholder="IDR" />{{with index .FieldErrors "product_currency"}}<p class="field-error">{{.}}</p>{{end}}<div class="field-help">Three-letter code, for example IDR or USD.</div></div>
             </div>
-            <div class="field"><label for="product-price">Price <span class="field-help">(optional)</span></label><input id="product-price" name="product_price" type="text" inputmode="decimal" value="{{.Offer.PriceInput}}" placeholder="For example: 79000 or 19.99" /><div class="field-help">Leave empty if the price is not set yet. Use a dot or comma for decimals.</div></div>
-            <div class="field"><label for="product-details">Product information <span class="field-help">(optional)</span></label><textarea id="product-details" name="product_details" maxlength="5000" rows="5" placeholder="Describe the contents, materials, size, or benefits">{{.Offer.ProductDetails}}</textarea></div>
-            <div class="field"><label for="product-fulfillment">Shipping or delivery <span class="field-help">(optional)</span></label><textarea id="product-fulfillment" name="product_fulfillment" maxlength="1000" rows="3" placeholder="For example: shipping cost confirmed by chat">{{.Offer.Fulfillment}}</textarea></div>
+            <div class="field"><label for="product-price">Price <span class="field-help">(optional)</span></label><input id="product-price" name="product_price" type="text" inputmode="decimal" value="{{.Offer.PriceInput}}" placeholder="For example: 79000 or 19.99" />{{with index .FieldErrors "product_price"}}<p class="field-error">{{.}}</p>{{end}}<div class="field-help">Leave empty if the price is not set yet. Use a dot or comma for decimals.</div></div>
+            <div class="field"><label for="product-details">Product information <span class="field-help">(optional)</span></label><textarea id="product-details" name="product_details" maxlength="5000" rows="5" placeholder="Describe the contents, materials, size, or benefits">{{.Offer.ProductDetails}}</textarea>{{with index .FieldErrors "product_details"}}<p class="field-error">{{.}}</p>{{end}}</div>
+            <div class="field"><label for="product-fulfillment">Shipping or delivery <span class="field-help">(optional)</span></label><textarea id="product-fulfillment" name="product_fulfillment" maxlength="1000" rows="3" placeholder="For example: shipping cost confirmed by chat">{{.Offer.Fulfillment}}</textarea>{{with index .FieldErrors "product_fulfillment"}}<p class="field-error">{{.}}</p>{{end}}</div>
             <input type="hidden" name="whatsapp_fields_present" value="1" />
             <label class="check-row"><input type="checkbox" id="whatsapp-enabled" name="whatsapp_enabled" value="1" {{if .Offer.WhatsAppEnabled}}checked{{end}} /><span>Accept orders through WhatsApp</span></label>
             <p class="field-help">The button on the detail page opens WhatsApp with a message the visitor can review and send. Clicks are counted separately from orders. To turn off the detail page, disable this WhatsApp option first.</p>
-            <div class="field"><label for="whatsapp-number">WhatsApp number <span class="field-help">(with country code)</span></label><input type="tel" id="whatsapp-number" name="whatsapp_number" maxlength="40" value="{{.Offer.WhatsAppNumber}}" placeholder="For example: 628123456789" autocomplete="off" /><div class="field-help">Indonesian numbers start with 62, not 0. Changing the number updates the product button; the destination URL of existing slugs is changed from the Links page.</div></div>
-            <div class="field"><label for="whatsapp-message">Opening message <span class="field-help">(optional)</span></label><textarea id="whatsapp-message" name="whatsapp_message" maxlength="500" rows="3" placeholder="Hi, I am interested in this product.">{{.Offer.WhatsAppMessage}}</textarea><div class="field-help">The product name and detail link are added automatically.</div></div>
+            <div class="field"><label for="whatsapp-number">WhatsApp number <span class="field-help">(with country code)</span></label><input type="tel" id="whatsapp-number" name="whatsapp_number" maxlength="40" value="{{.Offer.WhatsAppNumber}}" placeholder="For example: 628123456789" autocomplete="off" />{{with index .FieldErrors "whatsapp_number"}}<p class="field-error">{{.}}</p>{{end}}<div class="field-help">Indonesian numbers start with 62, not 0. Changing the number updates the product button; the destination URL of existing slugs is changed from the Links page.</div></div>
+            <div class="field"><label for="whatsapp-message">Opening message <span class="field-help">(optional)</span></label><textarea id="whatsapp-message" name="whatsapp_message" maxlength="500" rows="3" placeholder="Hi, I am interested in this product.">{{.Offer.WhatsAppMessage}}</textarea>{{with index .FieldErrors "whatsapp_message"}}<p class="field-error">{{.}}</p>{{end}}<div class="field-help">The product name and detail link are added automatically.</div></div>
             {{if .Offer.ID}}<p class="field-help">{{.Offer.WhatsAppClicks}} WhatsApp button clicks all time. This is not the number of orders.</p>{{end}}
+            {{if .Offer.ID}}<p class="field-help">{{.Offer.DetailViews}} detail page views all time.</p>{{end}}
           </section>
           <noscript><style>.product-fields[hidden] { display:block !important; }</style></noscript>
           <div class="form-section">
@@ -63,12 +64,12 @@
           <label class="check-row"><input type="checkbox" id="reuse-home-slug" name="reuse_home_slug" value="1" {{if .ReuseHomeSlug}}checked{{end}} /><span>Use an existing link</span></label>
           <p class="field-help">The slug must be active and not connected to another item. Its destination and click history are kept. If you use a link that is not listed, the public card can send visitors to that destination once the card is allowed to appear and available.</p>
           <div class="form-pair">
-            <div class="field"><label for="home-slug">Card slug</label><input type="text" id="home-slug" name="home_slug" required value="{{if .Offer}}{{.Offer.HomeSlug}}{{end}}" placeholder="greencloud-black-friday" /></div>
-            <div class="field"><label for="home-url">Destination URL</label><input type="url" id="home-url" name="home_url" value="{{if .Offer}}{{.Offer.HomeURL}}{{end}}" placeholder="https://provider.example/deal?ref=..." /><div class="field-help">For a new product with WhatsApp enabled, this may be left empty; the slug will point to that WhatsApp number.</div></div>
+            <div class="field"><label for="home-slug">Card slug</label><input type="text" id="home-slug" name="home_slug" required value="{{if .Offer}}{{.Offer.HomeSlug}}{{end}}" placeholder="greencloud-black-friday" />{{with index .FieldErrors "home_slug"}}<p class="field-error">{{.}}</p>{{end}}</div>
+            <div class="field"><label for="home-url">Destination URL</label><input type="url" id="home-url" name="home_url" value="{{if .Offer}}{{.Offer.HomeURL}}{{end}}" placeholder="https://provider.example/deal?ref=..." />{{with index .FieldErrors "home_url"}}<p class="field-error">{{.}}</p>{{end}}<div class="field-help">For a new product with WhatsApp enabled, this may be left empty; the slug will point to that WhatsApp number.</div></div>
           </div>
           {{else}}
           <div class="offer-form-heading"><h2>Card link</h2><span>Destination and tracking for the public card.</span></div>
-          <div class="offer-home-destination"><span>Card slug</span><strong>/{{.Offer.HomeSlug}}</strong><span>Change the destination from Links. {{if or (eq .Offer.ItemType "project") (eq .Offer.ItemType "article")}}This card opens the destination URL directly; card clicks are not recorded on the slug.{{else if and (eq .Offer.ItemType "product") .Offer.ProductPage}}Detail page visits are not counted. {{if .Offer.WhatsAppEnabled}}WhatsApp button clicks are recorded separately from slug clicks.{{else}}Destination button clicks are recorded through the slug.{{end}}{{else}}Card clicks are recorded through this slug.{{end}}</span></div>
+          <div class="offer-home-destination"><span>Card slug</span><strong>/{{.Offer.HomeSlug}}</strong><span>Change the destination from Links. {{if or (eq .Offer.ItemType "project") (eq .Offer.ItemType "article")}}This card opens the destination URL directly; card clicks are not recorded on the slug.{{else if and (eq .Offer.ItemType "product") .Offer.ProductPage}}Detail page views are recorded separately from slug clicks and WhatsApp button clicks. {{if .Offer.WhatsAppEnabled}}WhatsApp button clicks are recorded separately from slug clicks.{{else}}Destination button clicks are recorded through the slug.{{end}}{{else}}Card clicks are recorded through this slug.{{end}}</span></div>
           {{end}}
 
           </div>
@@ -190,42 +191,6 @@
     </main>
   </div>
 </div>
-{{if .IsForm}}
-<script>
-  const itemType = document.getElementById('offer-item-type');
-  const typeHelp = document.getElementById('offer-type-help');
-  const productFields = document.getElementById('product-fields');
-  const typeDescriptions = {
-    referral: 'Referrals link to the offer on the provider site.',
-    product: 'Product cards can show details before opening the destination URL.',
-    service: 'Services appear in the Services section and link to the destination URL.',
-    resource: 'Resources appear in the Resources section and link to the destination URL.',
-    article: 'Articles appear in the Reading section and open the article URL.',
-    project: 'Projects appear in the Projects section and open the project URL.'
-  };
-  itemType.addEventListener('change', function() {
-    typeHelp.textContent = typeDescriptions[itemType.value] || '';
-    productFields.hidden = itemType.value !== 'product';
-  });
-  document.getElementById('offer-form').addEventListener('invalid', function(event) {
-    const section = event.target.closest('details');
-    if (section) section.open = true;
-  }, true);
-  {{if .IsNew}}
-  const reuseExistingSlug = document.getElementById('reuse-home-slug');
-  const newHomepageURL = document.getElementById('home-url');
-  const whatsappEnabled = document.getElementById('whatsapp-enabled');
-  function updateHomepageURL() {
-    newHomepageURL.disabled = reuseExistingSlug.checked;
-    newHomepageURL.required = !reuseExistingSlug.checked && !(itemType.value === 'product' && whatsappEnabled.checked);
-  }
-  reuseExistingSlug.addEventListener('change', updateHomepageURL);
-  whatsappEnabled.addEventListener('change', updateHomepageURL);
-  itemType.addEventListener('change', updateHomepageURL);
-  updateHomepageURL();
-  {{end}}
-</script>
-{{end}}
 </body>
 </html>
 {{end}}

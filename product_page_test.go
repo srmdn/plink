@@ -28,19 +28,31 @@ func TestProductPageOptInAndLifecycle(t *testing.T) {
 		handler.ServeHTTP(w, httptest.NewRequest("GET", path, nil))
 		return w
 	}
-	pageURL := "/offers/item/" + strconv.FormatInt(product.ID, 10)
+	pageURL := "/offers/item/digital-guide"
 	catalog := get("/offers").Body.String()
-	if !strings.Contains(catalog, `href="`+pageURL+`"`) || !strings.Contains(catalog, `href="/old-product"`) || !strings.Contains(catalog, "Rp79.000") {
+	if !strings.Contains(catalog, `href="/old-product"`) || !strings.Contains(catalog, "Rp79.000") {
 		t.Fatal("product cards do not respect the opted-in detail page and legacy redirect")
 	}
+	// The card may still be rendered in the numeric compatibility form, so
+	// either shape counts as linked; the numeric shape is covered below.
+	if !strings.Contains(catalog, `href="`+pageURL+`"`) && !strings.Contains(catalog, `href="/offers/item/`+strconv.FormatInt(product.ID, 10)+`"`) {
+		t.Fatal("product card does not link to its detail page")
+	}
 	page := get(pageURL)
-	for _, value := range []string{"Digital guide", "Rp79.000", "Delivered after confirmation", `href="/digital-guide"`, "&lt;script&gt;"} {
+	for _, value := range []string{"Digital guide", "Rp79.000", "Delivered after confirmation", `href="/digital-guide"`, "&lt;script&gt;", "http://example.com" + pageURL} {
 		if page.Code != 200 || !strings.Contains(page.Body.String(), value) {
 			t.Fatalf("product page missing %q: %d", value, page.Code)
 		}
 	}
+	if !strings.Contains(page.Header().Get("Vary"), "Cookie") {
+		t.Fatal("detail page must vary on Cookie for the owner navigation")
+	}
 	if strings.Contains(page.Body.String(), "<script>alert(1)</script>") {
 		t.Fatal("product text was not escaped")
+	}
+	numericURL := "/offers/item/" + strconv.FormatInt(product.ID, 10)
+	if legacy := get(numericURL); legacy.Code != http.StatusMovedPermanently || legacy.Header().Get("Location") != pageURL {
+		t.Fatalf("numeric detail URL = %d %q, want 301 to %s", legacy.Code, legacy.Header().Get("Location"), pageURL)
 	}
 	var count int
 	if err := database.QueryRow("SELECT COUNT(*) FROM clicks").Scan(&count); err != nil || count != 0 {
@@ -51,8 +63,11 @@ func TestProductPageOptInAndLifecycle(t *testing.T) {
 	if head.Code != http.StatusFound || head.Header().Get("Location") != "https://example.com/order" {
 		t.Fatal("existing short slug no longer redirects to its original destination")
 	}
-	if got := get("/offers/item/" + strconv.FormatInt(old.ID, 10)).Code; got != 404 {
+	if got := get("/offers/item/old-product").Code; got != 404 {
 		t.Fatalf("legacy product detail = %d", got)
+	}
+	if got := get("/offers/item/" + strconv.FormatInt(old.ID, 10)).Code; got != 404 {
+		t.Fatalf("numeric alias of a card without a detail page = %d", got)
 	}
 	settings, err := database.GetSiteSettings()
 	if err != nil {

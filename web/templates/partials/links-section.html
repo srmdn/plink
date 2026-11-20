@@ -113,7 +113,7 @@
         {{if ne $.Status "active"}}<td class="status-cell"><span class="status {{if .Active}}on{{else}}off{{end}}">{{if .Active}}Active{{else}}Paused{{end}}</span></td>{{end}}
         <td class="actions-cell">
           <div class="row-actions">
-            {{if .Active}}<button class="btn btn-ghost btn-sm btn-copy" data-label="Copy" data-slug="{{.Slug}}" onclick="copyLink(this)">Copy</button>{{end}}
+            {{if .Active}}<button class="btn btn-ghost btn-sm btn-copy" data-label="Copy" data-slug="{{.Slug}}" data-copy-link>Copy</button>{{end}}
             <a class="btn btn-ghost btn-sm" href="/{{$.AdminPath}}/analytics/dashboard?link={{.ID}}">Analytics</a>
             <details class="row-menu">
               <summary class="btn btn-ghost btn-sm" aria-label="more actions for /{{.Slug}}">More</summary>

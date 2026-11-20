@@ -1,53 +1,3 @@
-{{define "guide-styles"}}
-<style>
-  .guide-page { max-width: 1240px; }
-  .guide-page .admin-page-heading p { max-width: 760px; line-height: 1.7; }
-  .guide-page .admin-page-heading { position: relative; }
-  .guide-toc-wrap { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-  .guide-toc-menu { position: absolute; top: calc(100% + 8px); right: 0; z-index: 70; width: min(300px, calc(100vw - 32px)); max-height: min(62vh, 430px); overflow-y: auto; padding: 8px; background: var(--surface); border: 1px solid var(--border); border-radius: 14px; box-shadow: 0 14px 36px #15191826; }
-  .guide-toc-menu[hidden] { display: none; }
-  .guide-toc-menu nav { display: grid; gap: 2px; }
-  .guide-toc-menu a { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 10px; color: var(--text); text-decoration: none; font-size: 13px; }
-  .guide-toc-menu a:hover, .guide-toc-menu a:focus-visible { background: var(--surface2); color: var(--accent); }
-  .guide-toc-num { flex: 0 0 auto; display: grid; place-items: center; width: 26px; height: 26px; border-radius: 8px; background: var(--surface2); color: var(--accent); font-size: 11px; font-weight: 700; }
-  .guide-section { margin-bottom: 20px; padding: clamp(18px, 3vw, 28px); scroll-margin-top: 160px; }
-  .guide-heading { display: flex; align-items: start; gap: 14px; margin-bottom: 22px; }
-  .guide-step { flex: 0 0 auto; display: grid; place-items: center; width: 36px; height: 36px; border: 1px solid var(--border); border-radius: 10px; font-size: 12px; font-weight: 700; }
-  .guide-heading h2 { font-size: 20px; line-height: 1.4; margin-bottom: 7px; }
-  .guide-page p { line-height: 1.75; font-size: 14px; }
-  .guide-page a:not(.btn):not(.guide-module):not(.guide-toc a):not(.guide-toc-menu a) { text-decoration: underline; text-underline-offset: 3px; }
-  .guide-module-grid, .guide-definition-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
-  .guide-module { display: flex; flex-direction: column; gap: 9px; padding: 18px; border: 1px solid var(--border); border-radius: 12px; }
-  .guide-module strong { font-size: 16px; }
-  .guide-module span { font-size: 13px; line-height: 1.7; }
-  .guide-module small { margin-top: auto; padding-top: 5px; font-size: 12px; }
-  .guide-page a.guide-module, .guide-toc a { text-decoration: none; }
-  .guide-module:hover { border-color: var(--accent); }
-  .guide-example { margin-top: 18px; padding: 18px; border-left: 3px solid var(--accent); border-radius: 0 9px 9px 0; }
-  .guide-example strong { display: block; font-size: 14px; margin-bottom: 8px; }
-  .guide-page code { padding: 2px 5px; border-radius: 4px; font-size: .9em; overflow-wrap: anywhere; }
-  .guide-steps { padding-left: 24px; font-size: 14px; line-height: 1.8; }
-  .guide-steps li { padding-left: 5px; margin: 0 0 13px; }
-  .guide-note { margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border); }
-  .guide-definition-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); margin-top: 20px; }
-  .guide-definition-grid > div { padding: 14px; border: 1px solid var(--border); border-radius: 9px; }
-  .guide-definition-grid strong { display: block; font-size: 13px; margin-bottom: 5px; }
-  .guide-definition-grid p { font-size: 13px; }
-  .guide-table-wrap { overflow-x: auto; margin-top: 20px; border: 1px solid var(--border); border-radius: 10px; }
-  .guide-table { width: 100%; border-collapse: collapse; font-size: 13px; line-height: 1.7; }
-  .guide-table caption { padding: 14px; text-align: left; font-weight: 600; }
-  .guide-table th, .guide-table td { padding: 12px 14px; text-align: left; vertical-align: top; border-top: 1px solid var(--border); }
-  .guide-table th { font-weight: 600; }
-  .guide-table th:first-child { width: 30%; }
-  .guide-faq details { border-top: 1px solid var(--border); padding: 16px 0; }
-  .guide-faq summary { cursor: pointer; font-size: 14px; line-height: 1.6; }
-  .guide-faq details p { margin: 12px 0 0; }
-  .guide-end { padding-bottom: 12px; }
-  .guide-page b { font-weight: 600; }
-  @media (max-width: 620px) { .guide-module-grid, .guide-definition-grid { grid-template-columns: minmax(0, 1fr); } .guide-heading h2 { font-size: 18px; } .guide-heading { gap: 10px; } .guide-table th, .guide-table td { padding: 10px; } .guide-table th:first-child { width: 36%; } }
-  @media (max-width: 350px) { .guide-toc-menu { width: min(300px, calc(100vw - 24px)); } }
-</style>
-{{end}}
 {{define "guide-dashboard"}}
 <!doctype html>
 <html lang="id">
@@ -75,29 +25,6 @@
           </div>
         </div>
       </div>
-      <script>
-      (function () {
-        var toggle = document.getElementById('guide-toc-toggle');
-        var menu = document.getElementById('guide-toc-menu');
-        if (!toggle || !menu) return;
-        function closeMenu() { menu.hidden = true; toggle.setAttribute('aria-expanded', 'false'); }
-        function openMenu() { menu.hidden = false; toggle.setAttribute('aria-expanded', 'true'); }
-        toggle.addEventListener('click', function () { menu.hidden ? openMenu() : closeMenu(); });
-        menu.addEventListener('click', function (event) {
-          var link = event.target.closest('a');
-          if (!link) return;
-          var target = document.querySelector(link.getAttribute('href'));
-          if (target) { event.preventDefault(); target.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
-          closeMenu();
-        });
-        document.addEventListener('keydown', function (event) { if (event.key === 'Escape') closeMenu(); });
-        document.addEventListener('click', function (event) {
-          if (menu.hidden) return;
-          if (event.target.closest('#guide-toc-menu') || event.target.closest('#guide-toc-toggle')) return;
-          closeMenu();
-        });
-      })();
-      </script>
 
       <section class="analytics-page-panel guide-section" id="hubungan-modul" aria-labelledby="modul-title">
         <div class="guide-heading"><span class="guide-step">01</span><div><h2 id="modul-title">Choose where to manage it</h2><p>A link can stand alone. Use an item when several links belong to the same program or promotion.</p></div></div>

@@ -180,13 +180,32 @@ func (s *Server) handleOGImage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// Bound memory across item variants; irrelevant query strings never change keys.
+	s.storeOGImage(cacheKey, body.Bytes())
+	writeOGImage(w, body.Bytes())
+}
+
+// ogCacheLimit bounds the rendered share images kept in memory. Insertion order
+// is kept in ogCacheOrder so the oldest entry is evicted first: a plain FIFO,
+// which is predictable and needs no extra bookkeeping.
+const ogCacheLimit = 64
+
+// storeOGImage inserts one rendered image and evicts the oldest cached entries
+// when the cache is full. Re-storing an existing key only refreshes its body.
+func (s *Server) storeOGImage(key string, body []byte) {
 	s.ogCacheMu.Lock()
-	if len(s.ogCache) >= 16 || s.ogCache == nil {
+	defer s.ogCacheMu.Unlock()
+	if s.ogCache == nil {
 		s.ogCache = make(map[string][]byte)
 	}
-	s.ogCache[cacheKey] = body.Bytes()
-	s.ogCacheMu.Unlock()
-	writeOGImage(w, body.Bytes())
+	if _, cached := s.ogCache[key]; !cached {
+		for len(s.ogCacheOrder) >= ogCacheLimit {
+			oldest := s.ogCacheOrder[0]
+			s.ogCacheOrder = s.ogCacheOrder[1:]
+			delete(s.ogCache, oldest)
+		}
+		s.ogCacheOrder = append(s.ogCacheOrder, key)
+	}
+	s.ogCache[key] = body
 }
 
 func writeOGImage(w http.ResponseWriter, body []byte) {

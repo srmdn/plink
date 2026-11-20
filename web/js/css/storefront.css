@@ -1,12 +1,14 @@
 :root {
-  color-scheme:light;
+  /* Dark palette itself is emitted by /js/theme.css (loaded after this file)
+     inside its own prefers-color-scheme:dark block; only the scheme
+     declaration and dead-color cleanup live here. */
+  color-scheme:light dark;
   --ink:#151918;
   --muted:#66706c;
   --paper:#f4f1e9;
   --surface:#fff;
   --line:#cbd0cc;
   --accent:#c43424;
-  --green:#c43424;
   --map:#1f6354
 }
 * {
@@ -66,7 +68,7 @@ a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible {
   width:38px;
   height:38px;
   background:var(--ink);
-  color:#fff;
+  color:var(--paper);
   display:grid;
   place-items:center;
   border-radius:12px;
@@ -153,7 +155,7 @@ p {
   display:grid;
   place-items:center;
   margin-bottom:8px;
-  box-shadow:0 0 0 3px #fff,0 0 0 5px color-mix(in srgb,var(--accent) 55%,#fff),0 12px 26px rgba(0,0,0,.14)
+  box-shadow:0 0 0 3px var(--surface),0 0 0 5px color-mix(in srgb,var(--accent) 55%,var(--surface)),0 12px 26px rgba(0,0,0,.14)
 }
 .profile-avatar img {
   width:100%;
@@ -188,7 +190,7 @@ p {
   height:38px;
   border:0;
   border-radius:50%;
-  background:color-mix(in srgb,var(--accent) 10%,#fff);
+  background:color-mix(in srgb,var(--accent) 10%,var(--surface));
   color:var(--accent);
   display:grid;
   place-items:center;
@@ -253,7 +255,7 @@ p {
   display:inline-flex;
   align-items:center;
   gap:5px;
-  background:#fff;
+  background:var(--surface);
   padding:6px 10px
 }
 .profile-header .store-dashboard .nav-icon {
@@ -274,7 +276,7 @@ p {
   align-items:center;
   gap:10px;
   padding:9px 20px;
-  background:color-mix(in srgb,var(--paper) 86%,#fff);
+  background:color-mix(in srgb,var(--paper) 86%,var(--surface));
   -webkit-backdrop-filter:blur(12px) saturate(1.4);
   backdrop-filter:blur(12px) saturate(1.4);
   border-bottom:1px solid var(--line);
@@ -305,7 +307,7 @@ p {
   color:var(--accent);
   display:grid;
   place-items:center;
-  box-shadow:0 0 0 2px #fff,0 0 0 3px color-mix(in srgb,var(--accent) 45%,#fff)
+  box-shadow:0 0 0 2px var(--surface),0 0 0 3px color-mix(in srgb,var(--accent) 45%,var(--surface))
 }
 .profile-mini-avatar img {
   width:100%;
@@ -349,7 +351,7 @@ p {
 .store-search input {
   min-width:0;
   flex:1;
-  background:#fff;
+  background:var(--surface);
   border:1px solid var(--line);
   border-radius:12px;
   padding:13px 12px;
@@ -375,12 +377,12 @@ p {
   padding:7px 12px;
   border:1px solid var(--line);
   border-radius:50px;
-  background:#fff;
+  background:var(--surface);
   font-size:11px
 }
 .store-chip.active {
   background:var(--ink);
-  color:#fff;
+  color:var(--paper);
   border-color:var(--ink)
 }
 .store-section {
@@ -407,7 +409,7 @@ p {
 .offer-card {
   position:relative;
   min-width:0;
-  background:#fff;
+  background:var(--surface);
   border:1px solid var(--line);
   border-radius:16px;
   overflow:hidden;
@@ -416,7 +418,7 @@ p {
 }
 .offer-card:hover {
   transform:translateY(-2px);
-  box-shadow:0 8px 18px #1519180d
+  box-shadow:0 8px 18px color-mix(in srgb,var(--ink) 5%,transparent)
 }
 .offer-card>a {
   display:flex;
@@ -429,7 +431,7 @@ p {
   display:grid;
   place-items:center;
   overflow:hidden;
-  background:#f8f8f5
+  background:var(--soft)
 }
 .offer-image img {
   height:100%;
@@ -444,7 +446,7 @@ p {
   position:absolute;
   bottom:9px;
   left:9px;
-  background:#fff;
+  background:var(--surface);
   padding:3px 7px;
   font-size:9px;
   border-radius:40px;
@@ -492,7 +494,7 @@ p {
   top:9px;
   right:9px;
   z-index:1;
-  background:#fff;
+  background:var(--surface);
   border:1px solid var(--line);
   color:var(--ink);
   border-radius:50%;
@@ -505,7 +507,7 @@ p {
 }
 .favorite-button[aria-pressed=true] {
   color:var(--accent);
-  background:#fff
+  background:var(--surface)
 }
 .featured-track {
   display:flex;
@@ -549,7 +551,7 @@ p {
 }
 .resource-card {
   position:relative;
-  background:#fff;
+  background:var(--surface);
   border:1px solid var(--line);
   border-radius:12px;
   padding:14px 55px 14px 14px;
@@ -597,7 +599,7 @@ p {
   padding: 7px;
   border: 1px solid var(--line);
   border-radius: 20px;
-  background: #fff;
+  background: var(--surface);
   box-shadow: 0 3px 12px rgba(21,25,24,.08);
   z-index: 60;
 }
@@ -644,7 +646,7 @@ p {
   min-width:0;
   border:1px solid var(--line);
   border-radius:10px;
-  background:#fff;
+  background:var(--surface);
   font-size:11px;
   padding:10px
 }
@@ -659,7 +661,7 @@ p {
   margin-top:24px
 }
 .catalog-pagination a {
-  background:#fff;
+  background:var(--surface);
   border:1px solid var(--line);
   padding:5px 12px;
   border-radius:8px
@@ -739,7 +741,7 @@ body[data-favorites-page] [data-favorite-card].is-favorite {
 .store-search { margin:6px 0 12px; }
 .store-search input { padding:11px 12px; }
 .store-chip { border:0; background:var(--soft); }
-.store-chip.active { background:color-mix(in srgb,var(--accent) 10%,white); color:var(--accent); }
+.store-chip.active { background:color-mix(in srgb,var(--accent) 10%,var(--surface)); color:var(--accent); }
 .store-section { margin:18px -20px 0; padding:20px; border-top:10px solid var(--paper); }
 .store-section-head { margin-bottom:14px; align-items:center; }
 .service-section { padding-top:20px; }
@@ -748,12 +750,12 @@ body[data-favorites-page] [data-favorite-card].is-favorite {
 .offer-image { background:var(--soft); border-radius:12px; aspect-ratio:1.35; }
 .offer-card--no-image .offer-image { aspect-ratio:auto; height:82px; }
 .offer-image-placeholder { display:grid; place-items:center; color:var(--accent); }
-.offer-card--no-image .offer-image { background:color-mix(in srgb,var(--accent) 7%,#fff); }
+.offer-card--no-image .offer-image { background:color-mix(in srgb,var(--accent) 7%,var(--surface)); }
 .item-illustration { display:block; width:90px; height:68px; color:var(--accent); }
 .illustration-icon { fill:none; }
-.offer-card--referral .offer-image { background:color-mix(in srgb,var(--accent) 4%,#eeeae3); }
-.offer-card--project .offer-image { background:color-mix(in srgb,var(--accent) 5%,#eaf0ee); }
-.offer-card--article .offer-image { background:color-mix(in srgb,var(--accent) 5%,#f2eee8); }
+.offer-card--referral .offer-image { background:color-mix(in srgb,var(--accent) 4%,var(--soft)); }
+.offer-card--project .offer-image { background:color-mix(in srgb,var(--accent) 5%,var(--soft)); }
+.offer-card--article .offer-image { background:color-mix(in srgb,var(--accent) 5%,var(--soft)); }
 .offer-grid > .offer-card--service .item-illustration,.offer-grid > .offer-card--resource .item-illustration { width:64px; height:54px; }
 .offer-card-copy { padding:10px 1px 4px; }
 .offer-card h3 { font-size:13px; margin:4px 0 6px; }
@@ -772,8 +774,13 @@ body[data-favorites-page] [data-favorite-card].is-favorite {
 .product-page .product-section { border-top:1px solid var(--line); margin-top:18px; padding-top:18px; }
 .product-page .product-action { display:block; margin-top:22px; padding:13px 16px; border-radius:10px; background:var(--accent); color:#fff; text-align:center; font-weight:700; }
 .product-page-with-contact .product-action { margin-right:68px; }
-.offer-badge { border:0; background:rgba(255,255,255,.92); bottom:7px; left:7px; }
-.favorite-button { width:34px; height:34px; border:0; box-shadow:0 1px 5px #15191808; transition:color .16s,transform .16s,background .16s; }
+/* Secondary item-aware contact action (P2b): a quiet outline button after the
+   primary action, rendered only when ContactItemAction is set. */
+.product-page .product-action-secondary { margin-top:10px; background:var(--surface); border:1px solid var(--line); color:var(--ink); font-weight:650; }
+.product-page .product-action-secondary:hover { border-color:var(--accent); color:var(--accent); }
+.product-page-with-contact .product-action-secondary { margin-right:68px; }
+.offer-badge { border:0; background:color-mix(in srgb,var(--surface) 92%,transparent); bottom:7px; left:7px; }
+.favorite-button { width:34px; height:34px; border:0; box-shadow:0 1px 5px color-mix(in srgb,var(--ink) 3%,transparent); transition:color .16s,transform .16s,background .16s; }
 .favorite-button .nav-icon { width:20px; height:20px; }
 .favorite-button.is-saved svg { fill:currentColor; }
 .favorite-button:active { transform:scale(.9); }
@@ -782,7 +789,7 @@ body[data-favorites-page] [data-favorite-card].is-favorite {
 .featured-track .offer-image { height:100%; min-height:120px; border-radius:0; }
 .offer-grid > .offer-card--service,.offer-grid > .offer-card--resource { grid-column:1/-1; background:var(--soft); }
 .offer-grid > .offer-card--service > a,.offer-grid > .offer-card--resource > a { display:grid; grid-template-columns:70px minmax(0,1fr); gap:12px; padding:12px 48px 12px 12px; }
-.offer-grid > .offer-card--service .offer-image,.offer-grid > .offer-card--resource .offer-image { height:70px; aspect-ratio:auto; background:#fff; }
+.offer-grid > .offer-card--service .offer-image,.offer-grid > .offer-card--resource .offer-image { height:70px; aspect-ratio:auto; background:var(--surface); }
 .offer-grid > .offer-card--service .offer-badge,.offer-grid > .offer-card--resource .offer-badge { position:static; font-size:8px; padding:0; background:none; }
 .offer-grid > .offer-card--service .offer-card-copy,.offer-grid > .offer-card--resource .offer-card-copy { padding:0; }
 .offer-grid > .offer-card--service .offer-card-cta,.offer-grid > .offer-card--resource .offer-card-cta { margin-top:4px; }
@@ -796,10 +803,10 @@ body[data-favorites-page] [data-favorite-card].is-favorite {
 .affiliate-note { border:0; margin:20px -20px -20px; padding:16px 20px; background:var(--paper); }
 .store-empty { border:0; background:var(--soft); display:flex; align-items:center; gap:12px; }
 .store-empty[hidden] { display:none; }
-.empty-icon { width:38px; height:38px; flex:none; display:grid; place-items:center; border-radius:12px; background:color-mix(in srgb,var(--accent) 10%,white); color:var(--accent); }
+.empty-icon { width:38px; height:38px; flex:none; display:grid; place-items:center; border-radius:12px; background:color-mix(in srgb,var(--accent) 10%,var(--surface)); color:var(--accent); }
 .empty-icon .nav-icon { width:19px; height:19px; }
 .store-footer { background:var(--paper); }
-.ui-toast { position:fixed; z-index:100; bottom:calc(100px + env(safe-area-inset-bottom)); left:50%; transform:translate(-50%,8px); width:max-content; max-width:calc(100% - 40px); padding:11px 16px; border-radius:12px; background:#151918; color:#fff; font-size:12px; box-shadow:0 4px 18px #15191820; opacity:0; visibility:hidden; transition:opacity .18s,transform .18s,visibility .18s; pointer-events:none; }
+.ui-toast { position:fixed; z-index:100; bottom:calc(100px + env(safe-area-inset-bottom)); left:50%; transform:translate(-50%,8px); width:max-content; max-width:calc(100% - 40px); padding:11px 16px; border-radius:12px; background:var(--ink); color:var(--surface); font-size:12px; box-shadow:0 4px 18px color-mix(in srgb,var(--ink) 12%,transparent); opacity:0; visibility:hidden; transition:opacity .18s,transform .18s,visibility .18s; pointer-events:none; }
 .ui-toast.is-visible { opacity:1; visibility:visible; transform:translate(-50%,0); }
 @media(max-width:350px) {
   .store-section { margin-inline:-14px; padding-inline:14px; }
@@ -840,7 +847,7 @@ body[data-favorites-page] [data-favorite-card].is-favorite {
 .contact-bubble {
   pointer-events:auto;
   width:min(280px,100%);
-  background:#fff;
+  background:var(--surface);
   border:1px solid var(--line);
   border-radius:18px;
   padding:14px;
@@ -863,7 +870,7 @@ body[data-favorites-page] [data-favorite-card].is-favorite {
   min-height:44px;
   padding:10px 12px;
   border-radius:12px;
-  background:color-mix(in srgb,var(--accent) 8%,#fff);
+  background:color-mix(in srgb,var(--accent) 8%,var(--surface));
   color:var(--ink);
   font-size:13px;
   font-weight:650;
@@ -964,7 +971,7 @@ body[data-favorites-page] [data-favorite-card].is-favorite {
 }
 @media (hover:hover) {
   .store-search button:hover,.catalog-filters button:hover,.product-action:hover {
-    box-shadow:0 3px 10px #1519181c
+    box-shadow:0 3px 10px color-mix(in srgb,var(--ink) 11%,transparent)
   }
 }
 .store-search button:active,.catalog-filters button:active,.product-action:active,.store-chip:active {
@@ -975,6 +982,9 @@ body[data-favorites-page] [data-favorite-card].is-favorite {
 }
 
 /* Native article pages */
+/* Native article pages. The column width follows the storefront shell at every
+   size: the 480px frame below 768px, and the 720px shell at the desktop
+   breakpoint, so the article body never drifts wider than the header. */
 .article-main { max-width: 720px; }
 .article-head { padding: 8px 0 18px; }
 .article-head h1 { font-size: 32px; line-height: 1.2; margin: 8px 0 10px; }
@@ -1000,3 +1010,84 @@ body[data-favorites-page] [data-favorite-card].is-favorite {
 .article-body th, .article-body td { border-top: 1px solid var(--line); padding: 8px 10px; text-align: left; }
 .article-source { margin: 28px 0 0; padding-top: 18px; border-top: 1px solid var(--line); font-size: 14px; }
 .article-source a { color: var(--accent); }
+
+/* Notice page styles, moved from the inline <style> block in offer-notice.html
+   (CSP pass). Values unchanged. */
+.notice-main { max-width:480px; margin:0 auto; padding:24px 20px 48px; background:var(--paper); min-height:calc(100dvh - 70px); }
+.notice-panel { overflow-wrap:anywhere; }
+.notice-status { color:var(--accent); font-size:12px; font-weight:700; margin-bottom:12px; }
+.notice-panel h1 { font-size:28px; line-height:1.2; margin-bottom:16px; }
+.notice-message { color:var(--muted); white-space:pre-line; line-height:1.7; }
+.notice-details { background:var(--surface); padding:16px; border-radius:12px; margin:24px 0; font-size:13px; }
+.notice-details p { margin:8px 0; }
+.notice-actions { display:grid; gap:10px; margin-top:24px; }
+.notice-actions a { border-radius:12px; padding:12px 16px; text-align:center; background:var(--surface); color:var(--ink); text-decoration:none; }
+.notice-actions .notice-primary { background:var(--accent); color:white; font-weight:700; }
+.notice-footnote { color:var(--muted); font-size:12px; margin-top:16px; line-height:1.6; }
+
+/* Catalog page styles, moved from the inline <style> blocks in
+   offer-catalog.html and link-catalog.html (CSP pass). Values unchanged. */
+.catalog-heading { margin: 20px 0 16px; }
+.catalog-heading h1 { margin: 3px 0 0; font-size: clamp(28px, 5vw, 42px); line-height: 1.05; letter-spacing: -.055em; }
+.catalog-heading p { margin: 7px 0 0; color: var(--muted); font-size: 12px; }
+.catalog-filters { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(150px, .8fr) minmax(150px, .8fr) auto; gap: 8px; margin: 18px 0; }
+.catalog-filters input, .catalog-filters select { width: 100%; min-width: 0; min-height: 44px; padding: 0 12px; color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-radius: 12px; font: inherit; font-size: 12px; }
+.catalog-filters button { min-height: 44px; padding: 0 16px; color: var(--paper); background: var(--ink); border: 0; border-radius: 12px; font-weight: 750; cursor: pointer; }
+.catalog-pagination { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 6px; margin: 28px 0 6px; }
+.catalog-page { display: grid; min-width: 36px; height: 36px; place-items: center; padding: 0 10px; color: #425047; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; font-size: 11px; font-weight: 700; }
+.catalog-page.active { color: #fff; background: var(--accent); border-color: var(--accent); }
+.catalog-page.disabled { opacity: .45; }
+@media(max-width:700px) { .catalog-filters { grid-template-columns: repeat(2, minmax(0, 1fr)); } .catalog-filters input { grid-column: 1 / -1; } .catalog-filters button { grid-column: 1 / -1; } }
+
+/* Typographic auto-mark for cards without an image (audit finding 12).
+   The item title becomes the placeholder mark; the line-icon stays as a
+   small secondary type cue. Truncation is CSS-only (two-line clamp with
+   ellipsis, ~3 words / ~24 characters) so no JavaScript or Go change is
+   needed. Row-layout service and resource cards keep the icon only. */
+.offer-image-placeholder { align-content:center; row-gap:7px; }
+.offer-mark {
+  display:-webkit-box;
+  -webkit-line-clamp:2;
+  -webkit-box-orient:vertical;
+  overflow:hidden;
+  overflow-wrap:anywhere;
+  max-width:84%;
+  color:var(--accent);
+  font-size:12px;
+  font-weight:750;
+  letter-spacing:.13em;
+  line-height:1.6;
+  text-align:center;
+  text-transform:uppercase;
+}
+.offer-card--no-image .item-illustration { width:32px; height:24px; opacity:.45; }
+.offer-grid > .offer-card--service .offer-mark, .offer-grid > .offer-card--resource .offer-mark { display:none; }
+
+/* Desktop widening (audit finding 10). The mobile 480px frame below 768px is
+   the product identity and stays untouched; from 768px the shell matches the
+   720px article measure and the catalog grid keeps two columns with a wider
+   gap. The bottom nav stays fixed and proportional. */
+@media (min-width:768px) {
+  .store-header, .store-main, .store-footer { width:min(720px,100%); }
+  .offer-grid { grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px; }
+  .notice-main { max-width:720px; }
+}
+
+/* Dark-mode bridging. The locked dark palette (--paper/--bg/--surface/--line/
+   --ink/--muted) is emitted by /js/theme.css, which loads AFTER this file, so
+   redefining those values here would lose by cascade order — they are
+   intentionally not repeated. This block only derives storefront-local
+   aliases from the theme palette and darkens the two light-only washes that
+   color-mix alone cannot fix. */
+@media (prefers-color-scheme:dark) {
+  :root {
+    --soft:color-mix(in srgb,var(--surface) 55%,var(--paper));
+  }
+  .catalog-page { color:var(--muted); }
+  .bottom-nav a[aria-current=page] {
+    box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--ink) 16%,transparent);
+  }
+}
+@media (hover:hover) and (prefers-color-scheme:dark) {
+  .bottom-nav a:hover { background:color-mix(in srgb,var(--ink) 8%,transparent); }
+}

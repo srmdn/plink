@@ -10,7 +10,7 @@
     <main class="admin-main workspace-page">
       <div class="admin-page-heading">
         <div><div class="admin-eyebrow">Short articles</div><h1>Articles</h1><p>Write short articles here. A draft stays private until you publish it.</p></div>
-        <a href="/{{.AdminPath}}/articles/new" class="btn btn-primary">+ New article</a>
+        <div class="admin-heading-actions"><a class="btn btn-ghost btn-sm" href="/{{.AdminPath}}/media">Media</a><a href="/{{.AdminPath}}/articles/new" class="btn btn-primary">+ New article</a></div>
       </div>
       <section class="dashboard-stats">
         <div class="stat-card"><div class="stat-value">{{len .Articles}}</div><div class="stat-label">Total articles</div></div>

@@ -53,7 +53,7 @@
         />
       </div>
       <div class="export-wrap">
-        <button class="btn btn-ghost btn-sm" onclick="toggleExportMenu(event)">Export ↓</button>
+        <button class="btn btn-ghost btn-sm" data-export-toggle>Export ↓</button>
         <div class="export-menu hidden" id="export-menu">
           <a href="/api/export?format=json">Link catalog · JSON</a>
           <a href="/api/export?format=csv">Link catalog · CSV</a>
@@ -71,7 +71,7 @@
     </div>
 
     <!-- Link modal -->
-    <div class="overlay hidden" id="link-modal" onclick="if(event.target===this)closeModal()">
+    <div class="overlay hidden" id="link-modal" data-overlay-close>
       <div class="modal">
         <div id="modal-body"></div>
       </div>

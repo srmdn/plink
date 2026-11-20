@@ -1,7 +1,7 @@
 {{define "link-form"}}
 <div class="modal-header">
   <span class="modal-title">{{if .Editing}}Edit link{{else}}Add link{{end}}</span>
-  <button type="button" class="btn btn-ghost btn-sm" onclick="closeModal()">✕</button>
+  <button type="button" class="btn btn-ghost btn-sm" data-modal-close>✕</button>
 </div>
 {{if .Error}}<div class="modal-error">{{.Error}}</div>{{end}}
 <form
@@ -24,11 +24,11 @@
     <input type="url" id="f-url" name="url" value="{{if .Link}}{{.Link.URL}}{{end}}" placeholder="https://example.com/ref?id=..." autocomplete="off" spellcheck="false" {{if .Link}}autofocus{{end}} />
   </div>
   <div class="field">
-    <label for="f-desc">Description <span style="color:var(--border)">(optional)</span></label>
+    <label for="f-desc">Description <span class="optional-hint">(optional)</span></label>
     <input type="text" id="f-desc" name="description" value="{{if .Link}}{{.Link.Description}}{{end}}" placeholder="Shopee referral — food category" autocomplete="off" />
   </div>
   <div class="field">
-    <label for="f-cat">Category <span style="color:var(--border)">(optional)</span></label>
+    <label for="f-cat">Category <span class="optional-hint">(optional)</span></label>
     <input type="text" id="f-cat" name="category" value="{{if .Link}}{{.Link.Category}}{{end}}" placeholder="Tools, Courses, Shopping..." autocomplete="off" list="cat-suggestions" />
     <datalist id="cat-suggestions">
       {{range .Categories}}<option value="{{.}}">{{end}}
@@ -37,12 +37,12 @@
   <h2 class="link-form-section-heading">Attribution &amp; tracking</h2>
   <div class="form-pair">
     <div class="field">
-      <label for="f-provider">Provider <span style="color:var(--border)">(optional)</span></label>
+      <label for="f-provider">Provider <span class="optional-hint">(optional)</span></label>
       <input type="text" id="f-provider" name="provider" value="{{if .Link}}{{.Link.Provider}}{{end}}" placeholder="GreenCloud, Shopee, MidTeknologi..." autocomplete="off" />
       <div class="field-help">Brand name or program owner</div>
     </div>
     <div class="field">
-      <label for="f-channel">Channel <span style="color:var(--border)">(optional)</span></label>
+      <label for="f-channel">Channel <span class="optional-hint">(optional)</span></label>
       <input type="text" id="f-channel" name="channel" value="{{if .Link}}{{.Link.Channel}}{{end}}" placeholder="blog, instagram, telegram..." autocomplete="off" list="channel-suggestions" />
       <div class="field-help">Where this slug is shared</div>
     </div>
@@ -61,7 +61,7 @@
     <option value="legacy"></option>
   </datalist>
   <div class="field">
-    <label for="f-campaign">campaign / placement <span style="color:var(--border)">(optional)</span></label>
+    <label for="f-campaign">campaign / placement <span class="optional-hint">(optional)</span></label>
     <input type="text" id="f-campaign" name="campaign" value="{{if .Link}}{{.Link.Campaign}}{{end}}" placeholder="review-vps, q4-promo, legacy..." autocomplete="off" list="campaign-suggestions" />
     <div class="field-help">Keep the public slug stable. Use campaigns to group strategies.</div>
   </div>
@@ -100,7 +100,7 @@
     </label>
   </div>
   <div class="modal-footer">
-    <button type="button" class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+    <button type="button" class="btn btn-ghost" data-modal-close>Cancel</button>
     <button type="submit" class="btn btn-primary">Save</button>
   </div>
 </form>

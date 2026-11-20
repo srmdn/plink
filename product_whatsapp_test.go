@@ -20,7 +20,7 @@ func TestProductWhatsAppOrderingAndClickAccounting(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	path := "/offers/item/" + strconv.FormatInt(product.ID, 10)
+	path := "/offers/item/buku"
 	request := func(method, target, agent string) *httptest.ResponseRecorder {
 		req := httptest.NewRequest(method, target, nil)
 		req.Header.Set("User-Agent", agent)
@@ -29,8 +29,14 @@ func TestProductWhatsAppOrderingAndClickAccounting(t *testing.T) {
 		return w
 	}
 	page := request("GET", path, "browser")
-	if page.Code != 200 || !strings.Contains(page.Body.String(), `href="`+path+`/whatsapp"`) || !strings.Contains(page.Body.String(), "Order via WhatsApp") {
+	numericWhatsApp := "/offers/item/" + strconv.FormatInt(product.ID, 10) + "/whatsapp"
+	if page.Code != 200 || !strings.Contains(page.Body.String(), "Order via WhatsApp") ||
+		(!strings.Contains(page.Body.String(), `href="`+path+`/whatsapp"`) && !strings.Contains(page.Body.String(), `href="`+numericWhatsApp+`"`)) {
 		t.Fatal("product page does not expose the WhatsApp action")
+	}
+	// The numeric contact URL only canonicalizes; the click belongs to the slug.
+	if legacy := request("GET", numericWhatsApp, "browser"); legacy.Code != http.StatusMovedPermanently || legacy.Header().Get("Location") != path+"/whatsapp" {
+		t.Fatalf("numeric WhatsApp URL = %d %q, want 301 to %s", legacy.Code, legacy.Header().Get("Location"), path+"/whatsapp")
 	}
 	for _, tc := range []struct{ method, agent string }{{"HEAD", "browser"}, {"GET", "WhatsApp/2.0"}, {"GET", "browser"}} {
 		response := request(tc.method, path+"/whatsapp", tc.agent)
@@ -128,7 +134,7 @@ func TestProductWhatsAppPublicFeatureSwitchesPreserveSettings(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	path := "/offers/item/" + strconv.FormatInt(product.ID, 10)
+	path := "/offers/item/produk-switch"
 	request := func(target string) int {
 		w := httptest.NewRecorder()
 		handler.ServeHTTP(w, httptest.NewRequest("HEAD", target, nil))

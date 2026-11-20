@@ -17,6 +17,7 @@
 
       {{if .Error}}<div class="offer-error" role="alert">{{.Error}}</div>{{end}}
       {{if .Saved}}<div class="settings-saved" role="status">Settings saved.</div>{{end}}
+      {{if .ContrastWarning}}<div class="settings-saved" role="status">{{.ContrastWarning}}</div>{{end}}
 
       <form method="POST" enctype="multipart/form-data" action="/{{.AdminPath}}/settings" id="settings-form">
         <section class="analytics-page-panel settings-panel"><div class="offer-form-heading"><h2>Logo &amp; favicon</h2><span>The logo is used in the public and admin headers.</span></div><div class="field"><label for="settings-logo">Logo URL</label><input id="settings-logo" type="text" name="logo_url" maxlength="2048" value="{{.Settings.LogoURL}}" placeholder="https://your-domain.com/logo.png" /><input type="file" id="settings-logo-file" name="logo_file" accept="image/png,image/jpeg,image/webp" /><p class="field-help">Upload a PNG/JPEG/WebP up to 5 MB, or enter a URL/path (SVG allowed). An upload replaces the URL. Leave empty to use the default logo.</p></div><div class="field"><label for="settings-favicon">Favicon URL</label><input id="settings-favicon" type="text" name="favicon_url" maxlength="2048" value="{{.Settings.FaviconURL}}" placeholder="https://your-domain.com/favicon.png" /><input type="file" id="settings-favicon-file" name="favicon_file" accept="image/png,image/jpeg,image/webp" /><p class="field-help">Optional. If empty, the favicon uses your logo; without a custom logo, it follows the public accent color. Upload a PNG/JPEG/WebP or enter an HTTPS URL/local path.</p></div><div class="brand-preview">{{template "brand-logo" .}}<span>Logo currently in use</span></div></section>
@@ -123,60 +124,6 @@
     </main>
   </div>
 </div>
-<script>
-(function () {
-  var mode = document.getElementById('feature-mode');
-  var flags = document.getElementById('feature-flags');
-  if (!mode || !flags) return;
-  var boxes = Array.prototype.slice.call(flags.querySelectorAll('input[data-feature]'));
-  var presets = {
-    full: {feature_storefront: 1, feature_catalog: 1, feature_services: 1, feature_articles: 1, feature_projects: 1, feature_resources: 1, feature_profile: 1, feature_support: 1, feature_favorites: 1, feature_contact: 1},
-    biolink: {feature_storefront: 1, feature_resources: 1, feature_profile: 1, feature_support: 1, feature_contact: 1},
-    shortener: {}
-  };
-  function apply(name) {
-    var preset = presets[name] || {};
-    boxes.forEach(function (box) { box.checked = !!preset[box.name]; });
-  }
-  function syncLock() {
-    var editable = mode.value === 'custom';
-    boxes.forEach(function (box) { box.disabled = !editable; });
-    flags.classList.toggle('feature-flags-locked', !editable);
-  }
-  mode.addEventListener('change', function () {
-    if (mode.value !== 'custom') apply(mode.value);
-    syncLock();
-  });
-  boxes.forEach(function (box) {
-    box.addEventListener('change', function () { mode.value = 'custom'; syncLock(); });
-  });
-  syncLock();
-})();
-(function () {
-  var rows = document.querySelector('[data-contact-rows]');
-  var add = document.querySelector('[data-contact-add]');
-  var template = document.getElementById('contact-row-template');
-  if (!rows || !add || !template) return;
-  function wire(row) {
-    var remove = row.querySelector('[data-contact-remove]');
-    if (remove) remove.addEventListener('click', function () { row.remove(); });
-    var up = row.querySelector('[data-contact-up]');
-    if (up) up.addEventListener('click', function () { var prev = row.previousElementSibling; if (prev) rows.insertBefore(row, prev); });
-    var down = row.querySelector('[data-contact-down]');
-    if (down) down.addEventListener('click', function () { var next = row.nextElementSibling; if (next) rows.insertBefore(next, row); });
-  }
-  rows.querySelectorAll('.contact-row').forEach(wire);
-  add.addEventListener('click', function () {
-    var row = document.createElement('div');
-    row.className = 'contact-row';
-    row.innerHTML = template.innerHTML;
-    rows.appendChild(row);
-    wire(row);
-    var input = row.querySelector('input[name="contact_url"]');
-    if (input) input.focus();
-  });
-})();
-</script>
 </body>
 </html>
 {{end}}

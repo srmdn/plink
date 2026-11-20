@@ -3,11 +3,25 @@ package server
 import (
 	"net/http"
 	"net/http/httptest"
+	"path/filepath"
 	"strings"
 	"testing"
 
 	"github.com/srmdn/plink/internal/config"
+	"github.com/srmdn/plink/internal/db"
 )
+
+// newTestSessionStore builds a session store over a throwaway database, since
+// sessions now live in SQLite instead of process memory.
+func newTestSessionStore(t *testing.T) *sessionStore {
+	t.Helper()
+	database, err := db.Init(filepath.Join(t.TempDir(), "sessions.db"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { database.Close() })
+	return newSessionStore(database)
+}
 
 func TestClientIPOnlyTrustsProxyHeadersFromLoopback(t *testing.T) {
 	r := httptest.NewRequest("GET", "http://example.test/", nil)
@@ -46,7 +60,7 @@ func TestBaseURLOnlyTrustsForwardedProtoFromLoopback(t *testing.T) {
 }
 
 func TestRequireAuthSetsNoStore(t *testing.T) {
-	s := &Server{cfg: &config.Config{AdminPath: "admin"}, sessions: newSessionStore()}
+	s := &Server{cfg: &config.Config{AdminPath: "admin"}, sessions: newTestSessionStore(t)}
 	handler := s.requireAuth(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusNoContent)
 	})
@@ -54,7 +68,11 @@ func TestRequireAuthSetsNoStore(t *testing.T) {
 	for _, authenticated := range []bool{false, true} {
 		r := httptest.NewRequest("GET", "/admin", nil)
 		if authenticated {
-			r.AddCookie(&http.Cookie{Name: cookieName, Value: s.sessions.create()})
+			token, _, err := s.sessions.create()
+			if err != nil {
+				t.Fatal(err)
+			}
+			r.AddCookie(&http.Cookie{Name: cookieName, Value: token})
 		}
 		w := httptest.NewRecorder()
 		handler(w, r)
@@ -66,7 +84,7 @@ func TestRequireAuthSetsNoStore(t *testing.T) {
 
 func TestDevNoAuthRestrictedToDirectLocalRequests(t *testing.T) {
 	cfg := &config.Config{AdminPath: "admin", Addr: "127.0.0.1:8080", DevNoAuth: true}
-	s := &Server{cfg: cfg, sessions: newSessionStore()}
+	s := &Server{cfg: cfg, sessions: newTestSessionStore(t)}
 	handler := s.requireAuth(func(w http.ResponseWriter, r *http.Request) { w.WriteHeader(http.StatusNoContent) })
 	for _, tc := range []struct {
 		name, remote, host, header string
@@ -107,7 +125,7 @@ func TestDevNoAuthRestrictedToDirectLocalRequests(t *testing.T) {
 }
 
 func TestDevNoAuthKeepsCSRFProtection(t *testing.T) {
-	s := &Server{cfg: &config.Config{AdminPath: "admin", Addr: "127.0.0.1:8080", DevNoAuth: true}, sessions: newSessionStore()}
+	s := &Server{cfg: &config.Config{AdminPath: "admin", Addr: "127.0.0.1:8080", DevNoAuth: true}, sessions: newTestSessionStore(t)}
 	handler := s.requireAuth(s.requireCSRF(func(w http.ResponseWriter, r *http.Request) { w.WriteHeader(http.StatusNoContent) }))
 	request := func(method string) *http.Request {
 		r := httptest.NewRequest(method, "http://127.0.0.1:8080/admin", nil)

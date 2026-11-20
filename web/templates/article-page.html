@@ -8,6 +8,7 @@
 {{template "favicon-link" .}}
 {{template "storefront-styles" .}}
 {{template "analytics-tag" .}}
+<script type="application/ld+json" nonce="{{.SEO.Nonce}}">{"@context":"https://schema.org","@type":"Article","headline":{{.Article.Title}}{{if .Published}},"datePublished":{{.Published}}{{end}}{{if .SEO.URL}},"mainEntityOfPage":{{.SEO.URL}}{{end}},"author":{"@type":"Organization","name":{{.SiteName}}}}</script>
 </head>
 <body class="article-page">
 {{template "public-header" .}}

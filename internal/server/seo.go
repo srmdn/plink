@@ -27,8 +27,8 @@ func (s *Server) publicURL(r *http.Request) string {
 }
 
 type pageSEO struct {
-	Title, Description, URL, Image, SiteName string
-	NoIndex                                  bool
+	Title, Description, URL, Image, SiteName, Nonce string
+	NoIndex                                         bool
 }
 
 func seoIdentity(settings db.SiteSettings) (string, string) {

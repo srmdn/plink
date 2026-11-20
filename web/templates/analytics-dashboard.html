@@ -22,14 +22,14 @@
     </div>
 
     <div class="analytics-page-filters">
-      <div class="analytics-period-field"><label for="analytics-period">Period</label><select id="analytics-period" onchange="var target = new window.URL(window.location.href); target.searchParams.set('period', this.value); window.location.assign(target.pathname + target.search)">{{range .Periods}}<option value="{{.Key}}" {{if eq $.Period .Key}}selected{{end}}>{{.Label}}</option>{{end}}</select></div>
+      <div class="analytics-period-field"><label for="analytics-period">Period</label><select id="analytics-period" data-analytics-nav="period">{{range .Periods}}<option value="{{.Key}}" {{if eq $.Period .Key}}selected{{end}}>{{.Label}}</option>{{end}}</select></div>
       <div class="analytics-selects">
         <div class="analytics-filter-field"><label for="analytics-group">Breakdown</label>
-        <select id="analytics-group" data-base-url="?period={{.Period}}{{if .Category}}&amp;category={{.Category | urlquery}}{{end}}" onchange="window.location.assign(this.dataset.baseUrl + (this.value &amp;&amp; this.value !== 'link' ? '&amp;group=' + encodeURIComponent(this.value) : ''))">
+        <select id="analytics-group" data-base-url="?period={{.Period}}{{if .Category}}&amp;category={{.Category | urlquery}}{{end}}" data-analytics-nav="group">
           {{range .Groups}}<option value="{{.Key}}" {{if eq .Key $.Group}}selected{{end}}>{{.Label}}</option>{{end}}
         </select>
         </div><div class="analytics-filter-field"><label for="analytics-category">Category</label>
-        <select id="analytics-category" data-base-url="?period={{.Period}}{{if ne .Group "link"}}&amp;group={{.Group | urlquery}}{{end}}" onchange="window.location.assign(this.dataset.baseUrl + (this.value ? '&amp;category=' + encodeURIComponent(this.value) : ''))">
+        <select id="analytics-category" data-base-url="?period={{.Period}}{{if ne .Group "link"}}&amp;group={{.Group | urlquery}}{{end}}" data-analytics-nav="category">
           <option value="">All categories</option>
           {{range .Categories}}<option value="{{.}}" {{if eq . $.Category}}selected{{end}}>{{.}}</option>{{end}}
         </select>

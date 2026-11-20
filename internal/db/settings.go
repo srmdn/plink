@@ -77,6 +77,27 @@ func (settings SiteSettings) FeatureMode() string {
 	}
 }
 
+// OnSettingsChange registers a callback that runs after every successful
+// settings write. Callbacks accumulate so several readers over one database
+// (for example, more than one Server in tests) all see the write.
+func (db *DB) OnSettingsChange(hook func()) {
+	if hook == nil {
+		return
+	}
+	db.settingsMu.Lock()
+	db.settingsHooks = append(db.settingsHooks, hook)
+	db.settingsMu.Unlock()
+}
+
+func (db *DB) notifySettingsChange() {
+	db.settingsMu.Lock()
+	hooks := append([]func(){}, db.settingsHooks...)
+	db.settingsMu.Unlock()
+	for _, hook := range hooks {
+		hook()
+	}
+}
+
 func (db *DB) GetSiteSettings() (SiteSettings, error) {
 	settings := SiteSettings{ItemPreviews: true, PublicOrigin: "", HeroEyebrow: "My recommendations", HeroTitle: "Good things,\nfor what you need.", HeroDescription: "Products, courses, and services I use and recommend.", ServiceTitle: "Services", ServiceDescription: "Need a website built, a WordPress site fixed, or a VPS managed? Tell me what you need.", HeroEnabled: true, FeaturedLimit: 3, PublicAccent: "#c43424", PublicBackground: "#f4f1e9", AdminAccent: "#c43424", AdminBackground: "#f4f1e9", StorefrontEnabled: true, CatalogEnabled: true, ServicesEnabled: true, ArticlesEnabled: true, ProjectsEnabled: true, ResourcesEnabled: true, ProfileEnabled: true, SupportEnabled: true, FavoritesEnabled: true, ContactTitle: "Contact me", ContactEnabled: true}
 	err := db.QueryRow(`
@@ -127,5 +148,9 @@ func (db *DB) SaveSiteSettings(settings SiteSettings) error {
 			feature_contact = excluded.feature_contact,
 			updated_at = excluded.updated_at
 	`, settings.SiteName, settings.SiteDesc, settings.AffiliateDisclosure, settings.HeroEnabled, settings.FeaturedLimit, settings.PublicAccent, settings.PublicBackground, settings.AdminAccent, settings.AdminBackground, settings.LogoURL, settings.FaviconURL, settings.AvatarURL, settings.SocialLinks, settings.SEOTitle, settings.SEODescription, settings.ShareImageURL, settings.PublicOrigin, settings.HeroEyebrow, settings.HeroTitle, settings.HeroDescription, settings.ServiceTitle, settings.ServiceDescription, settings.ItemPreviews, settings.StorefrontEnabled, settings.CatalogEnabled, settings.ServicesEnabled, settings.ArticlesEnabled, settings.ProjectsEnabled, settings.ResourcesEnabled, settings.ProfileEnabled, settings.SupportEnabled, settings.FavoritesEnabled, settings.ContactLinks, settings.ContactTitle, settings.ContactNote, settings.ContactEnabled, time.Now().Unix())
-	return err
+	if err != nil {
+		return err
+	}
+	db.notifySettingsChange()
+	return nil
 }

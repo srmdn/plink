@@ -36,7 +36,7 @@ func TestAnalyticsIsOptIn(t *testing.T) {
 	if body := off.Body.String(); strings.Contains(body, "data-website-id") || strings.Contains(body, "analytics.example.com") {
 		t.Fatal("default instance rendered a third-party analytics script")
 	}
-	if csp := off.Header().Get("Content-Security-Policy"); strings.Contains(csp, "connect-src") || !strings.Contains(csp, "script-src 'self' 'unsafe-inline'") {
+	if csp := off.Header().Get("Content-Security-Policy"); strings.Contains(csp, "connect-src") || !strings.Contains(csp, "script-src 'self' 'nonce-") {
 		t.Fatalf("unexpected default CSP: %s", csp)
 	}
 
@@ -56,7 +56,7 @@ func TestAnalyticsIsOptIn(t *testing.T) {
 		}
 	}
 	csp := getPage(t, handler, "/").Header().Get("Content-Security-Policy")
-	if !strings.Contains(csp, "script-src 'self' 'unsafe-inline' https://analytics.example.com") {
+	if !strings.Contains(csp, "script-src 'self' 'nonce-") || !strings.Contains(csp, " https://analytics.example.com") {
 		t.Fatalf("CSP did not allow the analytics script origin: %s", csp)
 	}
 	if !strings.Contains(csp, "connect-src 'self' https://analytics.example.com") {

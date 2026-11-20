@@ -2,6 +2,7 @@ package db
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 	"sort"
 	"strings"
@@ -38,6 +39,7 @@ type Offer struct {
 	WhatsAppNumber  string `json:"whatsapp_number"`
 	WhatsAppMessage string `json:"whatsapp_message"`
 	WhatsAppClicks  int64  `json:"whatsapp_clicks"`
+	DetailViews     int64  `json:"detail_views"`
 	PriceInput      string `json:"-"`
 	ProductPage     bool   `json:"product_page"`
 	ProductKind     string `json:"product_kind"`
@@ -171,8 +173,10 @@ type PublicLink struct {
 	Priority    int
 }
 
-func (db *DB) ListOffers() ([]Offer, error) {
-	rows, err := db.Query(`
+// offerSelectClause and offerFromClause are the single definition of the Offer
+// projection: every read path selects the same columns with the same joins so a
+// filtered lookup can never drift from ListOffers.
+const offerSelectClause = `
 		SELECT o.id, o.title, o.provider, o.description, o.category, o.image_url,
 		       o.button_label, o.fallback_url, o.starts_on, o.ends_on,
 		       o.active, o.featured, o.priority,
@@ -182,12 +186,36 @@ func (db *DB) ListOffers() ([]Offer, error) {
 		       (SELECT COUNT(*) FROM notice_views v JOIN links vl ON vl.id = v.link_id WHERE vl.offer_id = o.id),
 		       COALESCE(p.enabled, 0), COALESCE(p.kind, ''), p.price_minor, COALESCE(p.currency, 'IDR'), COALESCE(p.details, ''), COALESCE(p.fulfillment, ''),
 		       COALESCE(p.whatsapp_enabled, 0), COALESCE(p.whatsapp_number, ''), COALESCE(p.whatsapp_message, ''),
-		       (SELECT COUNT(*) FROM product_whatsapp_clicks wc WHERE wc.offer_id = o.id)
+		       (SELECT COUNT(*) FROM product_whatsapp_clicks wc WHERE wc.offer_id = o.id),
+		       (SELECT COUNT(*) FROM product_views pv WHERE pv.offer_id = o.id)`
+
+const offerFromClause = `
 		FROM offers o
 		LEFT JOIN product_details p ON p.offer_id = o.id
 		LEFT JOIN links l ON l.offer_id = o.id
 		LEFT JOIN clicks c ON c.link_id = l.id
-		LEFT JOIN links h ON h.offer_id = o.id AND h.offer_homepage = 1
+		LEFT JOIN links h ON h.offer_id = o.id AND h.offer_homepage = 1`
+
+// offerScanner is satisfied by *sql.Row and *sql.Rows, so the row and list
+// readers share one scan mapping.
+type offerScanner interface {
+	Scan(dest ...any) error
+}
+
+func scanOffer(scanner offerScanner) (Offer, error) {
+	var offer Offer
+	err := scanner.Scan(&offer.ID, &offer.Title, &offer.Provider, &offer.Description, &offer.Category, &offer.ImageURL,
+		&offer.ButtonLabel, &offer.FallbackURL, &offer.StartsOn, &offer.EndsOn,
+		&offer.Active, &offer.Featured, &offer.Priority, &offer.HomeSlug, &offer.HomeURL, &offer.HomeActive,
+		&offer.LinkCount, &offer.Clicks, &offer.CreatedAt, &offer.UpdatedAt,
+		&offer.ItemType, &offer.ProgramStatus, &offer.EndedBehavior, &offer.NoticeMessage, &offer.NoticeSourceURL, &offer.StatusChangedOn, &offer.VerifiedOn, &offer.NoticeViews,
+		&offer.ProductPage, &offer.ProductKind, &offer.PriceMinor, &offer.Currency, &offer.ProductDetails, &offer.Fulfillment,
+		&offer.WhatsAppEnabled, &offer.WhatsAppNumber, &offer.WhatsAppMessage, &offer.WhatsAppClicks, &offer.DetailViews)
+	return offer, err
+}
+
+func (db *DB) ListOffers() ([]Offer, error) {
+	rows, err := db.Query(offerSelectClause + offerFromClause + `
 		GROUP BY o.id
 		ORDER BY o.active DESC, o.featured DESC, o.priority DESC, o.updated_at DESC
 	`)
@@ -198,14 +226,8 @@ func (db *DB) ListOffers() ([]Offer, error) {
 
 	var offers []Offer
 	for rows.Next() {
-		var offer Offer
-		if err := rows.Scan(&offer.ID, &offer.Title, &offer.Provider, &offer.Description, &offer.Category, &offer.ImageURL,
-			&offer.ButtonLabel, &offer.FallbackURL, &offer.StartsOn, &offer.EndsOn,
-			&offer.Active, &offer.Featured, &offer.Priority, &offer.HomeSlug, &offer.HomeURL, &offer.HomeActive,
-			&offer.LinkCount, &offer.Clicks, &offer.CreatedAt, &offer.UpdatedAt,
-			&offer.ItemType, &offer.ProgramStatus, &offer.EndedBehavior, &offer.NoticeMessage, &offer.NoticeSourceURL, &offer.StatusChangedOn, &offer.VerifiedOn, &offer.NoticeViews,
-			&offer.ProductPage, &offer.ProductKind, &offer.PriceMinor, &offer.Currency, &offer.ProductDetails, &offer.Fulfillment,
-			&offer.WhatsAppEnabled, &offer.WhatsAppNumber, &offer.WhatsAppMessage, &offer.WhatsAppClicks); err != nil {
+		offer, err := scanOffer(rows)
+		if err != nil {
 			return nil, err
 		}
 		offers = append(offers, offer)
@@ -224,6 +246,29 @@ func (db *DB) GetOfferByID(id int64) (*Offer, error) {
 		}
 	}
 	return nil, nil
+}
+
+// GetOfferByHomeSlug resolves a public detail URL segment through the item's
+// card slug. The slug match is exact, like GetLinkBySlug, and includes items
+// whose card link is paused so callers can decide visibility with
+// isOfferAvailable instead of leaking a different error.
+func (db *DB) GetOfferByHomeSlug(slug string) (*Offer, error) {
+	if slug == "" {
+		return nil, nil
+	}
+	row := db.QueryRow(offerSelectClause+offerFromClause+`
+		WHERE h.slug = ?
+		GROUP BY o.id
+		LIMIT 1
+	`, slug)
+	offer, err := scanOffer(row)
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+	return &offer, nil
 }
 
 func (db *DB) ListOfferLinks(offerID int64) ([]Link, error) {
@@ -396,6 +441,15 @@ func saveProductDetails(tx *sql.Tx, offerID int64, product *ProductDetails) erro
 
 func (db *DB) RecordProductWhatsAppClick(offerID, clickedAt int64) error {
 	_, err := db.Exec(`INSERT INTO product_whatsapp_clicks (offer_id, clicked_at) VALUES (?, ?)`, offerID, clickedAt)
+	return err
+}
+
+// RecordProductView counts one detail page visit. It stays separate from slug
+// clicks and WhatsApp clicks so the funnel between card, detail page, and
+// contact action is readable.
+func (db *DB) RecordProductView(offerID int64, referrer, userAgent string, viewedAt int64) error {
+	_, err := db.Exec(`INSERT INTO product_views (offer_id, viewed_at, referrer, user_agent) VALUES (?, ?, ?, ?)`,
+		offerID, viewedAt, referrer, userAgent)
 	return err
 }
 
