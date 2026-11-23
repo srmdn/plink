@@ -225,6 +225,10 @@
 
 
   .empty-state { text-align: center; color: var(--muted); padding: 48px 20px; font-size: 13px; }
+  /* Title, description, and action stack instead of colliding on one line. */
+  .empty-state strong, .empty-state span { display: block; }
+  .empty-state span { margin-top: 4px; }
+  .empty-state .btn { margin-top: 12px; }
 
   /* ── Modal ── */
   .overlay {
@@ -1909,6 +1913,9 @@ html { scroll-padding-bottom: 130px; }
    at ~1080px, long forms cap at ~880px so fields stay readable, and tables
    use the full column width. */
 @media (min-width:1024px) {
+  /* The 480px app frame is the parent of .admin-main, so widening the main
+     column alone does nothing: max-width cannot loosen a smaller width. */
+  .admin-page #app.admin-app { width:min(1080px,100%); }
   .admin-page main.admin-main { max-width:1080px; margin-inline:auto; }
   .admin-page .offer-editor-panel,
   .admin-page #settings-form,

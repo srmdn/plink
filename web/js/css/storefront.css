@@ -771,6 +771,11 @@ body[data-favorites-page] [data-favorite-card].is-favorite {
 .offer-card--no-image .offer-image { aspect-ratio:auto; height:82px; }
 .offer-image-placeholder { display:grid; place-items:center; color:var(--accent); }
 .offer-card--no-image .offer-image { background:color-mix(in srgb,var(--accent) 7%,var(--soft)); }
+/* Grid cards without an image: the favorite button covers the top-right corner
+   of the strip, so the auto-mark gets its own band below the button and the
+   small line icon (already redundant with the type badge) steps aside. */
+.offer-grid > .offer-card--no-image .offer-image { height:104px; padding:30px 10px 8px; }
+.offer-grid > .offer-card--no-image .item-illustration { display:none; }
 .item-illustration { display:block; width:90px; height:68px; color:var(--accent); }
 .illustration-icon { fill:none; }
 .offer-card--referral .offer-image { background:color-mix(in srgb,var(--accent) 4%,var(--soft)); }
