@@ -719,3 +719,119 @@ document.addEventListener('keydown', function (event) {
     banner.remove();
   });
 })();
+
+// ── Offer editor draft protection ──────────────────────────────────────────
+// Same local backup pattern as the article editor, for the longer offer form
+// (#offer-form). Every named control is kept except file inputs, which cannot
+// be stored: an unfinished image upload has to be picked again by hand. A
+// successful save redirects with ?saved=1 and drops the backup.
+(function () {
+  var form = document.getElementById('offer-form');
+  if (!form) return;
+  var segments = (form.getAttribute('action') || '').split('/').filter(Boolean);
+  var lastSegment = segments[segments.length - 1] || '';
+  var key = 'plink-offer-draft:' + (/^\d+$/.test(lastSegment) ? lastSegment : 'new');
+  var SKIP = { file: 1, submit: 1, button: 1, reset: 1, hidden: 1 };
+  var dirty = false;
+  var submitted = false;
+  var restoring = false;
+  var saveTimer = null;
+
+  // Checkboxes and radios store their checked state; everything else stores
+  // its value. Disabled fields are skipped so a hidden section is not restored.
+  function controls() {
+    return Array.prototype.filter.call(form.elements, function (el) {
+      return el.name && !el.disabled && !SKIP[el.type];
+    });
+  }
+  function controlValue(el) {
+    if (el.type === 'checkbox' || el.type === 'radio') return el.checked ? '1' : '';
+    return el.value;
+  }
+  function readBackup() {
+    try { return JSON.parse(localStorage.getItem(key) || 'null'); } catch (e) { return null; }
+  }
+  function removeBackup() {
+    try { localStorage.removeItem(key); } catch (e) { /* private mode */ }
+  }
+  function persist() {
+    var values = {};
+    controls().forEach(function (el) { values[el.name] = controlValue(el); });
+    try {
+      localStorage.setItem(key, JSON.stringify({ t: Date.now(), f: values }));
+    } catch (e) { /* storage full or private mode */ }
+  }
+  function scheduleSave() {
+    dirty = true;
+    if (saveTimer) clearTimeout(saveTimer);
+    saveTimer = setTimeout(function () { saveTimer = null; persist(); }, 800);
+  }
+  form.addEventListener('input', function () {
+    if (restoring) return;
+    scheduleSave();
+  });
+  form.addEventListener('change', function () {
+    if (restoring) return;
+    scheduleSave(); // a chosen image file cannot be stored, but the change counts
+  });
+  window.addEventListener('beforeunload', function (event) {
+    if (!dirty || submitted) return;
+    persist();
+    event.preventDefault();
+    event.returnValue = '';
+  });
+  form.addEventListener('submit', function () {
+    submitted = true;
+    // A real save navigates away; on validation errors the server re-renders
+    // the submitted values, so the backup is obsolete either way.
+    removeBackup();
+  });
+  if (/[?&]saved=1(?=&|$)/.test(window.location.search)) removeBackup();
+
+  function restoreBackup(backup) {
+    restoring = true;
+    controls().forEach(function (el) {
+      if (!(el.name in backup.f)) return;
+      if (el.type === 'checkbox' || el.type === 'radio') el.checked = backup.f[el.name] === '1';
+      else el.value = backup.f[el.name];
+      el.dispatchEvent(new Event('input', { bubbles: true }));
+      el.dispatchEvent(new Event('change', { bubbles: true }));
+    });
+    restoring = false;
+    dirty = true; // the restored state is still unsaved work
+  }
+
+  var backup = readBackup();
+  if (!backup || !backup.f) return;
+  var differs = controls().some(function (el) {
+    return el.name in backup.f && controlValue(el) !== backup.f[el.name];
+  });
+  if (!differs) return;
+  var when = 'an earlier session';
+  try { when = new Date(backup.t).toLocaleString('en', { dateStyle: 'medium', timeStyle: 'short' }); } catch (e) { /* keep the fallback */ }
+  var banner = document.createElement('div');
+  banner.className = 'draft-banner';
+  banner.setAttribute('role', 'status');
+  var text = document.createElement('span');
+  text.textContent = 'Unsaved draft from ' + when + '.';
+  var restoreButton = document.createElement('button');
+  restoreButton.type = 'button';
+  restoreButton.className = 'btn btn-ghost';
+  restoreButton.textContent = 'Restore';
+  var discardButton = document.createElement('button');
+  discardButton.type = 'button';
+  discardButton.className = 'btn btn-ghost';
+  discardButton.textContent = 'Discard';
+  banner.appendChild(text);
+  banner.appendChild(restoreButton);
+  banner.appendChild(discardButton);
+  form.parentNode.insertBefore(banner, form);
+  restoreButton.addEventListener('click', function () {
+    restoreBackup(backup);
+    banner.remove();
+  });
+  discardButton.addEventListener('click', function () {
+    removeBackup();
+    banner.remove();
+  });
+})();
