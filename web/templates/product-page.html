@@ -3,7 +3,7 @@
 {{$profile := publicProfile}}
 <body>{{template "public-header" .}}<main class="store-main product-page{{if and .Settings.ContactEnabled $profile.Contact}} product-page-with-contact{{end}}">
   <a class="product-back" href="/offers">← Back to catalog</a>
-  {{if .Offer.ImageURL}}<img class="product-image" src="{{.Offer.ImageURL}}" alt="Image of {{.Offer.Title}}" />{{else}}<div class="product-image product-image-empty" aria-hidden="true">{{template "brand-mark"}}</div>{{end}}
+  {{if .Offer.ImageURL}}<img class="product-image" src="{{.Offer.ImageURL}}" alt="Image of {{.Offer.Title}}" />{{else}}<div class="product-image product-image-empty" aria-hidden="true"><span class="offer-mark product-image-mark">{{.Offer.Title}}</span></div>{{end}}
   {{if .Offer.Category}}<span class="store-eyebrow">{{.Offer.Category}}</span>{{end}}
   <h1>{{.Offer.Title}}</h1>
   {{if .Offer.Provider}}<p class="product-provider">{{.Offer.Provider}}</p>{{end}}

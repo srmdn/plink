@@ -100,3 +100,26 @@ func referrerLabel(source string) string {
 	}
 	return source
 }
+
+// humanDate renders a stored date for people instead of machines. Article
+// dates are stored either as a plain day or as a full timestamp, so both forms
+// are accepted; anything unrecognised is returned unchanged rather than
+// silently blanked.
+func humanDate(value string) string {
+	value = strings.TrimSpace(value)
+	if value == "" {
+		return ""
+	}
+	for _, layout := range []string{
+		time.RFC3339,
+		"2006-01-02T15:04:05",
+		"2006-01-02 15:04:05",
+		"2006-01-02T15:04",
+		"2006-01-02",
+	} {
+		if parsed, err := time.Parse(layout, value); err == nil {
+			return parsed.Format("Jan 2, 2006")
+		}
+	}
+	return value
+}

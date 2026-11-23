@@ -17,7 +17,7 @@
     <header class="article-head">
       <span class="store-eyebrow">ARTICLE</span>
       <h1>{{.Article.Title}}</h1>
-      <p class="article-meta">{{if .Published}}{{.Published}} · {{end}}{{.ReadingTime}} min read</p>
+      <p class="article-meta">{{if .Published}}{{humanDate .Published}} · {{end}}{{.ReadingTime}} min read</p>
       {{if .CoverURL}}<img class="article-cover" src="{{.CoverURL}}" alt="" />{{end}}
     </header>
     <div class="article-body">{{.Body}}</div>

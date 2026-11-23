@@ -26,7 +26,7 @@
             <tr>
               <td><a class="analytics-offer-link" href="/{{$.AdminPath}}/articles/{{.ID}}"><strong>{{.Title}}</strong></a><div class="field-help">/a/{{.Slug}}</div></td>
               <td><span class="status {{if eq .Status "published"}}on{{else}}off{{end}}">{{if eq .Status "published"}}Published{{else}}Draft{{end}}</span></td>
-              <td>{{if .PublishedAt}}{{.PublishedAt}}{{else}}—{{end}}</td>
+              <td>{{if .PublishedAt}}{{humanDate .PublishedAt}}{{else}}—{{end}}</td>
               <td>{{.Views}}</td>
               <td><a class="btn btn-ghost btn-sm" href="/{{$.AdminPath}}/articles/{{.ID}}">Edit</a></td>
             </tr>

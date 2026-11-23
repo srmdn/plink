@@ -167,6 +167,7 @@ func New(cfg *config.Config, database *db.DB, webFS embed.FS) http.Handler {
 			},
 			"productPrice":      productPriceLabel,
 			"productPriceValue": productPriceInput,
+			"humanDate":         humanDate,
 			"referrerLabel":     referrerLabel,
 			"branding": func() brandAssets {
 				settings, _ := s.currentSiteSettings()

@@ -54,7 +54,7 @@ func TestCatalogAdminVisibilityFilter(t *testing.T) {
 	if !strings.Contains(shown, "Visible referral") || !strings.Contains(shown, "Visible ended referral") || strings.Contains(shown, "Hidden ended referral") {
 		t.Fatal("shown filter must use the visibility setting, not availability")
 	}
-	if !strings.Contains(shown, "Allowed to appear") || !strings.Contains(shown, "Ended") {
+	if !strings.Contains(shown, `<div class="field-help">Visible</div>`) || !strings.Contains(shown, "Ended") {
 		t.Fatal("shown ended item must show visibility and program status separately")
 	}
 	empty := get("/admin/offers?visibility=hidden&q=no-such-item")

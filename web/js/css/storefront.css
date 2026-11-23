@@ -24,7 +24,10 @@
      only hover lift and floating chrome carry a shadow. Dark overrides live
      in the bridging block at the end of this file. */
   --shadow-hover:0 6px 18px color-mix(in srgb,var(--ink) 9%,transparent);
-  --shadow-float:0 16px 40px -20px rgba(21,25,24,.5)
+  --shadow-float:0 16px 40px -20px rgba(21,25,24,.5);
+  /* Bottom navigation sits close to the content, so it gets a tighter
+     shadow than other floating chrome. */
+  --shadow-nav:0 3px 12px color-mix(in srgb,var(--ink) 8%,transparent)
 }
 * {
   box-sizing:border-box
@@ -615,7 +618,7 @@ p {
   border: 1px solid var(--line);
   border-radius: var(--radius-xl);
   background: var(--surface);
-  box-shadow: 0 3px 12px rgba(21,25,24,.08);
+  box-shadow: var(--shadow-nav);
   z-index: 60;
 }
 .bottom-nav a {
@@ -794,6 +797,7 @@ body[data-favorites-page] [data-favorite-card].is-favorite {
 .product-page .product-back { display:inline-block; margin:4px 0 16px; color:var(--accent); font-weight:600; }
 .product-page .product-image { display:block; width:100%; max-height:420px; object-fit:contain; border-radius:var(--radius-md); background:var(--soft); margin-bottom:18px; }
 .product-page .product-image-empty { min-height:180px; display:grid; place-items:center; }
+.product-page .product-image-mark { font-size:18px; letter-spacing:.16em; max-width:72%; }
 .product-page h1 { font-size:26px; line-height:1.2; margin:8px 0; }
 .product-page h2 { font-size:15px; margin:0 0 6px; }
 .product-page .product-provider { color:var(--muted); margin:0 0 8px; }
@@ -1115,6 +1119,7 @@ body[data-favorites-page] [data-favorite-card].is-favorite {
     /* Ink-based hover shadows would glow on dark surfaces; shadows go black. */
     --shadow-hover:0 6px 18px rgba(0,0,0,.38);
     --shadow-float:0 16px 40px -20px rgba(0,0,0,.7);
+    --shadow-nav:0 3px 12px rgba(0,0,0,.45);
   }
   .catalog-page { color:var(--muted); }
   .bottom-nav a[aria-current=page] {
