@@ -2,7 +2,7 @@
 
 All notable changes to Plink are documented in this file.
 
-## Unreleased
+## v1.6.0
 
 ### Added
 
