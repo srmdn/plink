@@ -30,6 +30,9 @@ Implemented in the current development tree, not yet released:
   contrast warning on save;
 - a wider desktop layout for the storefront and admin while the mobile frame
   and bottom navigation keep their current behavior;
+- a desktop admin shell: from 1024 px the same navigation moves into a sidebar
+  so the operator does not travel to the bottom-centre of a wide screen. Below
+  1024 px the pill navigation is unchanged;
 - product detail pages at slug URLs with a permanent redirect from the numeric
   form, separate page-view counts, and item-aware contact and fulfillment copy;
 - a media library for stored uploads, with unreferenced files cleaned up after
@@ -113,12 +116,15 @@ and `surface2` as mixes of surface and paper/background.
 
 The mobile frame is unchanged: the storefront breakpoint stays below 768px and
 the admin breakpoint below 1024px, with the same 480px storefront width and
-bottom navigation. The change is the shared token language and the additional
+bottom navigation. From 1024px the admin navigation becomes a sidebar, but the
+pill navigation below that breakpoint and the storefront navigation at every
+size stay as they are. The change is the shared token language and these
 desktop rules, not a new responsive structure.
 
 ## Current condition
 
-- The admin has **Links**, **Catalog**, **Analytics**, and **Settings**.
+- The admin has **Links**, **Catalog**, **Articles**, **Analytics**, and
+  **Settings**, plus a **Media** entry point from both Articles and Catalog.
 - The catalog stores product, referral, service, resource, article, and project
   items. Services and projects already have their own public sections.
 - Product and referral cards point to a short slug, then to the destination.
@@ -252,13 +258,14 @@ the context of the selected product. They do not replace each other.
 
 ## Admin design
 
-Keep the four main menus, with descriptions on empty pages and through short
+Keep the five main menus, with descriptions on empty pages and through short
 help text:
 
 | Menu | Question it answers |
 | --- | --- |
 | **Links** | Which short URL did I share, and how many times was it clicked? |
 | **Catalog** | Which cards, products, services, and projects do I show? |
+| **Articles** | What long-form writing is published, drafted, or backed up? |
 | **Analytics** | Which links, providers, or channels get clicks? |
 | **Settings** | How are the site identity, contact, and public sections configured? |
 

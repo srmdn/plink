@@ -27,6 +27,8 @@ All notable changes to Plink are documented in this file.
   restore or discard it after a reload.
 - Uploaded files that are no longer referenced are removed once they are older
   than 48 hours; the sweep runs daily.
+- The media library is reachable from Catalog as well as Articles, next to the
+  existing add actions.
 
 ### Changed
 
@@ -38,8 +40,17 @@ All notable changes to Plink are documented in this file.
   the form-level message.
 - Custom theme colors below a 4.5:1 WCAG contrast ratio produce a non-blocking
   warning after saving.
-- The storefront widens to 720 px and the admin content area to 1080 px on
+- The storefront widens to 720 px and the admin content area to 1180 px on
   desktop; the mobile frame and bottom navigation keep their current behavior.
+- From 1024 px the admin navigation becomes a sidebar, so links, articles,
+  analytics, and settings no longer require travelling to the bottom-centre of
+  a wide screen. Below 1024 px the pill navigation is unchanged.
+- Article dates read as "Nov 20, 2026" on the public article page and in the
+  admin articles table instead of a raw timestamp.
+- Catalog visibility uses one pair of terms, Visible and Hidden, in the filter,
+  the counter, and each row.
+- A product detail page without an image shows the typographic title mark
+  instead of the Plink logo.
 - Cards without an image use a typographic mark derived from the item title
   instead of a generic placeholder.
 - The storefront and admin share one radius, border, and shadow scale: bands,
@@ -56,6 +67,8 @@ All notable changes to Plink are documented in this file.
   loads an admin page.
 - The offer notice page uses theme variables instead of a hardcoded white
   background.
+- The navigation shadow is a named token and turns black in dark mode instead
+  of glowing around the pill.
 
 ### Upgrade notes
 
