@@ -1461,7 +1461,7 @@
 .admin-page .toolbar { margin:0 12px 12px; padding:12px 14px; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-md); }
 .admin-page .links-controls { margin:0 12px 12px; padding:12px 14px; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-md); }
 .admin-page .link-table tbody { gap:8px; }
-.admin-page .link-table tr { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-sm); margin:0 12px; padding:11px 12px; gap:4px; }
+.admin-page .link-table tr { width:auto; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-sm); margin:0 12px; padding:11px 12px; gap:4px; }
 .admin-page .slug { font-size:13px; }
 .admin-page .link-destination { display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .admin-page .row-actions .btn { padding:4px 8px; min-height:30px; }
