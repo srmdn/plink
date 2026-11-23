@@ -839,6 +839,39 @@ body[data-favorites-page] [data-favorite-card].is-favorite {
 .empty-icon { width:38px; height:38px; flex:none; display:grid; place-items:center; border-radius:var(--radius-sm); background:color-mix(in srgb,var(--accent) 10%,var(--surface)); color:var(--accent); }
 .empty-icon .nav-icon { width:19px; height:19px; }
 .store-footer { background:transparent; }
+/* ── Section rhythm: one lead, then a compact list ──
+   Homepage sections used to repeat the same two-column card grid, so every
+   section carried the same weight. The first item now leads with a full-width
+   cover and the rest become rows that are scanned, not read. Red stays on
+   actions (the CTA); the eyebrow, the typographic mark, and the "view all"
+   link use ink so the accent keeps one meaning. */
+.store-section-head .store-eyebrow { color:var(--muted); }
+.store-section-head>a { color:var(--muted); }
+.store-section-head>a:hover { color:var(--ink); }
+.lead-list { display:flex; flex-direction:column; gap:8px; }
+.lead-card { background:var(--surface); border:1px solid var(--line); border-radius:var(--radius-md); overflow:hidden; transition:border-color .16s; }
+.lead-card:hover { border-color:color-mix(in srgb,var(--ink) 22%,var(--line)); }
+.lead-card>a { display:block; }
+.lead-card-cover { display:grid; place-items:center; aspect-ratio:16/9; overflow:hidden; background:var(--soft); }
+.lead-card-cover img { display:block; width:100%; height:100%; object-fit:cover; }
+.lead-card--no-image .lead-card-cover { aspect-ratio:auto; height:132px; background:color-mix(in srgb,var(--accent) 6%,var(--soft)); padding:18px 24px; }
+.lead-card-mark { display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; overflow-wrap:anywhere; max-width:100%; color:var(--ink); font-size:15px; font-weight:750; letter-spacing:.13em; line-height:1.5; text-align:center; text-transform:uppercase; }
+.lead-card-body { padding:13px 14px 14px; }
+.lead-card-meta { display:block; font-size:9px; text-transform:uppercase; letter-spacing:.07em; color:var(--muted); overflow-wrap:anywhere; }
+.lead-card-title { font-size:16px; line-height:1.3; margin:6px 0 7px; overflow-wrap:anywhere; }
+.lead-card-desc { font-size:12px; line-height:1.5; margin:0 0 10px; color:color-mix(in srgb,var(--muted) 82%,var(--ink)); display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
+.lead-card .offer-card-cta { display:inline-flex; align-items:center; gap:5px; border:0; padding-top:0; margin-top:0; }
+.lead-rows { display:flex; flex-direction:column; gap:8px; }
+.lead-row { background:var(--surface); border:1px solid var(--line); border-radius:var(--radius-sm); transition:border-color .16s; }
+.lead-row:hover { border-color:color-mix(in srgb,var(--ink) 22%,var(--line)); }
+.lead-row>a { display:flex; align-items:center; gap:10px; min-height:52px; padding:9px 11px; }
+.lead-row-thumb { display:grid; place-items:center; flex:0 0 34px; width:34px; height:34px; overflow:hidden; border:1px solid var(--line); border-radius:var(--radius-xs); background:var(--soft); color:var(--ink); font-size:9.5px; font-weight:750; letter-spacing:.06em; }
+.lead-row-thumb img { width:100%; height:100%; object-fit:cover; }
+.lead-row-text { flex:1; min-width:0; }
+.lead-row-title { display:block; font-size:12.5px; font-weight:600; line-height:1.35; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.lead-row-meta { display:block; margin-top:2px; font-size:10px; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.lead-row-arrow { flex:none; color:var(--muted); font-size:12px; }
+@media (min-width:768px) { .lead-card--no-image .lead-card-cover { height:168px; } }
 .ui-toast { position:fixed; z-index:100; bottom:calc(100px + env(safe-area-inset-bottom)); left:50%; transform:translate(-50%,8px); width:max-content; max-width:calc(100% - 40px); padding:11px 16px; border-radius:var(--radius-lg); background:var(--ink); color:var(--surface); font-size:12px; box-shadow:var(--shadow-float); opacity:0; visibility:hidden; transition:opacity .18s,transform .18s,visibility .18s; pointer-events:none; }
 .ui-toast.is-visible { opacity:1; visibility:visible; transform:translate(-50%,0); }
 /* The compact profile band mirrors the header band: full width, hairline,
@@ -1086,7 +1119,7 @@ body[data-favorites-page] [data-favorite-card].is-favorite {
   overflow:hidden;
   overflow-wrap:anywhere;
   max-width:84%;
-  color:var(--accent);
+  color:var(--ink);
   font-size:12px;
   font-weight:750;
   letter-spacing:.13em;

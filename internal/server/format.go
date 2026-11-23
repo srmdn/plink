@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"strings"
 	"time"
+	"unicode"
 
 	"github.com/srmdn/plink/internal/db"
 )
@@ -122,4 +123,26 @@ func humanDate(value string) string {
 		}
 	}
 	return value
+}
+
+// initialsOf reduces a title to the two-character token shown in the compact
+// list rows. Letter and digit runs split the title, so "Islami.click" becomes
+// "IC" and "The supply chain behind AI" becomes "TS"; a single word falls back
+// to its first two characters.
+func initialsOf(title string) string {
+	words := strings.FieldsFunc(title, func(r rune) bool {
+		return !unicode.IsLetter(r) && !unicode.IsDigit(r)
+	})
+	if len(words) == 0 {
+		return ""
+	}
+	first := []rune(words[0])
+	token := []rune{unicode.ToUpper(first[0])}
+	if len(words) > 1 {
+		return string(append(token, unicode.ToUpper([]rune(words[1])[0])))
+	}
+	if len(first) > 1 {
+		return string(append(token, unicode.ToUpper(first[1])))
+	}
+	return string(token)
 }
