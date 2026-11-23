@@ -2001,3 +2001,84 @@ html { scroll-padding-bottom: 130px; }
 @media (hover:hover) and (prefers-color-scheme:dark) {
   .admin-bottom-nav a:hover { background:color-mix(in srgb,var(--text) 8%,transparent); }
 }
+
+/* ── Desktop column tables ──
+   The list pages are single-column cards below 1024 px. Inside the desktop
+   shell (1180 px frame) the Articles and Catalog lists read as tables again:
+   a column header, then one aligned row per item. The card layer above sets
+   these properties unconditionally, so this block restores them with compound
+   selectors and uses !important only on the cell frame. */
+@media (min-width:1024px) {
+  .admin-page .link-table.article-admin-table,
+  .admin-page .link-table.offer-admin-table {
+    display:table;
+    width:100%;
+    table-layout:fixed;
+    border-collapse:separate;
+    border-spacing:0 6px;
+  }
+  .admin-page .link-table.article-admin-table thead,
+  .admin-page .link-table.offer-admin-table thead { display:table-header-group; }
+  .admin-page .link-table.article-admin-table tbody,
+  .admin-page .link-table.offer-admin-table tbody { display:table-row-group; }
+  .admin-page .link-table.article-admin-table tr,
+  .admin-page .link-table.offer-admin-table tr {
+    display:table-row;
+    width:auto;
+    margin:0;
+    padding:0;
+    gap:0;
+    border:0;
+    background:none;
+    position:static;
+  }
+  .admin-page .link-table.article-admin-table th,
+  .admin-page .link-table.offer-admin-table th { padding:0 12px 7px; vertical-align:bottom; }
+  .admin-page .link-table.article-admin-table td,
+  .admin-page .link-table.offer-admin-table td {
+    display:table-cell;
+    width:auto;
+    padding:11px 12px;
+    vertical-align:middle;
+    overflow:visible;
+    background:var(--surface);
+    border-top:1px solid var(--border)!important;
+    border-bottom:1px solid var(--border)!important;
+    border-left:0!important;
+    border-right:0!important;
+    border-radius:0!important;
+    text-align:left;
+  }
+  .admin-page .link-table.article-admin-table td:first-child,
+  .admin-page .link-table.offer-admin-table td:first-child {
+    border-left:1px solid var(--border)!important;
+    border-radius:var(--radius-sm) 0 0 var(--radius-sm)!important;
+  }
+  .admin-page .link-table.article-admin-table td:last-child,
+  .admin-page .link-table.offer-admin-table td:last-child {
+    border-right:1px solid var(--border)!important;
+    border-radius:0 var(--radius-sm) var(--radius-sm) 0!important;
+    text-align:right;
+  }
+  .admin-page .link-table.article-admin-table th:nth-child(1) { width:42%; }
+  .admin-page .link-table.article-admin-table th:nth-child(2) { width:14%; }
+  .admin-page .link-table.article-admin-table th:nth-child(3) { width:18%; }
+  .admin-page .link-table.article-admin-table th:nth-child(4) { width:10%; }
+  .admin-page .link-table.article-admin-table th:nth-child(5) { width:16%; }
+  .admin-page .link-table.offer-admin-table th:nth-child(1) { width:34%; }
+  .admin-page .link-table.offer-admin-table th:nth-child(2) { width:14%; }
+  .admin-page .link-table.offer-admin-table th:nth-child(3) { width:8%; }
+  /* The column header already names these cells, so the card labels go. */
+  .admin-page .link-table.offer-admin-table td:nth-child(3)::before,
+  .admin-page .link-table.offer-admin-table td:nth-child(4)::before { content:none; }
+  .admin-page .link-table.offer-admin-table th:nth-child(4) { width:10%; }
+  .admin-page .link-table.offer-admin-table th:nth-child(5) { width:15%; }
+  .admin-page .link-table.offer-admin-table th:nth-child(6) { width:20%; }
+  .admin-page .link-table.article-admin-table th:nth-child(4),
+  .admin-page .link-table.article-admin-table td:nth-child(4),
+  .admin-page .link-table.offer-admin-table th:nth-child(3),
+  .admin-page .link-table.offer-admin-table td:nth-child(3) { text-align:right; }
+  .admin-page .link-table.article-admin-table .row-actions,
+  .admin-page .link-table.offer-admin-table .row-actions,
+  .admin-page .link-table.offer-admin-table .offer-admin-actions { justify-content:flex-end; flex-wrap:nowrap; }
+}
