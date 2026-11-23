@@ -782,8 +782,11 @@ body[data-favorites-page] [data-favorite-card].is-favorite {
 .offer-card--project .offer-image { background:color-mix(in srgb,var(--accent) 5%,var(--soft)); }
 .offer-card--article .offer-image { background:color-mix(in srgb,var(--accent) 5%,var(--soft)); }
 .offer-grid > .offer-card--service .item-illustration,.offer-grid > .offer-card--resource .item-illustration { width:64px; height:54px; }
-.offer-card-copy { padding:12px 13px 13px; }
-.offer-card h3 { font-size:13.5px; margin:6px 0 7px; }
+/* A full-bleed cover meets the copy area in a straight line: only the top
+   corners follow the card radius. Rounded bottom corners left white wedges
+   between the image and the copy, which read as a broken join. */
+.offer-grid > .offer-card .offer-image { border-radius: calc(var(--radius-md) - 1px) calc(var(--radius-md) - 1px) 0 0; }
+.offer-card-copy { padding:12px 13px 13px; }.offer-card h3 { font-size:13.5px; margin:6px 0 7px; }
 .offer-provider { color:var(--muted); letter-spacing:.05em; }
 .offer-card p { -webkit-line-clamp:2; margin-bottom:10px; font-size:12px; line-height:1.5; color:color-mix(in srgb,var(--muted) 82%,var(--ink)); }
 .offer-card-cta { border:0; padding-top:7px; font-size:11.5px; }
