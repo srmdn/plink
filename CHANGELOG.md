@@ -25,10 +25,14 @@ All notable changes to Plink are documented in this file.
   keeping the operator accent color.
 - The article editor keeps a local backup of unsaved drafts and offers to
   restore or discard it after a reload.
+- The offer editor keeps the same local backup, so a long item form survives an
+  accidental reload.
 - Uploaded files that are no longer referenced are removed once they are older
   than 48 hours; the sweep runs daily.
 - The media library is reachable from Catalog as well as Articles, next to the
   existing add actions.
+- The admin link list pages 25 links at a time instead of rendering the whole
+  catalog, and keeps the current page after toggling or deleting a link.
 
 ### Changed
 
@@ -56,6 +60,11 @@ All notable changes to Plink are documented in this file.
 - The storefront and admin share one radius, border, and shadow scale: bands,
   tiles, and wells use named tokens, static tiles carry hairline borders, and
   shadows are limited to hover and floating chrome.
+- Projects and Articles open with one lead card and list the remaining items as
+  compact rows. The section eyebrow, the card mark, and the "view all" link use
+  ink, leaving the accent for action labels.
+- From 1024 px the admin Articles and Catalog lists read as column tables with
+  a header row; below that they keep the single-column cards.
 - Inline admin scripts moved to a versioned `admin.js` asset, and the inline
   analytics chart handler moved to delegated listeners. The
   Content-Security-Policy now allows scripts only from the site itself or with
