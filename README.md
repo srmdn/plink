@@ -25,11 +25,14 @@ yourdomain.com/tokopedia-promo  →  https://tokopedia.com/...
 - Notice analytics — count notice views separately from redirect clicks
 - Categories — organize links with filterable labels
 - Public catalogs — search and paginate offer cards and standalone resource links
-- Mobile storefront — centered 480px frame, bottom navigation, unified catalog
-  search, services, articles, and browser-local favorites
+- Storefront — mobile-first layout that widens on desktop, bottom navigation,
+  unified catalog search, services, articles, and browser-local favorites
+- Dark mode — the storefront and admin follow the system color-scheme preference
+  while keeping the configured accent color
 - Catalog types — products, referrals, services, resources, articles, and projects
 - Optional product detail pages — add a price, product type, details, and
-  fulfillment information, with an optional WhatsApp ordering button
+  fulfillment information, with an optional WhatsApp ordering button. Detail
+  pages use the item slug and record page views separately from other clicks
 - Project listing — a Portofolio section and `/offers?view=projects`; project cards
   link straight to their URL, like article cards
 - Feature toggles — Settings → Public features with preset modes (full catalog, bio
@@ -44,7 +47,10 @@ yourdomain.com/tokopedia-promo  →  https://tokopedia.com/...
   Telegram, email, or any URL) may use Plink slugs that stay out of public
   resource listings
 - Item images — upload PNG/JPEG/WebP (max 5 MB, 25 MP) or reference a URL; no
-  image shows the built-in mark
+  image shows a typographic mark derived from the item title
+- Media library — list uploaded images with their size, modification time, and
+  whether anything still references them; orphaned files are cleaned up after
+  48 hours
 - Featured picks — up to three manually scrollable cards, separate from the grid
 - Channel attribution — each offer slug tracks its own clicks while the public
   card redirects straight to its affiliate destination
@@ -121,13 +127,18 @@ variables `ANALYTICS_SCRIPT_URL`, `ANALYTICS_WEBSITE_ID`, and
 
 ## Security
 
-- **CSRF protection** — double-submit cookie token on all authenticated
-  state-changing requests
+- **Admin sessions** — stored in SQLite as token hashes, so a restart or deploy
+  does not sign the operator out; the session lifetime is 24 hours
+- **CSRF protection** — double-submit cookie token bound to the admin session on
+  all authenticated state-changing requests; a token stays valid across admin
+  tabs
 - **Rate limiting** — login attempts capped at 5 per IP per 15 minutes
 - **Admin password** — required; use at least 12 characters (Plink warns if
   shorter)
 - **Secure cookies** — set `APP_ENV=production` to enable `Secure` flag (HTTPS only)
-- **Security headers** — CSP, HSTS, X-Frame-Options, and more applied automatically
+- **Security headers** — CSP, HSTS, X-Frame-Options, and more applied automatically.
+  The CSP allows scripts only from the site itself or with a per-response nonce;
+  inline scripts and event handlers have been removed from admin pages
 - **Cache safety** — authenticated admin and API responses use `Cache-Control: no-store`
 - **URL validation** — only `http`/`https` redirect targets accepted
 - **No third-party tracking by default** — the binary ships with no analytics or
@@ -138,15 +149,17 @@ variables `ANALYTICS_SCRIPT_URL`, `ANALYTICS_WEBSITE_ID`, and
 
 ## Public homepage
 
-Plink uses a centered, mobile-width storefront with a bottom navigation that
-adapts to the enabled features: Home, Catalog, and Favorites, plus Projects and
-Services when those features are on (see **Public features** below). The public catalog
-at `/offers` searches both available offer cards and standalone resources.
+Plink uses a mobile-first storefront that widens on desktop, with a bottom
+navigation that adapts to the enabled features: Home, Catalog, and Favorites,
+plus Projects and Services when those features are on (see **Public features**
+below). The public catalog at `/offers` searches both available offer cards and
+standalone resources.
 Category and provider filters persist during search and pagination. `/links`
 remains the resource catalog. Favorites are stored in the visitor's browser
 without login; unavailable items are omitted from the favorites page. Articles
 render in a Reading section (`/offers?view=articles`) and projects in a Portfolio
-section (`/offers?view=projects`); catalog cards link to their destination URL. Native articles are hosted at `/a/<slug>`.
+section (`/offers?view=projects`); catalog cards link to their destination or
+product detail page. Native articles are hosted at `/a/<slug>`.
 
 Admin uses Links, Catalog, Articles, Analytics, and Settings in its navigation.
 The Guide is available from the header and Settings. Catalog items have an explicit
@@ -159,10 +172,14 @@ separate from category and program status.
 Settings controls the public name, description, referral disclosure, featured
 pick visibility/limit, and independent public/admin accent and background colors.
 The default palette follows Geopolitics: warm paper, dark ink, red accent, and
-green supporting details. Colors accept six-digit hex values. Use a light
-background and a contrasting accent. Featured picks scroll manually and are not
-repeated in the homepage grid. Clicking a card still records its homepage slug's
-redirect click. Browsing catalogs and saving favorites do not record clicks.
+green supporting details. Public and admin pages also follow the system
+dark-mode preference; the accent color stays as configured. Colors accept
+six-digit hex values. Use a light background and a contrasting accent; a saved
+palette whose accent and background fall below a 4.5:1 contrast ratio shows a
+warning, and the settings are still saved. Featured picks scroll manually and
+are not repeated in the homepage grid. Clicking a card still records its
+homepage slug's redirect click. Browsing catalogs and saving favorites do not
+record clicks.
 
 Settings → **Public features** controls which public surfaces exist. Choose a preset
 (**Full catalog**, **Bio link**, or **Link shortener only**) or toggle features
@@ -204,13 +221,19 @@ those fields on existing attached links. Manage each link's metadata in Links;
 new channel links inherit the item's category and provider when created.
 
 For a product, enable **Use a detail page for this product card** to show a
-local product page before the existing destination. The optional price is stored
-in hundredths of the specified three-letter currency; a blank price differs from
-zero. New products have the option selected by default in the dashboard; existing
-products keep their previous card behavior until it is enabled. The existing
-short slug continues to redirect as before, and opening a product page does not
-count as a redirect click. Price, detailed description, and delivery information
-are optional.
+local product page before the existing destination. The page uses the item slug
+at `/offers/item/<slug>`; a numeric detail URL redirects permanently to the slug
+form. The optional price is stored in hundredths of the specified three-letter
+currency; a blank price differs from zero. New products have the option selected
+by default in the dashboard; existing products keep
+their previous card behavior until it is enabled. The existing short slug
+continues to redirect as before, and opening a product page does not count as a
+redirect click. Each product page visit is recorded as a detail-page view,
+shown as an all-time count in the product form and kept out of slug and
+WhatsApp click totals. Detail-page views require schema v24. Price, detailed
+description, and delivery information are optional. The fulfillment heading
+reads "Delivery or access" for digital products and "Delivery or fulfillment"
+otherwise.
 Older binaries do not render product detail pages or prices and will show cards
 using the prior direct-link behavior; plan and verify rollback accordingly.
 
@@ -228,6 +251,13 @@ the selected period and category. These counts do not indicate that a message
 was sent, an order was placed, or a payment was made. Grouped link rankings and
 source charts do not include WhatsApp button clicks. WhatsApp settings and click
 history require schema v21 and are unavailable in older binaries.
+
+A product detail page also shows a secondary **Ask about this item** action when
+the floating contact feature is on and at least one contact channel is
+configured. The action uses the first configured channel; an email link gets the
+item title as its subject, and a WhatsApp link gets a draft message with the item
+name and detail-page URL. Clicks on this secondary action are not added to the
+product's WhatsApp click count.
 
 Notice views are stored separately and shown per Offer and channel slug. They
 do not inflate redirect-click analytics; the provider-website button is a direct
@@ -270,14 +300,20 @@ pages. A native article is hosted by Plink; a Catalog item of type Article
 can also point directly to an article hosted elsewhere.
 
 The editor stores Markdown. If the visual editor cannot safely represent the
-content, it opens source mode to avoid losing formatting. To change its code,
+content, it opens source mode to avoid losing formatting. While you edit, the
+browser keeps a local backup of unsaved fields; after a reload it offers to
+restore or discard that backup. To reuse uploaded images or check which files
+are still referenced, open **Media** from the Articles page. Unreferenced uploads
+older than 48 hours are removed automatically. To change the editor code,
 see [the editor build instructions](editor-src/README.md).
 
 ## Dashboard
 
 The admin dashboard keeps daily link management compact. It includes summary
 metrics, live search, category, status, and date filtering, JSON and CSV export,
-link controls, source overview analytics, and per-link analytics. The Offers
+link controls, source overview analytics, and per-link analytics. On desktop the
+content area widens for tables and long forms; the bottom navigation and the
+narrow-screen layout keep their current behavior. The Offers
 workspace manages public cards, groups channel slugs under each offer, tracks
 click totals per offer and slug, filters links by channel or campaign, and
 controls homepage placement and expiry. Add channel links with an optional
@@ -298,7 +334,9 @@ date range is selected.
 ## SEO and social sharing
 
 Public home, catalog, services, and resources render descriptions, canonical URLs,
-Open Graph metadata, and Twitter card tags on the server. Configure the homepage
+Open Graph metadata, and Twitter card tags on the server. Product detail pages
+also emit Product structured data with an optional price offer, and native
+articles emit Article structured data. Configure the homepage
 SEO title, description, and optional share-image URL under **Settings → SEO & sharing**.
 Empty SEO fields follow the site identity. Empty image settings use a generated
 1200×630 PNG with the public palette; no external image-generation service is required.

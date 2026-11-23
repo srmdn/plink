@@ -22,20 +22,116 @@ Shipped in the 10 November 2026 release:
 Still proposals, not behavior: configurable navigation labels and order,
 structured variants, multiple images, cart, and transaction integrations.
 
+Implemented in the current development tree, not yet released:
+
+- the shared radius, border, and shadow token scale described under **Visual
+  system**;
+- system dark mode with the operator accent retained and a non-blocking
+  contrast warning on save;
+- a wider desktop layout for the storefront and admin while the mobile frame
+  and bottom navigation keep their current behavior;
+- product detail pages at slug URLs with a permanent redirect from the numeric
+  form, separate page-view counts, and item-aware contact and fulfillment copy;
+- a media library for stored uploads, with unreferenced files cleaned up after
+  48 hours;
+- field-level validation errors on the offer form.
+
+## Visual system
+
+Status: **implemented in the current development tree, not yet released.** This
+section records the token scale and the rules that go with it, so later changes
+extend the system instead of adding one-off values.
+
+Both `web/js/css/storefront.css` and `web/js/css/admin.css` use the same named
+tokens. The storefront and admin read as one product because radius, border,
+background, and shadow are decided together.
+
+The rule in one sentence: the canvas is paper; a **band** runs edge to edge and
+is rounded on its free corners; a **tile** sits on the canvas with a hairline
+border and a radius from the scale; a **well** sits inside a tile on a deeper
+tone; **floating chrome** uses the largest radius step plus blur and shadow.
+There is no rounded element without a hairline, and no static tile with a
+shadow.
+
+### Radius scale
+
+| Token | Value | Role | Examples |
+| --- | --- | --- | --- |
+| `--radius-xs` | 6px | micro, nested | inline code, combo options, contact-order buttons, color swatches, small meta badges |
+| `--radius-sm` | 10px | controls and rows | inputs, selects, admin buttons, search and storefront buttons, table rows, thumbnails, inset image wells, product actions, notice actions, status banners, file pickers, draft banner |
+| `--radius-md` | 14px | cards and panels | offer cards, storefront sections, admin headings, KPI cards, analytics panels, form sections, guide sections, login box, menus, article modal, share preview, cover images, empty states |
+| `--radius-lg` | 18px | floating sheets | modals, toasts in both surfaces, contact bubble, sticky save bar |
+| `--radius-xl` | 24px | floating navigation band | bottom navigation in both surfaces; nav items use `calc(var(--radius-xl) - 7px)` to account for the 7px padding |
+| `--radius-pill` | 999px | pills | category chips, support buttons, offer badges, meta and media badges, status chips, progress bars |
+| `--radius-circle` | 50% | circles | avatars, contact FAB, favorite button, social icons, donut dots, touch-target halos |
+
+Band corners use `border-radius: 0 0 <step> <step>`: the thin topbar uses
+`sm`, the profile hero and compact profile bar use `sm`, and the tall hero uses
+`md`. The older admin `--radius: 12px` is retired to an alias of
+`var(--radius-md)`, so legacy rules follow the scale instead of keeping a free
+value.
+
+### Hierarchy, borders, and shadows
+
+The tone hierarchy is unchanged but explicit:
+
+- Storefront: `--paper` canvas → `--surface` tile → `--soft` well.
+- Admin: `--bg` canvas → `--surface` tile → `--surface2` well.
+- Cross-surface pairs: `paper` ↔ `bg`, `surface` ↔ `surface`, `soft` ↔
+  `surface2`.
+
+All static tiles carry a `1px` hairline border from `--line` (admin:
+`--border`, an alias). This includes offer cards, storefront sections, admin
+headings, KPI cards, panels, table rows, chips, resource cards, empty states,
+and notice panels.
+
+Shadows are functional tokens, not decoration:
+
+- `--shadow-hover` lifts a card slightly on hover; in the light theme it is
+  derived from the ink color.
+- `--shadow-float` is reserved for floating chrome such as modals, toasts, the
+  contact bubble, and the sticky save bar.
+- Static tiles have no shadow. Non-interactive hover effects that only faked
+  elevation were removed; for example, admin KPI cards now strengthen their
+  border instead of translating upward.
+
+The half-rounded stat strip was removed. Every KPI card is a complete tile at
+`md`, and the stats container is transparent with a gap instead of fusing
+heading, stats, and toolbar into one full-bleed workspace.
+
+### Dark mode
+
+The dark palette stays owned by `/js/theme.css` (paper `#161a19`, surface
+`#202623`, line `#39413d`, ink `#e9ece9`, muted `#9aa49e`) and is not
+redefined in the stylesheets. The stylesheets only override the shadow tokens in
+their dark blocks: ink-based shadows would become light glows on a dark surface,
+so floating shadows turn solid black there. Hairlines continue to use `--line`,
+and the tone hierarchy remains readable because the dark theme defines `soft`
+and `surface2` as mixes of surface and paper/background.
+
+### Scope
+
+The mobile frame is unchanged: the storefront breakpoint stays below 768px and
+the admin breakpoint below 1024px, with the same 480px storefront width and
+bottom navigation. The change is the shared token language and the additional
+desktop rules, not a new responsive structure.
+
 ## Current condition
 
 - The admin has **Links**, **Catalog**, **Analytics**, and **Settings**.
 - The catalog stores product, referral, service, resource, article, and project
   items. Services and projects already have their own public sections.
-- Product and referral cards currently point to a short slug, then to the
-  destination. Project and article cards point directly at the destination URL.
+- Product and referral cards point to a short slug, then to the destination.
+  A product with a detail page enabled goes to that page first. Project and
+  article cards point directly at the destination URL.
 - A WhatsApp link can be used as a destination, but price, product details,
   variant choices, and an order message builder were not available as
   dedicated features before the release above.
-- Analytics records redirect clicks; it does not measure orders, payments, or
-  commission. Favorites are stored in the visitor's browser.
-- Public features can be turned on and off in Settings. Local work in progress
-  also added unlisted links.
+- Analytics records redirect clicks and product detail-page views; it does not
+  measure orders, payments, or commission. Favorites are stored in the
+  visitor's browser.
+- Public features can be turned on and off in Settings. Unlisted standalone
+  links are available.
 
 ## Decision principles
 

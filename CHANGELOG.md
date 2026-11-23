@@ -4,6 +4,69 @@ All notable changes to Plink are documented in this file.
 
 ## Unreleased
 
+### Added
+
+- Admin sessions persist in SQLite, so restarts and deploys no longer sign the
+  operator out. Only token hashes are stored, and the session lifetime remains
+  24 hours.
+- Product detail pages record page views, shown as an all-time count in the
+  product form and kept separate from slug clicks and WhatsApp button clicks.
+- Product detail pages use the item slug at `/offers/item/<slug>`. The previous
+  numeric URL answers with a permanent redirect to the slug, including the
+  WhatsApp order endpoint.
+- Product detail pages and native articles include JSON-LD structured data: a
+  Product block with an optional price offer, and an Article block.
+- An admin media library at `/<admin>/media` lists stored uploads with size,
+  modification time, reference status, and a copy-URL action.
+- A secondary contact action on product detail pages uses the first configured
+  contact channel and prefills the item title in the mail subject or WhatsApp
+  message.
+- The storefront and admin follow the system dark-mode preference while
+  keeping the operator accent color.
+- The article editor keeps a local backup of unsaved drafts and offers to
+  restore or discard it after a reload.
+- Uploaded files that are no longer referenced are removed once they are older
+  than 48 hours; the sweep runs daily.
+
+### Changed
+
+- The CSRF token is bound to the admin session and stays valid across admin
+  tabs instead of rotating on every page load.
+- Product detail headings adapt to the product kind: digital products show
+  "Delivery or access" instead of "Delivery or fulfillment".
+- Offer form validation marks the fields that need correction in addition to
+  the form-level message.
+- Custom theme colors below a 4.5:1 WCAG contrast ratio produce a non-blocking
+  warning after saving.
+- The storefront widens to 720 px and the admin content area to 1080 px on
+  desktop; the mobile frame and bottom navigation keep their current behavior.
+- Cards without an image use a typographic mark derived from the item title
+  instead of a generic placeholder.
+- The storefront and admin share one radius, border, and shadow scale: bands,
+  tiles, and wells use named tokens, static tiles carry hairline borders, and
+  shadows are limited to hover and floating chrome.
+- Inline admin scripts moved to a versioned `admin.js` asset, and the inline
+  analytics chart handler moved to delegated listeners. The
+  Content-Security-Policy now allows scripts only from the site itself or with
+  the per-response nonce, with no `unsafe-inline` for scripts.
+
+### Fixed
+
+- Forms in other admin tabs no longer fail with a bare 403 after another tab
+  loads an admin page.
+- The offer notice page uses theme variables instead of a hardcoded white
+  background.
+
+### Upgrade notes
+
+- Schema v24 adds the `sessions` and `product_views` tables. Back up the
+  database and uploads, and verify the backup, before upgrading.
+- Sessions created before the upgrade are not carried over; sign in once after
+  upgrading. Later restarts and deploys keep the session.
+- Older binaries only understand the numeric product detail URL; slug URLs do
+  not resolve until an updated binary is running. Consider this before rolling
+  back a release that has published slug URLs.
+
 ## v1.5.0
 
 ### Added
