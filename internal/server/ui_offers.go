@@ -486,7 +486,7 @@ func (s *Server) handleOffersDashboard(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) handleNewOffer(w http.ResponseWriter, r *http.Request) {
 	today := time.Now().In(s.cfg.ReportLocation()).Format(dashboardDateLayout)
-	offer := &db.Offer{ItemType: "referral", Active: true, ProgramStatus: "active", EndedBehavior: "notice", ButtonLabel: "View offer", StartsOn: today}
+	offer := &db.Offer{ItemType: "referral", Active: true, ProgramStatus: "active", EndedBehavior: "notice", StartsOn: today}
 	s.renderOffersDashboard(w, r, offersDashboardData{Offer: offer, IsForm: true, IsNew: true})
 }
 

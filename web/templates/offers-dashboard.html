@@ -32,7 +32,7 @@
             <div class="field"><label for="offer-image">Image</label><input type="url" id="offer-image" name="image_url" value="{{if .Offer}}{{.Offer.ImageURL}}{{end}}" placeholder="https://cdn.example.com/product.webp" /><input type="file" id="offer-image-file" name="image_file" accept="image/png,image/jpeg,image/webp" /><div class="field-help">Upload a PNG/JPEG/WebP up to 5 MB, or enter a URL/path. An aspect ratio around 3:2 or 4:3 works best, with the subject centered. This image is also used when a slug is shared; without one, the default mark is shown.</div></div>
           </div>
           <div class="form-pair">
-            <div class="field"><label for="offer-button">Button label</label><input type="text" id="offer-button" name="button_label" maxlength="48" value="{{if .Offer}}{{.Offer.ButtonLabel}}{{else}}View offer{{end}}" placeholder="View on Shopee" /><p class="field-help">The WhatsApp button on the detail page uses the label “Message via WhatsApp”.</p></div>
+            <div class="field"><label for="offer-button">Button label</label><input type="text" id="offer-button" name="button_label" maxlength="48" value="{{if .Offer}}{{.Offer.ButtonLabel}}{{end}}" placeholder="View on Shopee" /><p class="field-help">Leave empty to use the default for the item type, for example “View project” or “Read article”. The WhatsApp button on the detail page uses the label “Message via WhatsApp”.</p></div>
             <div class="field"><label for="offer-priority">Display priority</label><input type="number" id="offer-priority" name="priority" min="0" step="1" value="{{if .Offer}}{{.Offer.Priority}}{{else}}0{{end}}" /><div class="field-help">Higher numbers appear first within the same group.</div></div>
           </div>
 

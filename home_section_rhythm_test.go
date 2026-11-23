@@ -49,6 +49,9 @@ func TestHomeSectionLeadAndList(t *testing.T) {
 	if !strings.Contains(lead, "Curlog") || !strings.Contains(lead, "https://curlog.example/") {
 		t.Fatal("the first project should be the lead card")
 	}
+	if !strings.Contains(lead, "View project") {
+		t.Fatal("an item without a button label should fall back to its type default")
+	}
 	rows := body[strings.Index(body, `class="lead-rows"`):]
 	if !strings.Contains(rows, "https://islami.example/") || !strings.Contains(rows, "https://srmdn.example/") {
 		t.Fatal("remaining projects should keep their links in the rows")

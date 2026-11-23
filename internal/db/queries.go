@@ -334,6 +334,25 @@ func (db *DB) CreateOfferWithExistingHomepageLink(input OfferInput, slug string)
 	return db.createOfferWithHomepageLink(input, slug, "", true)
 }
 
+// defaultButtonLabel keeps the card action honest when the operator leaves the
+// label empty: a project is not an "offer" and an article is not a "product".
+func defaultButtonLabel(itemType string) string {
+	switch itemType {
+	case "product":
+		return "View product"
+	case "service":
+		return "View service"
+	case "resource":
+		return "Open link"
+	case "article":
+		return "Read article"
+	case "project":
+		return "View project"
+	default:
+		return "View offer"
+	}
+}
+
 func (db *DB) createOfferWithHomepageLink(input OfferInput, slug, url string, reuse bool) (*Offer, error) {
 	input = normalizeOfferLifecycle(input)
 	tx, err := db.Begin()
@@ -344,7 +363,7 @@ func (db *DB) createOfferWithHomepageLink(input OfferInput, slug, url string, re
 
 	now := time.Now().Unix()
 	if strings.TrimSpace(input.ButtonLabel) == "" {
-		input.ButtonLabel = "View offer"
+		input.ButtonLabel = defaultButtonLabel(input.ItemType)
 	}
 	result, err := tx.Exec(`
 		INSERT INTO offers (title, provider, description, category, image_url, button_label, fallback_url,
@@ -405,7 +424,7 @@ func (db *DB) UpdateOffer(id int64, input OfferInput) error {
 
 	now := time.Now().Unix()
 	if strings.TrimSpace(input.ButtonLabel) == "" {
-		input.ButtonLabel = "View offer"
+		input.ButtonLabel = defaultButtonLabel(input.ItemType)
 	}
 	if _, err := tx.Exec(`
 		UPDATE offers
