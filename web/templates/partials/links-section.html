@@ -1,4 +1,5 @@
 {{define "links-section"}}
+<input type="hidden" id="links-page" name="page" value="{{.Page}}" />
 {{if .OOB}}
   {{template "dashboard-summary" .}}
   {{template "dashboard-daily-export-oob" .}}
@@ -88,7 +89,7 @@
                   hx-target="#modal-body"
                   hx-swap="innerHTML"
                   hx-disable="this"
-                  hx-include="#search, select[name='category'], select[name='status'], #date-filter"
+                  hx-include="#search, select[name='category'], select[name='status'], #date-filter, #links-page"
                 >/{{.Slug}}</button>
                 {{if .Featured}}<span class="cat-badge featured-badge">Featured</span>{{end}}
                 {{if and .Unlisted (not .OfferID)}}<span class="cat-badge">Unlisted</span>{{end}}
@@ -124,7 +125,7 @@
                   hx-target="#links-section"
                   hx-swap="innerHTML"
                   hx-disable="this"
-                  hx-include="#search, select[name='category'], select[name='status'], #date-filter"
+                  hx-include="#search, select[name='category'], select[name='status'], #date-filter, #links-page"
                 >{{if .Active}}Pause{{else}}Activate{{end}}</button>
                 <button
                   class="row-menu-item row-menu-danger"
@@ -133,7 +134,7 @@
                   hx-swap="innerHTML"
                   hx-disable="this"
                   hx-confirm="delete /{{.Slug}}? this cannot be undone"
-                  hx-include="#search, select[name='category'], select[name='status'], #date-filter"
+                  hx-include="#search, select[name='category'], select[name='status'], #date-filter, #links-page"
                 >Delete</button>
               </div>
             </details>
@@ -144,6 +145,12 @@
     </tbody>
   </table>
 </div>
+{{if gt .Pages 1}}
+<nav class="links-pagination" aria-label="Link pages">
+  <span class="links-page-count">Page {{.Page}} of {{.Pages}}</span>
+  {{range .PageLinks}}<a href="{{.URL}}" {{if .Current}}aria-current="page"{{end}} hx-get="{{.URL}}" hx-target="#links-section" hx-swap="innerHTML" hx-push-url="true">{{.Number}}</a>{{end}}
+</nav>
+{{end}}
 {{else}}
 <div class="empty-state">No links match these filters</div>
 {{end}}

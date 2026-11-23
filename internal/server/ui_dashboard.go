@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"net/url"
 	"sort"
+	"strconv"
 	"strings"
 	"time"
 
@@ -33,6 +34,55 @@ type dashboardData struct {
 	PublicURL        string
 	Production       bool
 	OOB              bool
+	Page             int
+	Pages            int
+	PageLinks        []catalogPageLink
+}
+
+// linksPerPage keeps the admin link list scannable; the whole catalog is still
+// loaded so counts and filters keep working across pages.
+const linksPerPage = 25
+
+func dashboardPageNumber(r *http.Request) int {
+	page, _ := strconv.Atoi(r.FormValue("page"))
+	if page < 1 {
+		return 1
+	}
+	return page
+}
+
+// paginateLinks slices the filtered list and builds the page links. The page
+// number is clamped to the last page so a deleted row cannot strand the
+// visitor on an empty page.
+func (s *Server) paginateLinks(r *http.Request, data *dashboardData) {
+	total := len(data.Links)
+	pages := (total + linksPerPage - 1) / linksPerPage
+	if pages < 1 {
+		pages = 1
+	}
+	page := dashboardPageNumber(r)
+	if page > pages {
+		page = pages
+	}
+	start := (page - 1) * linksPerPage
+	end := start + linksPerPage
+	if end > total {
+		end = total
+	}
+	data.Links = data.Links[start:end]
+	data.Page = page
+	data.Pages = pages
+	if pages < 2 {
+		return
+	}
+	data.PageLinks = make([]catalogPageLink, 0, pages)
+	for n := 1; n <= pages; n++ {
+		data.PageLinks = append(data.PageLinks, catalogPageLink{
+			Number:  n,
+			URL:     s.dashboardURLForPage(r, n),
+			Current: n == page,
+		})
+	}
 }
 
 func (s *Server) serveLinksSection(w http.ResponseWriter, r *http.Request) {
@@ -55,6 +105,10 @@ func (s *Server) serveLinksSection(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) dashboardURL(r *http.Request) string {
+	return s.dashboardURLForPage(r, dashboardPageNumber(r))
+}
+
+func (s *Server) dashboardURLForPage(r *http.Request, page int) string {
 	q, category, status := dashboardFilters(r)
 	date := dashboardDateFilter(r)
 	values := make(url.Values)
@@ -69,6 +123,9 @@ func (s *Server) dashboardURL(r *http.Request) string {
 	}
 	if date != "" {
 		values.Set("date", date)
+	}
+	if page > 1 {
+		values.Set("page", strconv.Itoa(page))
 	}
 	path := "/" + s.cfg.AdminPath
 	if encoded := values.Encode(); encoded != "" {
@@ -140,7 +197,9 @@ func (s *Server) dashboardDataForRequest(r *http.Request, links []db.Link) (dash
 			return dashboardData{}, err
 		}
 	}
-	return buildDashboardDataForDateIn(links, q, cat, status, date, daily, location, s.cfg.AdminPath, s.cfg.Production), nil
+	data := buildDashboardDataForDateIn(links, q, cat, status, date, daily, location, s.cfg.AdminPath, s.cfg.Production)
+	s.paginateLinks(r, &data)
+	return data, nil
 }
 
 func buildDashboardData(links []db.Link, q, cat, status, adminPath string, production bool) dashboardData {
