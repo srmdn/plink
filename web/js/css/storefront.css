@@ -760,7 +760,7 @@ body[data-favorites-page] [data-favorite-card].is-favorite {
 .store-header.profile-header { border-radius:0 0 var(--radius-md) var(--radius-md); }
 .store-main { background:transparent; padding-top:14px; }
 .profile-intro { padding:0 0 10px; }
-.profile-intro h1 { font-size:27px; margin:7px 0; line-height:1.16; }
+.profile-intro h1 { font-size:clamp(28px,5vw,42px); margin:7px 0; line-height:1.16; letter-spacing:-.045em; }
 .profile-intro p { margin:7px 0 0; }
 .store-search { margin:6px 0 12px; }
 .store-search input { padding:11px 12px; }
