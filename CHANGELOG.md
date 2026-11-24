@@ -81,6 +81,8 @@ All notable changes to Plink are documented in this file.
 
 ### Fixed
 
+- Code blocks in native articles draw one frame around the block instead of a
+  border under every line, and the block scrolls sideways on narrow screens.
 - Lead and compact-row links expose a short accessible name instead of reading
   the whole card aloud, desktop table headers declare their column scope, and
   the link page numbers keep a 40 px touch target below 1024 px.
