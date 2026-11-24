@@ -224,7 +224,9 @@ For a product, enable **Use a detail page for this product card** to show a
 local product page before the existing destination. The page uses the item slug
 at `/offers/item/<slug>`; a numeric detail URL redirects permanently to the slug
 form. The optional price is stored in hundredths of the specified three-letter
-currency; a blank price differs from zero. New products have the option selected
+currency; a blank price differs from zero. Prices show a symbol when the
+currency has a well-known one (US$300, €300, RM300) and keep the ISO code
+otherwise (CHF 300). New products have the option selected
 by default in the dashboard; existing products keep
 their previous card behavior until it is enabled. The existing short slug
 continues to redirect as before, and opening a product page does not count as a

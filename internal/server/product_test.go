@@ -12,7 +12,12 @@ func TestProductPriceParsingAndDisplay(t *testing.T) {
 		{"0", 0, "IDR", "Rp0"},
 		{"79000", 7900000, "IDR", "Rp79.000"},
 		{"12,5", 1250, "IDR", "Rp12,50"},
-		{"19.99", 1999, "USD", "USD 19.99"},
+		{"19.99", 1999, "USD", "US$19.99"},
+		{"300", 30000, "EUR", "€300"},
+		{"300", 30000, "GBP", "£300"},
+		{"300", 30000, "AUD", "A$300"},
+		{"300", 30000, "MYR", "RM300"},
+		{"300", 30000, "CHF", "CHF 300"},
 	} {
 		value, err := parseProductPrice(test.input)
 		if err != nil || value == nil || *value != test.minor || productPriceLabel(value, test.currency) != test.label {

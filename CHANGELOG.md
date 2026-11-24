@@ -70,6 +70,9 @@ All notable changes to Plink are documented in this file.
   items keep the label they already have.
 - The home headline uses the same responsive scale as the catalog heading
   instead of a fixed 27 px, so the two page titles grow together on desktop.
+- Prices in a non-IDR currency show a symbol instead of the raw code:
+  US$300, €300, RM300. Currencies without a well-known symbol keep the ISO
+  code, so the label never guesses.
 - Inline admin scripts moved to a versioned `admin.js` asset, and the inline
   analytics chart handler moved to delegated listeners. The
   Content-Security-Policy now allows scripts only from the site itself or with

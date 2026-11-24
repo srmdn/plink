@@ -53,6 +53,27 @@ func productPriceInput(value *int64) string {
 	return fmt.Sprintf("%d.%02d", *value/100, *value%100)
 }
 
+// currencySymbols gives the short, unambiguous prefix shown before an amount.
+// Currencies without an entry keep the ISO code, so the label never guesses a
+// symbol that could be mistaken for another currency.
+var currencySymbols = map[string]string{
+	"USD": "US$",
+	"AUD": "A$",
+	"CAD": "CA$",
+	"NZD": "NZ$",
+	"SGD": "S$",
+	"HKD": "HK$",
+	"EUR": "€",
+	"GBP": "£",
+	"JPY": "¥",
+	"CNY": "CN¥",
+	"KRW": "₩",
+	"INR": "₹",
+	"MYR": "RM",
+	"THB": "฿",
+	"PHP": "₱",
+}
+
 func productPriceLabel(value *int64, currency string) string {
 	if value == nil {
 		return ""
@@ -67,7 +88,15 @@ func productPriceLabel(value *int64, currency string) string {
 		}
 		return "Rp" + digits
 	}
-	return strings.TrimSpace(currency) + " " + productPriceInput(value)
+	amount := productPriceInput(value)
+	code := strings.ToUpper(strings.TrimSpace(currency))
+	if symbol, ok := currencySymbols[code]; ok {
+		return symbol + amount
+	}
+	if code == "" {
+		return amount
+	}
+	return code + " " + amount
 }
 
 func parseProductDetails(r *http.Request) (*db.ProductDetails, error) {
