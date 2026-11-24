@@ -85,6 +85,8 @@ All notable changes to Plink are documented in this file.
   of glowing around the pill.
 - The sticky save bar and the row/export menus use black shadows in dark mode
   instead of a light ink glow, and the modal scrim stays dark in both themes.
+- Admin surfaces and borders use the theme tokens instead of the legacy dark
+  palette values, so custom themes no longer leave stray patches.
 
 ### Upgrade notes
 
