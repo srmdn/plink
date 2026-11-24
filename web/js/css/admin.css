@@ -31,7 +31,11 @@
   --shadow-float:0 16px 40px -20px rgba(21,25,24,.5);
   /* The navigation sits close to the content, so it keeps a tighter shadow
      than other floating chrome. Dark mode overrides it with black. */
-  --shadow-nav:0 8px 32px color-mix(in srgb,var(--text) 14%,transparent),0 2px 7px color-mix(in srgb,var(--text) 5%,transparent)
+  --shadow-nav:0 8px 32px color-mix(in srgb,var(--text) 14%,transparent),0 2px 7px color-mix(in srgb,var(--text) 5%,transparent);
+  /* The sticky save bar and the row menus follow the same rule: the drop
+     shadow is black in dark mode instead of a light ink glow. */
+  --shadow-save:0 10px 30px color-mix(in srgb,var(--text) 16%,transparent),inset 0 1px 0 color-mix(in srgb,var(--surface) 80%,transparent);
+  --shadow-menu:0 8px 22px color-mix(in srgb,var(--text) 8%,transparent)
 }
 
 /* Base admin styles retained in their original cascade order before the current overrides. */
@@ -1197,7 +1201,7 @@
   color:var(--text)
 }
 .admin-page .overlay {
-  background:color-mix(in srgb,var(--text) 50%,transparent)
+  background:rgba(0,0,0,.5)
 }
 .admin-page .settings-saved {
   color:#1f6354;
@@ -1205,7 +1209,7 @@
 }
 .admin-page .row-menu-panel,.admin-page .export-menu {
   background:var(--surface);
-  box-shadow:0 8px 22px color-mix(in srgb,var(--text) 8%,transparent);
+  box-shadow:var(--shadow-menu);
   border-color:var(--border)
 }
 @media(max-width:370px) {
@@ -1732,7 +1736,7 @@ html { scroll-padding-bottom: 130px; }
   background:linear-gradient(135deg,color-mix(in srgb,var(--surface) 92%,transparent),color-mix(in srgb,var(--surface) 78%,transparent));
   -webkit-backdrop-filter:blur(18px) saturate(160%);
   backdrop-filter:blur(18px) saturate(160%);
-  box-shadow:0 10px 30px color-mix(in srgb,var(--text) 16%,transparent),inset 0 1px 0 color-mix(in srgb,var(--surface) 80%,transparent);
+  box-shadow:var(--shadow-save);
   opacity:0;
   visibility:hidden;
   transform:translate(-50%,8px);
@@ -1984,6 +1988,8 @@ html { scroll-padding-bottom: 130px; }
     --shadow-hover:0 6px 18px rgba(0,0,0,.38);
     --shadow-float:0 16px 40px -20px rgba(0,0,0,.7);
     --shadow-nav:0 8px 32px rgba(0,0,0,.55),0 2px 7px rgba(0,0,0,.4);
+    --shadow-save:0 10px 30px rgba(0,0,0,.55),inset 0 1px 0 color-mix(in srgb,var(--ink) 8%,transparent);
+    --shadow-menu:0 10px 26px rgba(0,0,0,.5);
   }
   .admin-page .status.on,
   .admin-page .settings-saved,

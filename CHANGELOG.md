@@ -68,6 +68,8 @@ All notable changes to Plink are documented in this file.
 - An item saved without a button label uses an action that matches its type:
   View product, View service, Open link, Read article, or View project. Older
   items keep the label they already have.
+- The home headline uses the same responsive scale as the catalog heading
+  instead of a fixed 27 px, so the two page titles grow together on desktop.
 - Inline admin scripts moved to a versioned `admin.js` asset, and the inline
   analytics chart handler moved to delegated listeners. The
   Content-Security-Policy now allows scripts only from the site itself or with
@@ -81,6 +83,8 @@ All notable changes to Plink are documented in this file.
   background.
 - The navigation shadow is a named token and turns black in dark mode instead
   of glowing around the pill.
+- The sticky save bar and the row/export menus use black shadows in dark mode
+  instead of a light ink glow, and the modal scrim stays dark in both themes.
 
 ### Upgrade notes
 
