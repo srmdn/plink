@@ -2091,3 +2091,8 @@ html { scroll-padding-bottom: 130px; }
 .admin-page .links-pagination a { display:inline-flex; align-items:center; justify-content:center; min-width:34px; min-height:34px; padding:0 9px; border:1px solid var(--border); border-radius:var(--radius-sm); color:var(--muted); font-size:12px; text-decoration:none; }
 .admin-page .links-pagination a:hover { border-color:var(--accent); color:var(--text); }
 .admin-page .links-pagination a[aria-current=page] { background:var(--accent); border-color:var(--accent); color:#fff; font-weight:650; }
+@media (max-width:1023px) {
+  /* Touch layouts get a 40 px page target; the desktop shell keeps the
+     compact 34 px pill. */
+  .admin-page .links-pagination a { min-width:40px; min-height:40px; }
+}

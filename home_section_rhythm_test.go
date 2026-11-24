@@ -52,12 +52,18 @@ func TestHomeSectionLeadAndList(t *testing.T) {
 	if !strings.Contains(lead, "View project") {
 		t.Fatal("an item without a button label should fall back to its type default")
 	}
+	if !strings.Contains(lead, `aria-label="Curlog — View project"`) {
+		t.Fatal("lead link should expose a concise accessible name")
+	}
 	rows := body[strings.Index(body, `class="lead-rows"`):]
 	if !strings.Contains(rows, "https://islami.example/") || !strings.Contains(rows, "https://srmdn.example/") {
 		t.Fatal("remaining projects should keep their links in the rows")
 	}
 	if !strings.Contains(rows, ">IC<") {
 		t.Fatal("a row thumbnail should show the title initials")
+	}
+	if !strings.Contains(rows, `aria-label="Islami.click — Said"`) {
+		t.Fatal("row links should include the meta line in their accessible name")
 	}
 	if strings.Contains(rows, `class="offer-card`) {
 		t.Fatal("rows should not fall back to the grid card")

@@ -76,13 +76,13 @@
 {{end}}
 {{define "lead-list"}}{{$lead := index . 0}}{{$rest := slice . 1}}
 <article class="lead-card{{if not $lead.ImageURL}} lead-card--no-image{{end}}">
-<a href="{{$lead.HomeURL}}"{{if not (hasPrefix $lead.HomeURL "/")}} target="_blank" rel="noopener"{{end}}>
+<a href="{{$lead.HomeURL}}"{{if not (hasPrefix $lead.HomeURL "/")}} target="_blank" rel="noopener"{{end}} aria-label="{{$lead.Title}}{{if $lead.ButtonLabel}} — {{$lead.ButtonLabel}}{{end}}">
 <div class="lead-card-cover">{{if $lead.ImageURL}}<img src="{{$lead.ImageURL}}" alt="" loading="lazy" />{{else}}<span class="lead-card-mark">{{$lead.Title}}</span>{{end}}</div>
 <div class="lead-card-body">{{if $lead.Meta}}<span class="lead-card-meta">{{$lead.Meta}}</span>{{end}}<h3 class="lead-card-title">{{$lead.Title}}</h3>{{if $lead.Description}}<p class="lead-card-desc">{{$lead.Description}}</p>{{end}}<span class="offer-card-cta">{{$lead.ButtonLabel}} <span aria-hidden="true">↗</span></span></div>
 </a>
 </article>
 {{if $rest}}<div class="lead-rows">{{range $rest}}
-<article class="lead-row"><a href="{{.HomeURL}}"{{if not (hasPrefix .HomeURL "/")}} target="_blank" rel="noopener"{{end}}><span class="lead-row-thumb" aria-hidden="true">{{if .ImageURL}}<img src="{{.ImageURL}}" alt="" loading="lazy" />{{else}}{{.Initials}}{{end}}</span><span class="lead-row-text"><span class="lead-row-title">{{.Title}}</span>{{if .Meta}}<span class="lead-row-meta">{{.Meta}}</span>{{end}}</span><span class="lead-row-arrow" aria-hidden="true">↗</span></a></article>
+<article class="lead-row"><a href="{{.HomeURL}}"{{if not (hasPrefix .HomeURL "/")}} target="_blank" rel="noopener"{{end}} aria-label="{{.Title}}{{if .Meta}} — {{.Meta}}{{end}}"><span class="lead-row-thumb" aria-hidden="true">{{if .ImageURL}}<img src="{{.ImageURL}}" alt="" loading="lazy" />{{else}}{{.Initials}}{{end}}</span><span class="lead-row-text"><span class="lead-row-title">{{.Title}}</span>{{if .Meta}}<span class="lead-row-meta">{{.Meta}}</span>{{end}}</span><span class="lead-row-arrow" aria-hidden="true">↗</span></a></article>
 {{end}}</div>{{end}}
 {{end}}
 {{define "resource-card"}}

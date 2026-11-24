@@ -66,11 +66,11 @@
   <table class="link-table admin-table links-admin-table {{if eq .Status "active"}}status-hidden{{end}}">
     <thead>
       <tr>
-        <th>Link</th>
-        <th class="destination">Destination</th>
-        <th>{{if .Date}}Clicks · {{.DateLabel}}{{else}}Clicks{{end}}</th>
-        {{if ne .Status "active"}}<th>Status</th>{{end}}
-        <th><span class="sr-only">Actions</span></th>
+        <th scope="col">Link</th>
+        <th scope="col" class="destination">Destination</th>
+        <th scope="col">{{if .Date}}Clicks · {{.DateLabel}}{{else}}Clicks{{end}}</th>
+        {{if ne .Status "active"}}<th scope="col">Status</th>{{end}}
+        <th scope="col"><span class="sr-only">Actions</span></th>
       </tr>
     </thead>
     <tbody>

@@ -81,6 +81,9 @@ All notable changes to Plink are documented in this file.
 
 ### Fixed
 
+- Lead and compact-row links expose a short accessible name instead of reading
+  the whole card aloud, desktop table headers declare their column scope, and
+  the link page numbers keep a 40 px touch target below 1024 px.
 - Forms in other admin tabs no longer fail with a bare 403 after another tab
   loads an admin page.
 - The offer notice page uses theme variables instead of a hardcoded white
