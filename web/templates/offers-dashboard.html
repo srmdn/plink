@@ -169,7 +169,7 @@
       <form class="catalog-admin-filters" method="get" action="/{{.AdminPath}}/offers"><input type="search" name="q" value="{{.CatalogQuery}}" placeholder="Search items or slugs…" aria-label="Search items" /><select name="item_type" aria-label="Item type"><option value="">All types</option><option value="product" {{if eq .ItemType "product"}}selected{{end}}>Product</option><option value="referral" {{if eq .ItemType "referral"}}selected{{end}}>Referral</option><option value="service" {{if eq .ItemType "service"}}selected{{end}}>Service</option><option value="resource" {{if eq .ItemType "resource"}}selected{{end}}>Resource</option><option value="article" {{if eq .ItemType "article"}}selected{{end}}>Article</option><option value="project" {{if eq .ItemType "project"}}selected{{end}}>Project</option></select><select name="visibility" aria-label="Visibility"><option value="">All visibility</option><option value="shown" {{if eq .Visibility "shown"}}selected{{end}}>Visible</option><option value="hidden" {{if eq .Visibility "hidden"}}selected{{end}}>Hidden</option></select><button type="submit" class="btn btn-ghost">Search</button>{{if or .CatalogQuery .ItemType .Visibility}}<a class="clear-filters" href="/{{.AdminPath}}/offers">Clear filters</a>{{end}}</form>
       {{if .Offers}}
       <div class="table-wrap offer-admin-table-wrap">
-        <table class="link-table offer-admin-table">
+        <table class="link-table admin-table offer-admin-table">
           <thead><tr><th>Item / public card</th><th>Provider</th><th>Links</th><th>Clicks</th><th>Status</th><th>Actions</th></tr></thead>
           <tbody>
             {{range .Offers}}

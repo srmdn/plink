@@ -2009,26 +2009,23 @@ html { scroll-padding-bottom: 130px; }
 }
 
 /* ── Desktop column tables ──
-   The list pages are single-column cards below 1024 px. Inside the desktop
-   shell (1180 px frame) the Articles and Catalog lists read as tables again:
-   a column header, then one aligned row per item. The card layer above sets
-   these properties unconditionally, so this block restores them with compound
-   selectors and uses !important only on the cell frame. */
+   Lists are single-column cards below 1024 px. Inside the desktop shell
+   (1180 px frame) the tables marked admin-table — Links, Articles, Catalog,
+   Media — read as tables again: a column header, then one aligned row per
+   item. The card layer above sets these properties unconditionally, so this
+   block restores them with compound selectors and uses !important only on the
+   cell frame. */
 @media (min-width:1024px) {
-  .admin-page .link-table.article-admin-table,
-  .admin-page .link-table.offer-admin-table {
+  .admin-page .link-table.admin-table {
     display:table;
     width:100%;
     table-layout:fixed;
     border-collapse:separate;
     border-spacing:0 6px;
   }
-  .admin-page .link-table.article-admin-table thead,
-  .admin-page .link-table.offer-admin-table thead { display:table-header-group; }
-  .admin-page .link-table.article-admin-table tbody,
-  .admin-page .link-table.offer-admin-table tbody { display:table-row-group; }
-  .admin-page .link-table.article-admin-table tr,
-  .admin-page .link-table.offer-admin-table tr {
+  .admin-page .link-table.admin-table thead { display:table-header-group; }
+  .admin-page .link-table.admin-table tbody { display:table-row-group; }
+  .admin-page .link-table.admin-table tr {
     display:table-row;
     width:auto;
     margin:0;
@@ -2038,10 +2035,8 @@ html { scroll-padding-bottom: 130px; }
     background:none;
     position:static;
   }
-  .admin-page .link-table.article-admin-table th,
-  .admin-page .link-table.offer-admin-table th { padding:0 12px 7px; vertical-align:bottom; }
-  .admin-page .link-table.article-admin-table td,
-  .admin-page .link-table.offer-admin-table td {
+  .admin-page .link-table.admin-table th { padding:0 12px 7px; vertical-align:bottom; }
+  .admin-page .link-table.admin-table td {
     display:table-cell;
     width:auto;
     padding:11px 12px;
@@ -2055,13 +2050,11 @@ html { scroll-padding-bottom: 130px; }
     border-radius:0!important;
     text-align:left;
   }
-  .admin-page .link-table.article-admin-table td:first-child,
-  .admin-page .link-table.offer-admin-table td:first-child {
+  .admin-page .link-table.admin-table td:first-child {
     border-left:1px solid var(--border)!important;
     border-radius:var(--radius-sm) 0 0 var(--radius-sm)!important;
   }
-  .admin-page .link-table.article-admin-table td:last-child,
-  .admin-page .link-table.offer-admin-table td:last-child {
+  .admin-page .link-table.admin-table td:last-child {
     border-right:1px solid var(--border)!important;
     border-radius:0 var(--radius-sm) var(--radius-sm) 0!important;
     text-align:right;
