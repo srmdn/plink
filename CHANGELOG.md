@@ -96,6 +96,9 @@ All notable changes to Plink are documented in this file.
   instead of a light ink glow, and the modal scrim stays dark in both themes.
 - Admin surfaces and borders use the theme tokens instead of the legacy dark
   palette values, so custom themes no longer leave stray patches.
+- Accent text and icons lighten in dark mode so action labels reach 4.9:1 on a
+  card and 5.2:1 on the page instead of 2.8:1. Button and badge fills keep the
+  full accent, so their white labels stay readable.
 
 ### Upgrade notes
 
