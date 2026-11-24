@@ -2,6 +2,19 @@
 
 All notable changes to Plink are documented in this file.
 
+## v1.6.1
+
+### Fixed
+
+- Code blocks in native articles draw one frame around the block instead of a
+  border under every line, and the block scrolls sideways on narrow screens.
+- Lead and compact-row links expose a short accessible name instead of reading
+  the whole card aloud, desktop table headers declare their column scope, and
+  the link page numbers keep a 40 px touch target below 1024 px.
+- Accent text and icons lighten in dark mode so action labels reach 4.9:1 on a
+  card and 5.2:1 on the page instead of 2.8:1. Button and badge fills keep the
+  full accent, so their white labels stay readable.
+
 ## v1.6.0
 
 ### Added
@@ -81,11 +94,6 @@ All notable changes to Plink are documented in this file.
 
 ### Fixed
 
-- Code blocks in native articles draw one frame around the block instead of a
-  border under every line, and the block scrolls sideways on narrow screens.
-- Lead and compact-row links expose a short accessible name instead of reading
-  the whole card aloud, desktop table headers declare their column scope, and
-  the link page numbers keep a 40 px touch target below 1024 px.
 - Forms in other admin tabs no longer fail with a bare 403 after another tab
   loads an admin page.
 - The offer notice page uses theme variables instead of a hardcoded white
@@ -96,9 +104,6 @@ All notable changes to Plink are documented in this file.
   instead of a light ink glow, and the modal scrim stays dark in both themes.
 - Admin surfaces and borders use the theme tokens instead of the legacy dark
   palette values, so custom themes no longer leave stray patches.
-- Accent text and icons lighten in dark mode so action labels reach 4.9:1 on a
-  card and 5.2:1 on the page instead of 2.8:1. Button and badge fills keep the
-  full accent, so their white labels stay readable.
 
 ### Upgrade notes
 
