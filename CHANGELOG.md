@@ -63,8 +63,9 @@ All notable changes to Plink are documented in this file.
 - Projects and Articles open with one lead card and list the remaining items as
   compact rows. The section eyebrow, the card mark, and the "view all" link use
   ink, leaving the accent for action labels.
-- From 1024 px the admin Articles and Catalog lists read as column tables with
-  a header row; below that they keep the single-column cards.
+- From 1024 px the admin Links, Articles, Catalog, and Media lists read as
+  column tables with a header row; below that they keep the single-column
+  cards.
 - An item saved without a button label uses an action that matches its type:
   View product, View service, Open link, Read article, or View project. Older
   items keep the label they already have.
