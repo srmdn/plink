@@ -2,6 +2,13 @@
 
 All notable changes to Plink are documented in this file.
 
+## Unreleased
+
+### Fixed
+
+- Restored the original accent red for text and icons in dark mode; v1.6.1
+  had lightened it toward pink.
+
 ## v1.6.1
 
 ### Fixed

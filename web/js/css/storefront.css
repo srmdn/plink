@@ -9,9 +9,6 @@
   --surface:#fff;
   --line:#cbd0cc;
   --accent:#c43424;
-  /* Accent for text and icons. Fills keep --accent so white button labels
-     stay readable; the dark bridge below lightens this one only. */
-  --accent-text:var(--accent);
   --map:#1f6354;
   /* Radius scale — one language shared with admin.css. Bands run edge to edge
      and round only their free corners; tiles round all four; floating chrome
@@ -112,7 +109,7 @@ a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible {
   letter-spacing:.13em;
   text-transform:uppercase;
   font-weight:750;
-  color:var(--accent-text)
+  color:var(--accent)
 }
 h1 {
   font-size:33px;
@@ -137,7 +134,7 @@ p {
   margin-left:auto;
   font-size:11px;
   font-weight:650;
-  color:var(--accent-text);
+  color:var(--accent);
   text-decoration:none;
   padding:7px 11px;
   border:1px solid var(--line);
@@ -172,7 +169,7 @@ p {
   border-radius:var(--radius-circle);
   overflow:hidden;
   background:var(--paper);
-  color:var(--accent-text);
+  color:var(--accent);
   display:grid;
   place-items:center;
   margin-bottom:8px;
@@ -212,7 +209,7 @@ p {
   border:0;
   border-radius:var(--radius-circle);
   background:color-mix(in srgb,var(--accent) 10%,var(--surface));
-  color:var(--accent-text);
+  color:var(--accent);
   display:grid;
   place-items:center;
   transition:transform .15s,background .15s,color .15s
@@ -325,7 +322,7 @@ p {
   border-radius:var(--radius-circle);
   overflow:hidden;
   background:var(--paper);
-  color:var(--accent-text);
+  color:var(--accent);
   display:grid;
   place-items:center;
   box-shadow:0 0 0 2px var(--surface),0 0 0 3px color-mix(in srgb,var(--accent) 45%,var(--surface))
@@ -418,7 +415,7 @@ p {
 }
 .store-section-head>a {
   font-size:11px;
-  color:var(--accent-text);
+  color:var(--accent);
   font-weight:650;
   white-space:nowrap
 }
@@ -504,7 +501,7 @@ p {
   display:flex;
   justify-content:space-between;
   font-size:10px;
-  color:var(--accent-text);
+  color:var(--accent);
   border-top:1px solid var(--line);
   padding-top:9px;
   margin-top:auto;
@@ -527,7 +524,7 @@ p {
   place-items:center
 }
 .favorite-button[aria-pressed=true] {
-  color:var(--accent-text);
+  color:var(--accent);
   background:var(--surface)
 }
 .featured-track {
@@ -605,7 +602,7 @@ p {
   padding-bottom:100px
 }
 .store-footer a {
-  color:var(--accent-text)
+  color:var(--accent)
 }
 .bottom-nav {
   position: fixed;
@@ -640,7 +637,7 @@ p {
   margin-bottom:4px
 }
 .bottom-nav a[aria-current=page] {
-  color:var(--accent-text);
+  color:var(--accent);
   font-weight:750
 }
 .bottom-nav small {
@@ -648,7 +645,7 @@ p {
   top:0;
   right:25%;
   font-size:9px;
-  color:var(--accent-text)
+  color:var(--accent)
 }
 .catalog-heading {
   margin:10px 0 22px
@@ -688,7 +685,7 @@ p {
   border-radius:var(--radius-sm)
 }
 .catalog-pagination a[aria-current=page] {
-  color:var(--accent-text);
+  color:var(--accent);
   border-color:var(--accent)
 }
 body[data-favorites-page] [data-favorite-card] {
@@ -750,7 +747,7 @@ body[data-favorites-page] [data-favorite-card].is-favorite {
 }
 
 .brand-image { display:block; width:38px; height:38px; object-fit:contain; flex-shrink:0; border-radius:var(--radius-sm); }
-.brand-default { color:var(--accent-text); }
+.brand-default { color:var(--accent); }
 
 /* ── Design system: paper canvas, band header, surface tiles, soft wells ──
     The page is the paper canvas. The header is a full-width band that rounds
@@ -768,21 +765,21 @@ body[data-favorites-page] [data-favorite-card].is-favorite {
 .store-search { margin:6px 0 12px; }
 .store-search input { padding:11px 12px; }
 .store-chip { background:var(--surface); border:1px solid var(--line); border-radius:var(--radius-pill); }
-.store-chip.active { background:color-mix(in srgb,var(--accent) 10%,var(--surface)); color:var(--accent-text); border-color:color-mix(in srgb,var(--accent) 35%,var(--line)); }
+.store-chip.active { background:color-mix(in srgb,var(--accent) 10%,var(--surface)); color:var(--accent); border-color:color-mix(in srgb,var(--accent) 35%,var(--line)); }
 .store-section { margin:16px 0 0; }
 .store-section-head { margin-bottom:14px; align-items:center; }
 .offer-card { border:1px solid var(--line); border-radius:var(--radius-md); box-shadow:none; }
 .offer-card:hover { transform:translateY(-1px); box-shadow:var(--shadow-hover); }
 .offer-image { background:var(--soft); border-radius:calc(var(--radius-md) - 1px); aspect-ratio:1.35; }
 .offer-card--no-image .offer-image { aspect-ratio:auto; height:82px; }
-.offer-image-placeholder { display:grid; place-items:center; color:var(--accent-text); }
+.offer-image-placeholder { display:grid; place-items:center; color:var(--accent); }
 .offer-card--no-image .offer-image { background:color-mix(in srgb,var(--accent) 7%,var(--soft)); }
 /* Grid cards without an image: the favorite button covers the top-right corner
    of the strip, so the auto-mark gets its own band below the button and the
    small line icon (already redundant with the type badge) steps aside. */
 .offer-grid > .offer-card--no-image .offer-image { height:104px; padding:30px 10px 8px; }
 .offer-grid > .offer-card--no-image .item-illustration { display:none; }
-.item-illustration { display:block; width:90px; height:68px; color:var(--accent-text); }
+.item-illustration { display:block; width:90px; height:68px; color:var(--accent); }
 .illustration-icon { fill:none; }
 .offer-card--referral .offer-image { background:color-mix(in srgb,var(--accent) 4%,var(--soft)); }
 .offer-card--project .offer-image { background:color-mix(in srgb,var(--accent) 5%,var(--soft)); }
@@ -797,7 +794,7 @@ body[data-favorites-page] [data-favorite-card].is-favorite {
 .offer-card p { -webkit-line-clamp:2; margin-bottom:10px; font-size:12px; line-height:1.5; color:color-mix(in srgb,var(--muted) 82%,var(--ink)); }
 .offer-card-cta { border:0; padding-top:7px; font-size:11.5px; }
 .product-card-price { display:block; margin:4px 0; font-size:13px; }
-.product-page .product-back { display:inline-block; margin:4px 0 16px; color:var(--accent-text); font-weight:600; }
+.product-page .product-back { display:inline-block; margin:4px 0 16px; color:var(--accent); font-weight:600; }
 .product-page .product-image { display:block; width:100%; max-height:420px; object-fit:contain; border-radius:var(--radius-md); background:var(--soft); margin-bottom:18px; }
 .product-page .product-image-empty { min-height:180px; display:grid; place-items:center; }
 .product-page .product-image-mark { font-size:18px; letter-spacing:.16em; max-width:72%; }
@@ -812,7 +809,7 @@ body[data-favorites-page] [data-favorite-card].is-favorite {
 /* Secondary item-aware contact action (P2b): a quiet outline button after the
    primary action, rendered only when ContactItemAction is set. */
 .product-page .product-action-secondary { margin-top:10px; background:var(--surface); border:1px solid var(--line); color:var(--ink); font-weight:650; border-radius:var(--radius-sm); }
-.product-page .product-action-secondary:hover { border-color:var(--accent); color:var(--accent-text); }
+.product-page .product-action-secondary:hover { border-color:var(--accent); color:var(--accent); }
 .product-page-with-contact .product-action-secondary { margin-right:68px; }
 .offer-badge { border:1px solid var(--line); background:color-mix(in srgb,var(--surface) 92%,transparent); bottom:7px; left:7px; }
 .favorite-button { width:34px; height:34px; border:0; box-shadow:0 1px 5px color-mix(in srgb,var(--ink) 3%,transparent); transition:color .16s,transform .16s,background .16s; }
@@ -839,7 +836,7 @@ body[data-favorites-page] [data-favorite-card].is-favorite {
 .affiliate-note { border:1px solid var(--line); border-radius:var(--radius-md); background:var(--soft); margin:20px 0 0; padding:14px 16px; }
 .store-empty { border:1px solid var(--line); background:var(--soft); border-radius:var(--radius-md); display:flex; align-items:center; gap:12px; }
 .store-empty[hidden] { display:none; }
-.empty-icon { width:38px; height:38px; flex:none; display:grid; place-items:center; border-radius:var(--radius-sm); background:color-mix(in srgb,var(--accent) 10%,var(--surface)); color:var(--accent-text); }
+.empty-icon { width:38px; height:38px; flex:none; display:grid; place-items:center; border-radius:var(--radius-sm); background:color-mix(in srgb,var(--accent) 10%,var(--surface)); color:var(--accent); }
 .empty-icon .nav-icon { width:19px; height:19px; }
 .store-footer { background:transparent; }
 /* ── Section rhythm: one lead, then a compact list ──
@@ -1075,17 +1072,17 @@ body[data-favorites-page] [data-favorite-card].is-favorite {
 .article-body img { max-width: 100%; height: auto; border-radius: var(--radius-sm); }
 .article-body figure { margin: 1.5em 0; }
 .article-body figcaption { color: var(--muted); font-size: .875em; margin-top: .5em; }
-.article-body a { color: var(--accent-text); }
+.article-body a { color: var(--accent); }
 .article-body table { width: 100%; border-collapse: collapse; margin: 0 0 1em; }
 .article-body th, .article-body td { border-top: 1px solid var(--line); padding: 8px 10px; text-align: left; }
 .article-source { margin: 28px 0 0; padding-top: 18px; border-top: 1px solid var(--line); font-size: 14px; }
-.article-source a { color: var(--accent-text); }
+.article-source a { color: var(--accent); }
 
 /* Notice page styles, moved from the inline <style> block in offer-notice.html
    (CSP pass). Values unchanged. */
 .notice-main { max-width:480px; margin:0 auto; padding:24px 20px 48px; background:var(--paper); min-height:calc(100dvh - 70px); }
 .notice-panel { overflow-wrap:anywhere; }
-.notice-status { color:var(--accent-text); font-size:12px; font-weight:700; margin-bottom:12px; }
+.notice-status { color:var(--accent); font-size:12px; font-weight:700; margin-bottom:12px; }
 .notice-panel h1 { font-size:28px; line-height:1.2; margin-bottom:16px; }
 .notice-message { color:var(--muted); white-space:pre-line; line-height:1.7; }
 .notice-details { background:var(--surface); padding:16px; border:1px solid var(--line); border-radius:var(--radius-md); margin:24px 0; font-size:13px; }
@@ -1151,10 +1148,6 @@ body[data-favorites-page] [data-favorite-card].is-favorite {
    color-mix alone cannot fix. */
 @media (prefers-color-scheme:dark) {
   :root {
-    /* Red text on a dark surface is only 2.8:1; a 65/35 mix with white
-       reaches 4.9:1 on a tinted chip and 5.2:1 on a card, without touching
-       button and badge fills. */
-    --accent-text:color-mix(in srgb,var(--accent) 65%,#fff);
     --soft:color-mix(in srgb,var(--surface) 55%,var(--paper));
     /* Ink-based hover shadows would glow on dark surfaces; shadows go black. */
     --shadow-hover:0 6px 18px rgba(0,0,0,.38);
