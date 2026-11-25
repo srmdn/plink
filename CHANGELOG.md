@@ -6,6 +6,9 @@ All notable changes to Plink are documented in this file.
 
 ### Fixed
 
+- Article bodies give h4–h6 their own scale; browser defaults made h5 and h6
+  smaller than the body text. Task lists drop the duplicate bullet and start at
+  the body margin.
 - Native article pages keep their white reading surface and join the header
   band squarely; the paper-canvas pass made the body inherit the cream page
   background, and the band's rounded corners cut a seam across the white.
