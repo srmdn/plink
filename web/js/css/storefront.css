@@ -1054,8 +1054,10 @@ body[data-favorites-page] [data-favorite-card].is-favorite {
    breakpoint, so the article body never drifts wider than the header. */
 /* Native article pages. The article keeps the surface background it had
    before the paper-canvas pass: only the section lists moved onto the canvas,
-   the reading column stays white. */
+   the reading column stays white. The header joins that sheet squarely — its
+   rounded bottom corners and hairline would cut a seam across the white. */
 .article-main { max-width: 720px; background: var(--surface); }
+.article-page .store-header { border-radius: 0; border-bottom: 0; }
 .article-head { padding: 8px 0 18px; }
 .article-head h1 { font-size: 32px; line-height: 1.2; margin: 8px 0 10px; }
 .article-meta { color: var(--muted); font-size: 13px; margin: 0; }
