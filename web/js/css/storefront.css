@@ -1052,7 +1052,10 @@ body[data-favorites-page] [data-favorite-card].is-favorite {
 /* Native article pages. The column width follows the storefront shell at every
    size: the 480px frame below 768px, and the 720px shell at the desktop
    breakpoint, so the article body never drifts wider than the header. */
-.article-main { max-width: 720px; }
+/* Native article pages. The article keeps the surface background it had
+   before the paper-canvas pass: only the section lists moved onto the canvas,
+   the reading column stays white. */
+.article-main { max-width: 720px; background: var(--surface); }
 .article-head { padding: 8px 0 18px; }
 .article-head h1 { font-size: 32px; line-height: 1.2; margin: 8px 0 10px; }
 .article-meta { color: var(--muted); font-size: 13px; margin: 0; }

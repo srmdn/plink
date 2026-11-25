@@ -6,6 +6,9 @@ All notable changes to Plink are documented in this file.
 
 ### Fixed
 
+- Native article pages keep their white reading surface; the paper-canvas pass
+  made the body inherit the cream page background while the section lists got
+  tiles of their own.
 - Restored the original accent red for text and icons in dark mode; v1.6.1
   had lightened it toward pink.
 
