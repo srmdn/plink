@@ -11,6 +11,8 @@ All notable changes to Plink are documented in this file.
   turned the content itself transparent.
 - Projects and Articles are back on the two-column card grid, and the section
   eyebrow, card mark, and "view all" link use the accent red again.
+- The public header band joins the content sheet squarely. Its rounded bottom
+  corners and hairline cut a seam against a white surface of the same color.
 
 ### Fixed
 

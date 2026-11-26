@@ -756,8 +756,11 @@ body[data-favorites-page] [data-favorite-card].is-favorite {
     Quiet areas inside tiles take the --soft inner tone. Floating chrome
     (bottom nav, FAB, bubble, toast) keeps blur plus the float shadow. */
 :root { --soft:#faf8f3; }
-.store-header { background:var(--surface); border-bottom:1px solid var(--line); border-radius:0 0 var(--radius-sm) var(--radius-sm); }
-.store-header.profile-header { border-radius:0 0 var(--radius-md) var(--radius-md); }
+/* The band joins the white content sheet squarely. A rounded bottom edge plus
+   a hairline cut a visible seam against a surface of the same color, which is
+   what the live site never had. */
+.store-header { background:var(--surface); border-bottom:0; border-radius:0; }
+.store-header.profile-header { border-radius:0; }
 /* The public frame is a white sheet inside the paper page, as it was before the
    canvas experiment: the cream only shows around the frame and behind the
    header band. */
@@ -1030,7 +1033,6 @@ body[data-favorites-page] [data-favorite-card].is-favorite {
    the reading column stays white. The header joins that sheet squarely — its
    rounded bottom corners and hairline would cut a seam across the white. */
 .article-main { max-width: 720px; background: var(--surface); }
-.article-page .store-header { border-radius: 0; border-bottom: 0; }
 .article-head { padding: 8px 0 18px; }
 .article-head h1 { font-size: 32px; line-height: 1.2; margin: 8px 0 10px; }
 .article-meta { color: var(--muted); font-size: 13px; margin: 0; }
