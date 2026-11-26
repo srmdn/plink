@@ -74,17 +74,7 @@
 <div class="offer-card-copy"><span class="offer-provider">{{if .Provider}}{{.Provider}}{{else}}{{.Category}}{{end}}</span><h3>{{.Title}}</h3>{{if .Description}}<p>{{.Description}}</p>{{end}}{{if and $productPage .PriceMinor}}<strong class="product-card-price">{{productPrice .PriceMinor .Currency}}</strong>{{end}}<span class="offer-card-cta">{{if $productPage}}View details{{else}}{{.ButtonLabel}}{{end}} <span aria-hidden="true">↗</span></span></div>
 </a></article>
 {{end}}
-{{define "lead-list"}}{{$lead := index . 0}}{{$rest := slice . 1}}
-<article class="lead-card{{if not $lead.ImageURL}} lead-card--no-image{{end}}">
-<a href="{{$lead.HomeURL}}"{{if not (hasPrefix $lead.HomeURL "/")}} target="_blank" rel="noopener"{{end}} aria-label="{{$lead.Title}}{{if $lead.ButtonLabel}} — {{$lead.ButtonLabel}}{{end}}">
-<div class="lead-card-cover">{{if $lead.ImageURL}}<img src="{{$lead.ImageURL}}" alt="" loading="lazy" />{{else}}<span class="lead-card-mark">{{$lead.Title}}</span>{{end}}</div>
-<div class="lead-card-body">{{if $lead.Meta}}<span class="lead-card-meta">{{$lead.Meta}}</span>{{end}}<h3 class="lead-card-title">{{$lead.Title}}</h3>{{if $lead.Description}}<p class="lead-card-desc">{{$lead.Description}}</p>{{end}}<span class="offer-card-cta">{{$lead.ButtonLabel}} <span aria-hidden="true">↗</span></span></div>
-</a>
-</article>
-{{if $rest}}<div class="lead-rows">{{range $rest}}
-<article class="lead-row"><a href="{{.HomeURL}}"{{if not (hasPrefix .HomeURL "/")}} target="_blank" rel="noopener"{{end}} aria-label="{{.Title}}{{if .Meta}} — {{.Meta}}{{end}}"><span class="lead-row-thumb" aria-hidden="true">{{if .ImageURL}}<img src="{{.ImageURL}}" alt="" loading="lazy" />{{else}}{{.Initials}}{{end}}</span><span class="lead-row-text"><span class="lead-row-title">{{.Title}}</span>{{if .Meta}}<span class="lead-row-meta">{{.Meta}}</span>{{end}}</span><span class="lead-row-arrow" aria-hidden="true">↗</span></a></article>
-{{end}}</div>{{end}}
-{{end}}
+
 {{define "resource-card"}}
 <article class="resource-card" data-favorite-card="{{.Slug}}"><a href="/{{.Slug}}" target="_blank" rel="noopener"><span class="resource-icon" aria-hidden="true">{{template "nav-icon" "link"}}</span><span class="resource-copy"><strong>{{if .Description}}{{.Description}}{{else}}{{.Slug}}{{end}}</strong><small>{{.Category}}</small></span></a><button type="button" class="favorite-button" data-favorite="{{.Slug}}" aria-label="Save {{.Slug}} to favorites" aria-pressed="false">{{template "nav-icon" "heart"}}</button></article>
 {{end}}
@@ -100,8 +90,8 @@
 <form class="store-search" method="get" action="/offers" role="search"><input type="search" name="q" placeholder="Search products, services, or links…" aria-label="Search the catalog" /><button type="submit">Search</button></form>
 {{if .OfferCategories}}<nav class="store-categories" aria-label="Categories"><a class="store-chip active" href="/offers">All</a>{{range .OfferCategories}}<a class="store-chip" href="/offers?category={{. | urlquery}}">{{.}}</a>{{end}}</nav>{{end}}
 {{end}}
-{{if and .Settings.ProjectsEnabled .Projects}}<section class="store-section"><div class="store-section-head"><div><span class="store-eyebrow">PORTFOLIO</span><h2>Projects</h2></div><a href="/offers?view=projects">View all →</a></div><div class="lead-list">{{template "lead-list" .Projects}}</div></section>{{end}}
-{{if and .Settings.ArticlesEnabled .Articles}}<section class="store-section article-section"><div class="store-section-head"><div><span class="store-eyebrow">READING</span><h2>Articles</h2></div><a href="/offers?view=articles">View all →</a></div><div class="lead-list">{{template "lead-list" .Articles}}</div></section>{{end}}
+{{if and .Settings.ProjectsEnabled .Projects}}<section class="store-section"><div class="store-section-head"><div><span class="store-eyebrow">PORTFOLIO</span><h2>Projects</h2></div><a href="/offers?view=projects">View all →</a></div><div class="offer-grid">{{range .Projects}}{{template "offer-card" .}}{{end}}</div></section>{{end}}
+{{if and .Settings.ArticlesEnabled (or .NativeArticles .Articles)}}<section class="store-section article-section"><div class="store-section-head"><div><span class="store-eyebrow">READING</span><h2>Articles</h2></div><a href="/offers?view=articles">View all →</a></div><div class="offer-grid">{{range .NativeArticles}}{{template "offer-card" .}}{{end}}{{range .Articles}}{{template "offer-card" .}}{{end}}</div></section>{{end}}
 {{if .Settings.CatalogEnabled}}
 {{if and .HeroEnabled .FeaturedOffers}}<section class="store-section"><div class="store-section-head"><div><span class="store-eyebrow">FEATURED</span><h2>Featured</h2></div></div><div class="featured-scroller"><div class="featured-track" data-featured-track>{{range .FeaturedOffers}}{{template "offer-card" .}}{{end}}</div></div></section>{{end}}
 {{if .Offers}}<section class="store-section"><div class="store-section-head"><h2>{{.OfferSectionTitle}}</h2><a href="/offers">View all →</a></div><div class="offer-grid">{{range .Offers}}{{template "offer-card" .}}{{end}}</div></section>{{end}}{{end}}
