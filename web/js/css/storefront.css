@@ -758,7 +758,10 @@ body[data-favorites-page] [data-favorite-card].is-favorite {
 :root { --soft:#faf8f3; }
 .store-header { background:var(--surface); border-bottom:1px solid var(--line); border-radius:0 0 var(--radius-sm) var(--radius-sm); }
 .store-header.profile-header { border-radius:0 0 var(--radius-md) var(--radius-md); }
-.store-main { background:transparent; padding-top:14px; }
+/* The public frame is a white sheet inside the paper page, as it was before the
+   canvas experiment: the cream only shows around the frame and behind the
+   header band. */
+.store-main { background:var(--surface); padding-top:14px; }
 .profile-intro { padding:0 0 10px; }
 .profile-intro h1 { font-size:clamp(28px,5vw,42px); margin:7px 0; line-height:1.16; letter-spacing:-.045em; }
 .profile-intro p { margin:7px 0 0; }

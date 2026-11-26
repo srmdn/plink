@@ -4,6 +4,12 @@ All notable changes to Plink are documented in this file.
 
 ## Unreleased
 
+### Changed
+
+- Public pages sit on a white content sheet again. The cream paper stays
+  around the frame and behind the header band; the canvas experiment had
+  turned the content itself transparent.
+
 ### Fixed
 
 - Article bodies give h4–h6 their own scale; browser defaults made h5 and h6
