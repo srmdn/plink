@@ -781,6 +781,9 @@ body[data-favorites-page] [data-favorite-card].is-favorite {
    of the strip, so the auto-mark gets its own band below the button and the
    small line icon (already redundant with the type badge) steps aside. */
 .offer-grid > .offer-card--no-image .offer-image { height:104px; padding:30px 10px 8px; }
+/* The image strip centers its placeholder, which shrank the placeholder to the
+   mark's own width and wrapped titles mid-word. Let it own the strip. */
+.offer-grid > .offer-card--no-image .offer-image-placeholder { width:100%; }
 .offer-grid > .offer-card--no-image .item-illustration { display:none; }
 .item-illustration { display:block; width:90px; height:68px; color:var(--accent); }
 .illustration-icon { fill:none; }

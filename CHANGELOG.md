@@ -9,9 +9,13 @@ All notable changes to Plink are documented in this file.
 - Public pages sit on a white content sheet again. The cream paper stays
   around the frame and behind the header band; the canvas experiment had
   turned the content itself transparent.
+- Projects and Articles are back on the two-column card grid, and the section
+  eyebrow, card mark, and "view all" link use the accent red again.
 
 ### Fixed
 
+- Cards without an image keep their title mark on one line instead of wrapping
+  mid-word inside a half-width grid card.
 - Article bodies give h4–h6 their own scale; browser defaults made h5 and h6
   smaller than the body text. Task lists drop the duplicate bullet and start at
   the body margin.
